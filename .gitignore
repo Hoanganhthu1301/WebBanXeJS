@@ -1,0 +1,12 @@
+node_modules/
+.env
+uploads/*
+!uploads/.gitkeep
+dist/
+build/
+coverage/
+*.log
+.DS_Store
+.vscode/
+keys/private.key
+keys/public.key
