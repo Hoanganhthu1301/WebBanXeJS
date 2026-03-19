@@ -1,0 +1,131 @@
+.admin-cars-page {
+  padding: 24px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.admin-cars-header {
+  margin-bottom: 24px;
+}
+
+.admin-cars-header h1 {
+  margin: 0 0 8px;
+  color: #111827;
+}
+
+.admin-cars-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.admin-cars-box {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.admin-cars-box h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.car-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.car-form input,
+.car-form select,
+.car-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.car-form textarea {
+  grid-column: 1 / -1;
+  resize: vertical;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+}
+
+.save-btn,
+.cancel-btn,
+.edit-btn,
+.delete-btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.save-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.cancel-btn {
+  background: #9ca3af;
+  color: white;
+}
+
+.edit-btn {
+  background: #f59e0b;
+  color: white;
+  margin-right: 8px;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.message-text {
+  margin-top: 16px;
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.cars-table-wrapper {
+  overflow-x: auto;
+}
+
+.cars-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cars-table th,
+.cars-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.cars-table th {
+  background: #f9fafb;
+}
+
+.car-thumb {
+  width: 100px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .car-form {
+    grid-template-columns: 1fr;
+  }
+}
