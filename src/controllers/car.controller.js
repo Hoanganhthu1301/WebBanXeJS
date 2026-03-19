@@ -1,8 +1,9 @@
 const Car = require("../models/car.model");
 
+// USER: chỉ lấy xe đang bán
 const getAllCars = async (req, res) => {
   try {
-    const cars = await Car.find().sort({ createdAt: -1 });
+    const cars = await Car.find({ status: "available" }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       message: "Lấy danh sách xe thành công",
@@ -11,6 +12,23 @@ const getAllCars = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Lỗi server khi lấy danh sách xe",
+      error: error.message,
+    });
+  }
+};
+
+// ADMIN: lấy tất cả xe
+const getAllCarsForAdmin = async (req, res) => {
+  try {
+    const cars = await Car.find().sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Lấy danh sách xe cho admin thành công",
+      cars,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Lỗi server khi lấy danh sách xe admin",
       error: error.message,
     });
   }
@@ -50,8 +68,12 @@ const createCar = async (req, res) => {
       transmission,
       mileage,
       color,
-      image,
+      images,
       description,
+      overviewTitle,
+      overviewText,
+      highlights,
+      features,
       status,
     } = req.body;
 
@@ -62,18 +84,22 @@ const createCar = async (req, res) => {
     }
 
     const newCar = await Car.create({
-      name,
-      brand,
-      category,
-      price,
-      year,
-      fuel,
-      transmission,
-      mileage,
-      color,
-      image,
-      description,
-      status,
+      name: String(name).trim(),
+      brand: String(brand).trim(),
+      category: String(category).trim(),
+      price: Number(price),
+      year: year ? Number(year) : new Date().getFullYear(),
+      fuel: fuel || "Xăng",
+      transmission: transmission || "Tự động",
+      mileage: mileage ? Number(mileage) : 0,
+      color: color || "",
+      images: Array.isArray(images) ? images : [],
+      description: description || "",
+      overviewTitle: overviewTitle || "",
+      overviewText: overviewText || "",
+      highlights: Array.isArray(highlights) ? highlights : [],
+      features: Array.isArray(features) ? features : [],
+      status: status || "available",
     });
 
     return res.status(201).json({
@@ -93,15 +119,19 @@ const updateCar = async (req, res) => {
     const {
       name,
       brand,
-      category,     
+      category,
       price,
       year,
       fuel,
       transmission,
       mileage,
       color,
-      image,
+      images,
       description,
+      overviewTitle,
+      overviewText,
+      highlights,
+      features,
       status,
     } = req.body;
 
@@ -111,14 +141,18 @@ const updateCar = async (req, res) => {
         name,
         brand,
         category,
-        price,
-        year,
+        price: price ? Number(price) : price,
+        year: year ? Number(year) : year,
         fuel,
         transmission,
-        mileage,
+        mileage: mileage ? Number(mileage) : mileage,
         color,
-        image,
+        images: Array.isArray(images) ? images : [],
         description,
+        overviewTitle,
+        overviewText,
+        highlights: Array.isArray(highlights) ? highlights : [],
+        features: Array.isArray(features) ? features : [],
         status,
       },
       { new: true, runValidators: true }
@@ -127,7 +161,7 @@ const updateCar = async (req, res) => {
     if (!updatedCar) {
       return res.status(404).json({
         message: "Không tìm thấy xe để cập nhật",
-      });     
+      });
     }
 
     return res.status(200).json({
@@ -165,6 +199,7 @@ const deleteCar = async (req, res) => {
 
 module.exports = {
   getAllCars,
+  getAllCarsForAdmin,
   getCarById,
   createCar,
   updateCar,

@@ -1,5 +1,23 @@
 const mongoose = require('mongoose');
 
+const highlightSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: "" },
+    text: { type: String, default: "" },
+    image: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
+const featureSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: "" },
+    text: { type: String, default: "" },
+    image: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
 const carSchema = new mongoose.Schema(
   {
     name: {
@@ -41,9 +59,9 @@ const carSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
-    image: {
-      type: String,
-      default: ''
+    images: {
+      type: [String],
+      default: []
     },
     description: {
       type: String,

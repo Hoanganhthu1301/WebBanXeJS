@@ -13,7 +13,7 @@ const initialForm = {
   transmission: "",
   mileage: "",
   color: "",
-  image: "",
+  images: "",
   description: "",
   status: "available",
 };
@@ -39,13 +39,13 @@ export default function AdminCars() {
   }, []);
 
   const fetchCars = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/cars");
-      setCars(res.data.cars || []);
-    } catch (error) {
-      setMessage("Không lấy được danh sách xe");
-    }
-  };
+  try {
+    const res = await axios.get("http://localhost:5000/api/cars/admin/all");
+    setCars(res.data.cars || []);
+  } catch (error) {
+    setMessage("Không lấy được danh sách xe");
+  }
+};
 
   const fetchCategories = async () => {
     try {
@@ -110,7 +110,7 @@ export default function AdminCars() {
       transmission: car.transmission || "",
       mileage: car.mileage || "",
       color: car.color || "",
-      image: car.image || "",
+      images: car.images || "",
       description: car.description || "",
       status: car.status || "available",
     });
@@ -225,9 +225,9 @@ export default function AdminCars() {
 
           <input
             type="text"
-            name="image"
+            name="images"
             placeholder="Link ảnh"
-            value={formData.image}
+            value={formData.images}
             onChange={handleChange}
           />
 
@@ -286,8 +286,8 @@ export default function AdminCars() {
                     <td>
                       <img
                         src={
-                          car.image ||
-                          "https://via.placeholder.com/100x70?text=No+Image"
+                          car.images ||
+                          "https://via.placeholder.com/100x70?text=No+Images"
                         }
                         alt={car.name}
                         className="car-thumb"

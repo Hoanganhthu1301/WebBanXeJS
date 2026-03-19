@@ -9,6 +9,7 @@ import ResetPassword from "./pages/user/ResetPassword";
 import AdminHome from "./pages/Admin/AdminHome";
 import AdminCars from "./pages/Admin/AdminCars";
 import AdminCategories from "./pages/Admin/AdminCategories";
+import CarDetail from "./pages/user/CarDetail";
 
 function App() {
   return (
@@ -24,6 +25,8 @@ function App() {
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/cars" element={<AdminCars />} />
         <Route path="/admin/categories" element={<AdminCategories />} />
+        
+        <Route path="/cars/:id" element={<CarDetail />} />
       </Routes>
     </BrowserRouter>
   );
