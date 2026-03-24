@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const highlightSchema = new mongoose.Schema(
   {
     title: { type: String, default: "" },
     text: { type: String, default: "" },
-    image: { type: String, default: "" }
+    image: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -13,7 +13,7 @@ const featureSchema = new mongoose.Schema(
   {
     title: { type: String, default: "" },
     text: { type: String, default: "" },
-    image: { type: String, default: "" }
+    image: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -23,57 +23,77 @@ const carSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     brand: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     category: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     price: {
       type: Number,
-      required: true
+      required: true,
     },
     year: {
       type: Number,
-      default: new Date().getFullYear()
+      default: new Date().getFullYear(),
     },
     fuel: {
       type: String,
-      default: 'Xăng'
+      default: "Xăng",
     },
     transmission: {
       type: String,
-      default: 'Tự động'
+      default: "Tự động",
     },
     mileage: {
       type: Number,
-      default: 0
+      default: 0,
     },
     color: {
       type: String,
-      default: ''
+      default: "",
+    },
+    image: {
+      type: String,
+      default: "",
     },
     images: {
       type: [String],
-      default: []
+      default: [],
     },
     description: {
       type: String,
-      default: ''
+      default: "",
+    },
+    overviewTitle: {
+      type: String,
+      default: "",
+    },
+    overviewText: {
+      type: String,
+      default: "",
+    },
+    highlights: {
+      type: [highlightSchema],
+      default: [],
+    },
+    features: {
+      type: [featureSchema],
+      default: [],
     },
     status: {
       type: String,
-      enum: ['available', 'hidden'],
-      default: 'available'
-    }
+      enum: ["available", "hidden"],
+      default: "available",
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Car', carSchema);
+module.exports = mongoose.model("Car", carSchema);

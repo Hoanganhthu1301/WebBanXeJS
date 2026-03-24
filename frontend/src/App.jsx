@@ -10,6 +10,10 @@ import AdminHome from "./pages/Admin/AdminHome";
 import AdminCars from "./pages/Admin/AdminCars";
 import AdminCategories from "./pages/Admin/AdminCategories";
 import CarDetail from "./pages/user/CarDetail";
+import AdminBrands from "./pages/Admin/AdminBrands";
+import CarsPage from "./pages/user/CarsPage";
+import AdminContacts from "./pages/Admin/AdminContacts";
+import ContactPage from "./pages/user/ContactPage";
 
 function App() {
   return (
@@ -27,6 +31,10 @@ function App() {
         <Route path="/admin/categories" element={<AdminCategories />} />
         
         <Route path="/cars/:id" element={<CarDetail />} />
+        <Route path="/admin/brands" element={<AdminBrands />} />
+        <Route path="/cars" element={<CarsPage />} />
+        <Route path="/admin/contacts" element={<AdminContacts />} />
+        <Route path="/cars/:id/contact" element={<ContactPage />} />
       </Routes>
     </BrowserRouter>
   );

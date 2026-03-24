@@ -12,5 +12,9 @@ router.get('/test', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/cars', require('./car.routes'));
 router.use('/categories', require('./category.routes'));
+router.use('/brands', require('./brand.routes'));
+
+router.use('/contacts', require('./contact.routes'));
+
 
 module.exports = router;

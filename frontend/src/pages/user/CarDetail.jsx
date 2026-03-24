@@ -5,9 +5,20 @@ import "../../styles/user/CarDetail.css";
 
 export default function CarDetail() {
   const { id } = useParams();
+
   const [car, setCar] = useState(null);
   const [message, setMessage] = useState("");
   const [activeFeature, setActiveFeature] = useState(null);
+
+  const [contactForm, setContactForm] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
 
   useEffect(() => {
     fetchCar();
@@ -17,6 +28,7 @@ export default function CarDetail() {
     try {
       const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
       setCar(res.data.car);
+      setMessage("");
     } catch (error) {
       setMessage("Không lấy được chi tiết xe");
     }
@@ -53,6 +65,52 @@ export default function CarDetail() {
 
   const getImage = (index) => carImages[index] || carImages[0];
 
+  const handleContactChange = (e) => {
+    setContactForm({
+      ...contactForm,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmitContact = async (e) => {
+    e.preventDefault();
+
+    if (!car?._id) {
+      setContactMessage("Không xác định được xe đang quan tâm");
+      return;
+    }
+
+    try {
+      setContactLoading(true);
+      setContactMessage("");
+
+      const payload = {
+        fullName: contactForm.fullName,
+        phone: contactForm.phone,
+        email: contactForm.email,
+        message: contactForm.message,
+        carId: car._id,
+      };
+
+      const res = await axios.post("http://localhost:5000/api/contacts", payload);
+
+      setContactMessage(res.data.message || "Gửi yêu cầu tư vấn thành công");
+
+      setContactForm({
+        fullName: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+    } catch (error) {
+      setContactMessage(
+        error.response?.data?.message || "Gửi yêu cầu tư vấn thất bại"
+      );
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
   if (message) {
     return <p style={{ padding: "30px", color: "red" }}>{message}</p>;
   }
@@ -84,30 +142,27 @@ export default function CarDetail() {
 
   const features =
     car.features && car.features.length > 0
-      ? car.features.map((item, index) => ({
-          ...item,
-          image: item.image || getImage(index),
-        }))
+      ? car.features
       : [
           {
             title: "Màn hình giải trí",
             text: "Hiển thị thông tin trực quan, dễ sử dụng.",
-            image: getImage(0),
+            image: "",
           },
           {
             title: "Hỗ trợ lái",
             text: "Tăng độ an toàn và sự tự tin khi vận hành.",
-            image: getImage(1),
+            image: "",
           },
           {
             title: "Khung gầm",
             text: "Cân bằng tốt giữa độ êm ái và cảm giác lái.",
-            image: getImage(2),
+            image: "",
           },
           {
             title: "Tiện nghi nội thất",
             text: "Thiết kế hướng tới sự thoải mái và sang trọng.",
-            image: getImage(0),
+            image: "",
           },
         ];
 
@@ -144,9 +199,9 @@ export default function CarDetail() {
           )}
 
           <div className="mb-hero-actions">
-            <a href="#contact" className="mb-btn mb-btn-light">
+            <Link to={`/cars/${car._id}/contact`} className="mb-btn mb-btn-light">
               Yêu cầu tư vấn
-            </a>
+            </Link>
             <a href="#specs" className="mb-btn mb-btn-dark">
               Xem thông số
             </a>
@@ -202,7 +257,11 @@ export default function CarDetail() {
               onClick={() => setActiveFeature(item)}
             >
               <img
-                src={item.image}
+                src={
+                  item.image && item.image.trim() !== ""
+                    ? item.image
+                    : "https://via.placeholder.com/500x320?text=No+Feature+Image"
+                }
                 alt={item.title}
                 className="mb-feature-card-image"
                 onError={(e) => {
@@ -251,17 +310,52 @@ export default function CarDetail() {
           <h2>Đăng ký nhận tư vấn về {car.name}</h2>
         </div>
 
-        <form className="mb-contact-form">
-          <input type="text" placeholder="Họ và tên" />
-          <input type="text" placeholder="Số điện thoại" />
-          <input type="email" placeholder="Email" />
-          <textarea rows="5" placeholder="Nội dung cần tư vấn"></textarea>
-          <button type="submit">Gửi yêu cầu</button>
+        <form className="mb-contact-form" onSubmit={handleSubmitContact}>
+          <input
+            type="text"
+            name="fullName"
+            placeholder="Họ và tên"
+            value={contactForm.fullName}
+            onChange={handleContactChange}
+          />
+          <input
+            type="text"
+            name="phone"
+            placeholder="Số điện thoại"
+            value={contactForm.phone}
+            onChange={handleContactChange}
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={contactForm.email}
+            onChange={handleContactChange}
+          />
+          <textarea
+            rows="5"
+            name="message"
+            placeholder="Nội dung cần tư vấn"
+            value={contactForm.message}
+            onChange={handleContactChange}
+          ></textarea>
+          <button type="submit" disabled={contactLoading}>
+            {contactLoading ? "Đang gửi..." : "Gửi yêu cầu"}
+          </button>
+
+          {contactMessage && (
+            <p style={{ color: "white", marginTop: "10px" }}>
+              {contactMessage}
+            </p>
+          )}
         </form>
       </section>
 
       {activeFeature && (
-        <div className="mb-feature-drawer-overlay" onClick={() => setActiveFeature(null)}>
+        <div
+          className="mb-feature-drawer-overlay"
+          onClick={() => setActiveFeature(null)}
+        >
           <div
             className="mb-feature-drawer"
             onClick={(e) => e.stopPropagation()}
@@ -272,7 +366,11 @@ export default function CarDetail() {
             </div>
 
             <img
-              src={activeFeature.image}
+              src={
+                activeFeature.image && activeFeature.image.trim() !== ""
+                  ? activeFeature.image
+                  : "https://via.placeholder.com/700x500?text=No+Feature+Image"
+              }
               alt={activeFeature.title}
               className="mb-feature-drawer-image"
               onError={(e) => {

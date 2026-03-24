@@ -65,12 +65,12 @@ export default function Home() {
           </p>
 
           <div className="hero-buttons">
-            <a href="#featured" className="btn btn-outline">
+            <Link to="/cars" className="btn btn-outline">
               Khám phá ưu đãi
-            </a>
-            <a href="#featured" className="btn btn-primary">
-              Xem xe nổi bật
-            </a>
+            </Link>
+            <Link to="/cars" className="btn btn-primary">
+              Xem tất cả xe
+            </Link>
           </div>
         </div>
 

@@ -3,6 +3,18 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/admin/AdminCars.css";
 
+const createEmptyHighlight = () => ({
+  title: "",
+  text: "",
+  image: "",
+});
+
+const createEmptyFeature = () => ({
+  title: "",
+  text: "",
+  image: "",
+});
+
 const initialForm = {
   name: "",
   brand: "",
@@ -13,9 +25,23 @@ const initialForm = {
   transmission: "",
   mileage: "",
   color: "",
-  images: "",
+  image: "",
+  imagesText: "",
   description: "",
   status: "available",
+  overviewTitle: "",
+  overviewText: "",
+  highlights: [
+    createEmptyHighlight(),
+    createEmptyHighlight(),
+    createEmptyHighlight(),
+  ],
+  features: [
+    createEmptyFeature(),
+    createEmptyFeature(),
+    createEmptyFeature(),
+    createEmptyFeature(),
+  ],
 };
 
 export default function AdminCars() {
@@ -27,6 +53,7 @@ export default function AdminCars() {
   const [formData, setFormData] = useState(initialForm);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -36,16 +63,25 @@ export default function AdminCars() {
 
     fetchCars();
     fetchCategories();
-  }, []);
+    fetchBrands();
 
-  const fetchCars = async () => {
+  }, []);
+  const fetchBrands = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/cars/admin/all");
-    setCars(res.data.cars || []);
+    const res = await axios.get("http://localhost:5000/api/brands");
+    setBrands(res.data.brands || []);
   } catch (error) {
-    setMessage("Không lấy được danh sách xe");
+    console.log("Không lấy được danh sách hãng", error);
   }
 };
+  const fetchCars = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/cars/admin/all");
+      setCars(res.data.cars || []);
+    } catch (error) {
+      setMessage("Không lấy được danh sách xe");
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -63,21 +99,67 @@ export default function AdminCars() {
     });
   };
 
+  const handleNestedChange = (type, index, field, value) => {
+    const updated = [...formData[type]];
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+
+    setFormData({
+      ...formData,
+      [type]: updated,
+    });
+  };
+
   const resetForm = () => {
     setFormData(initialForm);
     setEditingId(null);
+  };
+
+  const parseLinesToArray = (text) => {
+    return text
+      .split("\n")
+      .map((item) => item.trim())
+      .filter((item) => item !== "");
+  };
+
+  const normalizeArrayItems = (items) => {
+    return items.filter(
+      (item) =>
+        (item.title && item.title.trim() !== "") ||
+        (item.text && item.text.trim() !== "") ||
+        (item.image && item.image.trim() !== "")
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      const parsedImages = parseLinesToArray(formData.imagesText);
+
       const payload = {
-        ...formData,
+        name: formData.name,
+        brand: formData.brand,
+        category: formData.category,
         price: Number(formData.price),
         year: Number(formData.year) || new Date().getFullYear(),
+        fuel: formData.fuel,
+        transmission: formData.transmission,
         mileage: Number(formData.mileage) || 0,
+        color: formData.color,
+        image: formData.image || parsedImages[0] || "",
+        images: parsedImages,
+        description: formData.description,
+        status: formData.status,
+        overviewTitle: formData.overviewTitle,
+        overviewText: formData.overviewText,
+        highlights: normalizeArrayItems(formData.highlights),
+        features: normalizeArrayItems(formData.features),
       };
+
+      console.log("PAYLOAD GUI LEN:", payload);
 
       if (editingId) {
         await axios.put(`http://localhost:5000/api/cars/${editingId}`, payload);
@@ -90,6 +172,7 @@ export default function AdminCars() {
       resetForm();
       fetchCars();
     } catch (error) {
+      console.log("UPDATE ERROR:", error.response?.data || error);
       setMessage(
         error.response?.data?.message ||
           error.response?.data?.error ||
@@ -100,6 +183,7 @@ export default function AdminCars() {
 
   const handleEdit = (car) => {
     setEditingId(car._id);
+
     setFormData({
       name: car.name || "",
       brand: car.brand || "",
@@ -110,9 +194,38 @@ export default function AdminCars() {
       transmission: car.transmission || "",
       mileage: car.mileage || "",
       color: car.color || "",
-      images: car.images || "",
+      image: car.image || "",
+      imagesText: Array.isArray(car.images) ? car.images.join("\n") : "",
       description: car.description || "",
       status: car.status || "available",
+      overviewTitle: car.overviewTitle || "",
+      overviewText: car.overviewText || "",
+      highlights:
+        Array.isArray(car.highlights) && car.highlights.length > 0
+          ? [
+              car.highlights[0] || createEmptyHighlight(),
+              car.highlights[1] || createEmptyHighlight(),
+              car.highlights[2] || createEmptyHighlight(),
+            ]
+          : [
+              createEmptyHighlight(),
+              createEmptyHighlight(),
+              createEmptyHighlight(),
+            ],
+      features:
+        Array.isArray(car.features) && car.features.length > 0
+          ? [
+              car.features[0] || createEmptyFeature(),
+              car.features[1] || createEmptyFeature(),
+              car.features[2] || createEmptyFeature(),
+              car.features[3] || createEmptyFeature(),
+            ]
+          : [
+              createEmptyFeature(),
+              createEmptyFeature(),
+              createEmptyFeature(),
+              createEmptyFeature(),
+            ],
     });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -131,6 +244,12 @@ export default function AdminCars() {
     }
   };
 
+  const getThumb = (car) => {
+    if (car.image && car.image.trim() !== "") return car.image;
+    if (Array.isArray(car.images) && car.images.length > 0) return car.images[0];
+    return "https://via.placeholder.com/100x70?text=No+Image";
+  };
+
   if (!user || user.role !== "admin") return null;
 
   return (
@@ -144,27 +263,22 @@ export default function AdminCars() {
         <h2>{editingId ? "Cập nhật xe" : "Thêm xe mới"}</h2>
 
         <form className="car-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Tên xe"
-            value={formData.name}
-            onChange={handleChange}
-          />
-
-          <input
-            type="text"
+          <input type="text" name="name" placeholder="Tên xe" value={formData.name} onChange={handleChange} />
+          <select
             name="brand"
-            placeholder="Hãng xe"
             value={formData.brand}
             onChange={handleChange}
-          />
-
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
           >
+            <option value="">-- Chọn hãng xe --</option>
+            {brands
+              .filter((item) => item.status === "active")
+              .map((item) => (
+                <option key={item._id} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
+          </select>
+          <select name="category" value={formData.category} onChange={handleChange}>
             <option value="">-- Chọn danh mục xe --</option>
             {categories
               .filter((item) => item.status === "active")
@@ -175,70 +289,26 @@ export default function AdminCars() {
               ))}
           </select>
 
-          <input
-            type="number"
-            name="price"
-            placeholder="Giá"
-            value={formData.price}
-            onChange={handleChange}
-          />
+          <input type="number" name="price" placeholder="Giá" value={formData.price} onChange={handleChange} />
+          <input type="number" name="year" placeholder="Năm sản xuất" value={formData.year} onChange={handleChange} />
+          <input type="text" name="fuel" placeholder="Nhiên liệu" value={formData.fuel} onChange={handleChange} />
+          <input type="text" name="transmission" placeholder="Hộp số" value={formData.transmission} onChange={handleChange} />
+          <input type="number" name="mileage" placeholder="Số km đã đi" value={formData.mileage} onChange={handleChange} />
+          <input type="text" name="color" placeholder="Màu xe" value={formData.color} onChange={handleChange} />
+          <input type="text" name="image" placeholder="Ảnh chính" value={formData.image} onChange={handleChange} />
 
-          <input
-            type="number"
-            name="year"
-            placeholder="Năm sản xuất"
-            value={formData.year}
-            onChange={handleChange}
-          />
-
-          <input
-            type="text"
-            name="fuel"
-            placeholder="Nhiên liệu"
-            value={formData.fuel}
-            onChange={handleChange}
-          />
-
-          <input
-            type="text"
-            name="transmission"
-            placeholder="Hộp số"
-            value={formData.transmission}
-            onChange={handleChange}
-          />
-
-          <input
-            type="number"
-            name="mileage"
-            placeholder="Số km đã đi"
-            value={formData.mileage}
-            onChange={handleChange}
-          />
-
-          <input
-            type="text"
-            name="color"
-            placeholder="Màu xe"
-            value={formData.color}
-            onChange={handleChange}
-          />
-
-          <input
-            type="text"
-            name="images"
-            placeholder="Link ảnh"
-            value={formData.images}
-            onChange={handleChange}
-          />
-
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-          >
+          <select name="status" value={formData.status} onChange={handleChange}>
             <option value="available">Đang bán</option>
             <option value="hidden">Ẩn</option>
           </select>
+
+          <textarea
+            name="imagesText"
+            placeholder="Nhiều link ảnh (mỗi dòng 1 link)"
+            rows="5"
+            value={formData.imagesText}
+            onChange={handleChange}
+          ></textarea>
 
           <textarea
             name="description"
@@ -247,6 +317,86 @@ export default function AdminCars() {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
+
+          <input
+            type="text"
+            name="overviewTitle"
+            placeholder="Tiêu đề giới thiệu"
+            value={formData.overviewTitle}
+            onChange={handleChange}
+          />
+
+          <textarea
+            name="overviewText"
+            placeholder="Nội dung giới thiệu"
+            rows="4"
+            value={formData.overviewText}
+            onChange={handleChange}
+          ></textarea>
+
+          <div className="nested-block">
+            <h3>Highlights / Điểm nổi bật</h3>
+            {formData.highlights.map((item, index) => (
+              <div className="nested-group" key={`highlight-${index}`}>
+                <input
+                  type="text"
+                  placeholder={`Highlight ${index + 1} - Tiêu đề`}
+                  value={item.title}
+                  onChange={(e) =>
+                    handleNestedChange("highlights", index, "title", e.target.value)
+                  }
+                />
+                <textarea
+                  rows="3"
+                  placeholder={`Highlight ${index + 1} - Nội dung`}
+                  value={item.text}
+                  onChange={(e) =>
+                    handleNestedChange("highlights", index, "text", e.target.value)
+                  }
+                ></textarea>
+                <input
+                  type="text"
+                  placeholder={`Highlight ${index + 1} - Ảnh`}
+                  value={item.image}
+                  onChange={(e) =>
+                    handleNestedChange("highlights", index, "image", e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="nested-block">
+            <h3>Features / Trang bị nổi bật</h3>
+            {formData.features.map((item, index) => (
+              <div className="nested-group" key={`feature-${index}`}>
+                <input
+                  type="text"
+                  placeholder={`Feature ${index + 1} - Tiêu đề`}
+                  value={item.title}
+                  onChange={(e) =>
+                    handleNestedChange("features", index, "title", e.target.value)
+                  }
+                />
+                <textarea
+                  rows="3"
+                  placeholder={`Feature ${index + 1} - Nội dung`}
+                  value={item.text}
+                  onChange={(e) =>
+                    handleNestedChange("features", index, "text", e.target.value)
+                  }
+                ></textarea>
+                <input
+                  type="text"
+                  placeholder={`Feature ${index + 1} - Ảnh`}
+                  value={item.image}
+                  onChange={(e) =>
+                    handleNestedChange("features", index, "image", e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </div>
 
           <div className="form-actions">
             <button type="submit" className="save-btn">
@@ -285,12 +435,13 @@ export default function AdminCars() {
                   <tr key={car._id}>
                     <td>
                       <img
-                        src={
-                          car.images ||
-                          "https://via.placeholder.com/100x70?text=No+Images"
-                        }
+                        src={getThumb(car)}
                         alt={car.name}
                         className="car-thumb"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/100x70?text=No+Image";
+                        }}
                       />
                     </td>
                     <td>{car.name}</td>
@@ -300,16 +451,10 @@ export default function AdminCars() {
                     <td>{car.year}</td>
                     <td>{car.status === "available" ? "Đang bán" : "Ẩn"}</td>
                     <td>
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit(car)}
-                      >
+                      <button className="edit-btn" onClick={() => handleEdit(car)}>
                         Sửa
                       </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(car._id)}
-                      >
+                      <button className="delete-btn" onClick={() => handleDelete(car._id)}>
                         Xóa
                       </button>
                     </td>

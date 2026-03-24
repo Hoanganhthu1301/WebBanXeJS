@@ -1,6 +1,6 @@
 const Car = require("../models/car.model");
 
-// USER: chỉ lấy xe đang bán
+// USER
 const getAllCars = async (req, res) => {
   try {
     const cars = await Car.find({ status: "available" }).sort({ createdAt: -1 });
@@ -17,7 +17,7 @@ const getAllCars = async (req, res) => {
   }
 };
 
-// ADMIN: lấy tất cả xe
+// ADMIN
 const getAllCarsForAdmin = async (req, res) => {
   try {
     const cars = await Car.find().sort({ createdAt: -1 });
@@ -68,6 +68,7 @@ const createCar = async (req, res) => {
       transmission,
       mileage,
       color,
+      image,
       images,
       description,
       overviewTitle,
@@ -93,6 +94,7 @@ const createCar = async (req, res) => {
       transmission: transmission || "Tự động",
       mileage: mileage ? Number(mileage) : 0,
       color: color || "",
+      image: image || "",
       images: Array.isArray(images) ? images : [],
       description: description || "",
       overviewTitle: overviewTitle || "",
@@ -107,6 +109,7 @@ const createCar = async (req, res) => {
       car: newCar,
     });
   } catch (error) {
+    console.error("CREATE CAR ERROR:", error);
     return res.status(500).json({
       message: "Lỗi server khi thêm xe",
       error: error.message,
@@ -126,6 +129,7 @@ const updateCar = async (req, res) => {
       transmission,
       mileage,
       color,
+      image,
       images,
       description,
       overviewTitle,
@@ -147,6 +151,7 @@ const updateCar = async (req, res) => {
         transmission,
         mileage: mileage ? Number(mileage) : mileage,
         color,
+        image,
         images: Array.isArray(images) ? images : [],
         description,
         overviewTitle,
@@ -169,6 +174,7 @@ const updateCar = async (req, res) => {
       car: updatedCar,
     });
   } catch (error) {
+    console.error("UPDATE CAR ERROR:", error);
     return res.status(500).json({
       message: "Lỗi server khi cập nhật xe",
       error: error.message,

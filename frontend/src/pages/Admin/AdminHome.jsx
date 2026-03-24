@@ -52,7 +52,9 @@ export default function AdminHome() {
           <Link to="/admin/users">Người dùng</Link>
           <Link to="/admin/orders">Đơn hàng</Link>
           <Link to="/admin/categories">Danh mục</Link>
+          <Link to="/admin/brands">Hãng xe</Link>
           <Link to="/admin/banners">Banner</Link>
+          <Link to="/admin/contacts">Yêu cầu tư vấn</Link>
         </nav>
       </aside>
 
