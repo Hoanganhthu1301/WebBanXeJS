@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/ContactPage.css";
+import MainNavbar from "../../components/MainNavbar";
 
 const initialForm = {
   salutation: "",
@@ -102,19 +103,7 @@ export default function ContactPage() {
 
   return (
     <div className="contact-page">
-      <header className="contact-header">
-        <div className="contact-header-inner">
-          <Link to="/" className="contact-logo">
-            ★ CAR SHOP
-          </Link>
-
-          <nav className="contact-nav">
-            <Link to="/">Trang chủ</Link>
-            <Link to="/cars">Danh sách xe</Link>
-            <Link to="/login">Đăng nhập</Link>
-          </nav>
-        </div>
-      </header>
+      <MainNavbar />
 
       <div className="contact-container">
         <div className="contact-left">

@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
+  background: #f3f4f6;
+}
 .admin-cars-page {
   padding: 24px;
   background: #f5f7fb;

@@ -50,7 +50,7 @@ export default function AdminHome() {
           <Link to="/admin" className="active">Tổng quan</Link>
           <Link to="/admin/cars">Quản lý xe</Link>
           <Link to="/admin/users">Người dùng</Link>
-          <Link to="/admin/orders">Đơn hàng</Link>
+          <Link to="/admin/deposits">Đơn hàng</Link>
           <Link to="/admin/categories">Danh mục</Link>
           <Link to="/admin/brands">Hãng xe</Link>
           <Link to="/admin/banners">Banner</Link>
@@ -106,7 +106,7 @@ export default function AdminHome() {
               <p>Xem danh sách người dùng và phân quyền</p>
             </Link>
 
-            <Link to="/admin/orders" className="action-card">
+            <Link to="/admin/deposits" className="action-card">
               <h3>Quản lý đơn hàng</h3>
               <p>Theo dõi các yêu cầu mua xe và liên hệ</p>
             </Link>

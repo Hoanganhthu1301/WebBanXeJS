@@ -14,6 +14,13 @@ import AdminBrands from "./pages/Admin/AdminBrands";
 import CarsPage from "./pages/user/CarsPage";
 import AdminContacts from "./pages/Admin/AdminContacts";
 import ContactPage from "./pages/user/ContactPage";
+import DepositPage from "./pages/user/DepositPage";
+import DepositSuccess from "./pages/user/DepositSuccess";
+import DepositCancel from "./pages/user/DepositCancel";
+import MyDepositsPage from "./pages/user/MyDepositsPage";
+import AdminDeposits from "./pages/Admin/AdminDeposits";
+import AdminDepositDetail from "./pages/Admin/AdminDepositDetail";
+
 
 function App() {
   return (
@@ -35,6 +42,12 @@ function App() {
         <Route path="/cars" element={<CarsPage />} />
         <Route path="/admin/contacts" element={<AdminContacts />} />
         <Route path="/cars/:id/contact" element={<ContactPage />} />
+        <Route path="/cars/:id/deposit" element={<DepositPage />} />
+        <Route path="/admin/deposits" element={<AdminDeposits />} />
+        <Route path="/admin/deposits/:id" element={<AdminDepositDetail />} />
+        <Route path="/deposit/success" element={<DepositSuccess />} />
+        <Route path="/deposit/cancel" element={<DepositCancel />} />
+        <Route path="/my-deposits" element={<MyDepositsPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/CarsPage.css";
+import MainNavbar from "../../components/MainNavbar";
 
 export default function CarsPage() {
   const [cars, setCars] = useState([]);
@@ -85,21 +86,8 @@ export default function CarsPage() {
 
   return (
     <div className="cars-page">
-      <header className="cars-header">
-        <div className="cars-header-inner">
-          <Link to="/" className="cars-logo">
-            ★ CAR SHOP
-          </Link>
-
-          <nav className="cars-nav">
-            <Link to="/">Trang chủ</Link>
-            <Link to="/cars" className="active">
-              Danh sách xe
-            </Link>
-            <Link to="/login">Đăng nhập</Link>
-          </nav>
-        </div>
-      </header>
+     <MainNavbar />
+        
 
       <section className="cars-hero">
         <div className="cars-hero-overlay"></div>

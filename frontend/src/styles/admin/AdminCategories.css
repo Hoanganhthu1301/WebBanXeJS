@@ -1,3 +1,10 @@
+
+
+body {
+  margin: 0;
+  font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
+  background: #f3f4f6;
+}
 .admin-categories-page {
   padding: 24px;
   background: #f5f7fb;

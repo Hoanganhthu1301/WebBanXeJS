@@ -15,6 +15,7 @@ router.use('/categories', require('./category.routes'));
 router.use('/brands', require('./brand.routes'));
 
 router.use('/contacts', require('./contact.routes'));
+router.use('/deposits', require('./deposit.routes'));
 
 
 module.exports = router;

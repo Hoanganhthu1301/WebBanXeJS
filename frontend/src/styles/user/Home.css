@@ -9,9 +9,9 @@ html {
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: #0b0b0b;
-  color: white;
+  margin: 0;
+  font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
+  background: #f3f4f6;
 }
 
 a {
@@ -443,4 +443,29 @@ a {
   .car-price {
     font-size: 26px;
   }
+  .user-link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.user-link:hover {
+  opacity: 0.8;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #fff;
+  color: #000;
+}
 }

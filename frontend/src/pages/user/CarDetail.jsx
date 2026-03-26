@@ -1,27 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/CarDetail.css";
+import MainNavbar from "../../components/MainNavbar";
 
 export default function CarDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [car, setCar] = useState(null);
   const [message, setMessage] = useState("");
   const [activeFeature, setActiveFeature] = useState(null);
-
-  const [contactForm, setContactForm] = useState({
-    fullName: "",
-    phone: "",
-    email: "",
-    message: "",
-  });
-
-  const [contactMessage, setContactMessage] = useState("");
-  const [contactLoading, setContactLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     fetchCar();
+
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        setUser(null);
+      }
+    }
   }, [id]);
 
   const fetchCar = async () => {
@@ -65,50 +67,28 @@ export default function CarDetail() {
 
   const getImage = (index) => carImages[index] || carImages[0];
 
-  const handleContactChange = (e) => {
-    setContactForm({
-      ...contactForm,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleConsultationClick = () => {
+    const token = localStorage.getItem("token");
 
-  const handleSubmitContact = async (e) => {
-    e.preventDefault();
-
-    if (!car?._id) {
-      setContactMessage("Không xác định được xe đang quan tâm");
+    if (!token) {
+      alert("Vui lòng đăng nhập để gửi yêu cầu tư vấn");
+      navigate("/login");
       return;
     }
 
-    try {
-      setContactLoading(true);
-      setContactMessage("");
+    navigate(`/cars/${car._id}/contact`);
+  };
 
-      const payload = {
-        fullName: contactForm.fullName,
-        phone: contactForm.phone,
-        email: contactForm.email,
-        message: contactForm.message,
-        carId: car._id,
-      };
+  const handleDepositClick = () => {
+    const token = localStorage.getItem("token");
 
-      const res = await axios.post("http://localhost:5000/api/contacts", payload);
-
-      setContactMessage(res.data.message || "Gửi yêu cầu tư vấn thành công");
-
-      setContactForm({
-        fullName: "",
-        phone: "",
-        email: "",
-        message: "",
-      });
-    } catch (error) {
-      setContactMessage(
-        error.response?.data?.message || "Gửi yêu cầu tư vấn thất bại"
-      );
-    } finally {
-      setContactLoading(false);
+    if (!token) {
+      alert("Vui lòng đăng nhập để đặt cọc giữ xe");
+      navigate("/login");
+      return;
     }
+
+    navigate(`/cars/${car._id}/deposit`);
   };
 
   if (message) {
@@ -168,6 +148,8 @@ export default function CarDetail() {
 
   return (
     <div className="mb-detail-page">
+      <MainNavbar />
+
       <section className="mb-hero">
         <img
           src={getImage(0)}
@@ -199,9 +181,22 @@ export default function CarDetail() {
           )}
 
           <div className="mb-hero-actions">
-            <Link to={`/cars/${car._id}/contact`} className="mb-btn mb-btn-light">
+            <button
+              type="button"
+              className="mb-btn mb-btn-light"
+              onClick={handleConsultationClick}
+            >
               Yêu cầu tư vấn
-            </Link>
+            </button>
+
+            <button
+              type="button"
+              className="mb-btn mb-btn-dark"
+              onClick={handleDepositClick}
+            >
+              Đặt cọc giữ xe
+            </button>
+
             <a href="#specs" className="mb-btn mb-btn-dark">
               Xem thông số
             </a>
@@ -306,49 +301,58 @@ export default function CarDetail() {
 
       <section id="contact" className="mb-section">
         <div className="mb-section-heading">
-          <p>YÊU CẦU TƯ VẤN</p>
-          <h2>Đăng ký nhận tư vấn về {car.name}</h2>
+          <p>TƯ VẤN MUA XE</p>
+          <h2>Nhận tư vấn riêng cho {car.name}</h2>
         </div>
 
-        <form className="mb-contact-form" onSubmit={handleSubmitContact}>
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Họ và tên"
-            value={contactForm.fullName}
-            onChange={handleContactChange}
-          />
-          <input
-            type="text"
-            name="phone"
-            placeholder="Số điện thoại"
-            value={contactForm.phone}
-            onChange={handleContactChange}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={contactForm.email}
-            onChange={handleContactChange}
-          />
-          <textarea
-            rows="5"
-            name="message"
-            placeholder="Nội dung cần tư vấn"
-            value={contactForm.message}
-            onChange={handleContactChange}
-          ></textarea>
-          <button type="submit" disabled={contactLoading}>
-            {contactLoading ? "Đang gửi..." : "Gửi yêu cầu"}
-          </button>
+        <div className="mb-description-box" style={{ textAlign: "center" }}>
+          <h3>
+            {user
+              ? `Xin chào ${user.fullName || user.name || "khách hàng"}`
+              : "Đăng nhập để gửi yêu cầu tư vấn"}
+          </h3>
 
-          {contactMessage && (
-            <p style={{ color: "white", marginTop: "10px" }}>
-              {contactMessage}
-            </p>
-          )}
-        </form>
+          <p style={{ maxWidth: "760px", margin: "12px auto 24px" }}>
+            {user
+              ? "Bạn đã đăng nhập. Nhấn nút bên dưới để chuyển tới trang gửi yêu cầu tư vấn dành riêng cho mẫu xe này."
+              : "Để đảm bảo quản lý yêu cầu tư vấn, lịch sử liên hệ và phản hồi từ showroom một cách chuyên nghiệp, vui lòng đăng nhập trước khi gửi yêu cầu."}
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "14px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            {user ? (
+              <button
+                type="button"
+                className="mb-btn mb-btn-light"
+                onClick={handleConsultationClick}
+              >
+                Đi tới trang yêu cầu tư vấn
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="mb-btn mb-btn-light"
+                onClick={() => navigate("/login")}
+              >
+                Đăng nhập ngay
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="mb-btn mb-btn-dark"
+              onClick={handleDepositClick}
+            >
+              Đặt cọc giữ xe
+            </button>
+          </div>
+        </div>
       </section>
 
       {activeFeature && (

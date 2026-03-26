@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/Home.css";
+import MainNavbar from "../../components/MainNavbar";
 
 export default function Home() {
   const [cars, setCars] = useState([]);
@@ -17,8 +18,6 @@ export default function Home() {
       setLoading(true);
 
       const res = await axios.get("http://localhost:5000/api/cars");
-      console.log("Danh sách xe:", res.data);
-
       setCars(res.data.cars || []);
       setMessage("");
     } catch (error) {
@@ -31,21 +30,7 @@ export default function Home() {
 
   return (
     <div className="home-page">
-      <header className="home-header">
-        <div className="header-left">
-          <a href="#featured">Các mẫu xe</a>
-          <a href="#featured">Mua</a>
-          <a href="#services">Dịch vụ</a>
-          <a href="#featured">Thương hiệu</a>
-        </div>
-
-        <div className="header-logo">★</div>
-
-        <div className="header-right">
-          <a href="#featured">Tìm kiếm</a>
-          <Link to="/login">Đăng nhập</Link>
-        </div>
-      </header>
+      <MainNavbar />
 
       <section className="hero">
         <div className="hero-overlay"></div>
