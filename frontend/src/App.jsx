@@ -5,7 +5,6 @@ import Login from "./pages/user/Login";
 import Register from "./pages/user/Register";
 import ForgotPassword from "./pages/user/ForgotPassword";
 import ResetPassword from "./pages/user/ResetPassword";
-
 import AdminHome from "./pages/Admin/AdminHome";
 import AdminCars from "./pages/Admin/AdminCars";
 import AdminCategories from "./pages/Admin/AdminCategories";
@@ -18,9 +17,9 @@ import DepositPage from "./pages/user/DepositPage";
 import DepositSuccess from "./pages/user/DepositSuccess";
 import DepositCancel from "./pages/user/DepositCancel";
 import MyDepositsPage from "./pages/user/MyDepositsPage";
+import UserDepositDetail from "./pages/user/UserDepositDetail";
 import AdminDeposits from "./pages/Admin/AdminDeposits";
 import AdminDepositDetail from "./pages/Admin/AdminDepositDetail";
-
 
 function App() {
   return (
@@ -36,18 +35,21 @@ function App() {
         <Route path="/admin" element={<AdminHome />} />
         <Route path="/admin/cars" element={<AdminCars />} />
         <Route path="/admin/categories" element={<AdminCategories />} />
-        
-        <Route path="/cars/:id" element={<CarDetail />} />
         <Route path="/admin/brands" element={<AdminBrands />} />
-        <Route path="/cars" element={<CarsPage />} />
         <Route path="/admin/contacts" element={<AdminContacts />} />
-        <Route path="/cars/:id/contact" element={<ContactPage />} />
-        <Route path="/cars/:id/deposit" element={<DepositPage />} />
         <Route path="/admin/deposits" element={<AdminDeposits />} />
         <Route path="/admin/deposits/:id" element={<AdminDepositDetail />} />
+
+        <Route path="/cars" element={<CarsPage />} />
+        <Route path="/cars/:id" element={<CarDetail />} />
+        <Route path="/cars/:id/contact" element={<ContactPage />} />
+        <Route path="/cars/:id/deposit" element={<DepositPage />} />
+
         <Route path="/deposit/success" element={<DepositSuccess />} />
         <Route path="/deposit/cancel" element={<DepositCancel />} />
+
         <Route path="/my-deposits" element={<MyDepositsPage />} />
+        <Route path="/my-deposits/:id" element={<UserDepositDetail />} />
       </Routes>
     </BrowserRouter>
   );

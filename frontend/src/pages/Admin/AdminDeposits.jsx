@@ -155,14 +155,18 @@ export default function AdminDeposits() {
   };
 
   const handleCancelDeposit = async (id) => {
-    const ok = window.confirm("Bạn chắc muốn hủy đơn này?");
-    if (!ok) return;
+    const reason = window.prompt("Nhập lý do admin hủy đơn:");
+    if (!reason) return;
 
     try {
       setMessage("");
-      await axios.put(`${API_URL}/${id}/cancel`, {}, authHeaders);
+      const res = await axios.put(
+        `${API_URL}/${id}/cancel`,
+        { reason },
+        authHeaders
+      );
       await fetchDeposits();
-      setMessage("Đã hủy đơn đặt cọc");
+      setMessage(res.data?.message || "Đã hủy đơn đặt cọc");
     } catch (error) {
       setMessage(error?.response?.data?.message || "Hủy đơn thất bại");
     }
@@ -213,11 +217,12 @@ export default function AdminDeposits() {
   const renderActionButtons = (item) => {
     const isCancelled = item.status === "cancelled";
     const isCompleted = item.status === "completed";
+    const isRefunded = item.status === "refunded";
 
-    const canAssign = !item.assignedStaffId && !isCancelled && !isCompleted;
+    const canAssign = !item.assignedStaffId && !isCancelled && !isCompleted && !isRefunded;
 
     const canCancel =
-      !["cancelled", "completed"].includes(item.status);
+      !["cancelled", "completed", "refunded"].includes(item.status);
 
     const canConfirmDeposit =
       item.paymentStatus === "paid" && item.status === "paid";

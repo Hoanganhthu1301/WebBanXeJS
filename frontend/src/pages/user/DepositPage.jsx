@@ -28,6 +28,24 @@ const showroomSlots = [
 
 const deliverySlots = ["08:00-12:00", "13:00-17:00"];
 
+const bankOptions = [
+  { bin: "970422", name: "MB Bank" },
+  { bin: "970436", name: "Vietcombank" },
+  { bin: "970418", name: "BIDV" },
+  { bin: "970407", name: "Techcombank" },
+  { bin: "970415", name: "VietinBank" },
+  { bin: "970432", name: "VPBank" },
+  { bin: "970423", name: "TPBank" },
+  { bin: "970403", name: "Sacombank" },
+  { bin: "970437", name: "HDBank" },
+  { bin: "970405", name: "Agribank" },
+  { bin: "970448", name: "OCB" },
+  { bin: "970416", name: "ACB" },
+  { bin: "970431", name: "Eximbank" },
+  { bin: "970443", name: "SHB" },
+  { bin: "970438", name: "BaoViet Bank" },
+];
+
 export default function DepositPage() {
   const { id } = useParams();
 
@@ -56,6 +74,9 @@ export default function DepositPage() {
     showroom: "Showroom TP.HCM",
     deliveryAddress: "",
     note: "",
+    refundBankBin: "",
+    refundBankAccountNumber: "",
+    refundBankAccountName: "",
   });
 
   useEffect(() => {
@@ -66,7 +87,7 @@ export default function DepositPage() {
     try {
       const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
       setCar(res.data.car);
-    } catch (error) {
+    } catch {
       setMessage("Không lấy được thông tin xe");
     }
   };
@@ -120,6 +141,11 @@ export default function DepositPage() {
     return formData.deliveryMethod === "home_delivery" ? deliverySlots : showroomSlots;
   }, [formData.deliveryMethod]);
 
+  const selectedRefundBankName = useMemo(() => {
+    const found = bankOptions.find((bank) => bank.bin === formData.refundBankBin);
+    return found ? found.name : "Chưa chọn";
+  }, [formData.refundBankBin]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -153,6 +179,21 @@ export default function DepositPage() {
 
     if (!formData.fullName || !formData.phone) {
       setMessage("Vui lòng nhập họ tên và số điện thoại");
+      return;
+    }
+
+    if (!formData.refundBankBin) {
+      setMessage("Vui lòng chọn ngân hàng nhận hoàn");
+      return;
+    }
+
+    if (!formData.refundBankAccountNumber.trim()) {
+      setMessage("Vui lòng nhập số tài khoản nhận hoàn");
+      return;
+    }
+
+    if (!formData.refundBankAccountName.trim()) {
+      setMessage("Vui lòng nhập tên chủ tài khoản nhận hoàn");
       return;
     }
 
@@ -205,6 +246,9 @@ export default function DepositPage() {
         showroom: formData.showroom,
         deliveryAddress: formData.deliveryAddress,
         note: formData.note,
+        refundBankBin: formData.refundBankBin,
+        refundBankAccountNumber: formData.refundBankAccountNumber,
+        refundBankAccountName: formData.refundBankAccountName,
       };
 
       const token = localStorage.getItem("token");
@@ -300,6 +344,39 @@ export default function DepositPage() {
                 onChange={handleChange}
               />
             </div>
+
+            <h3 className="deposit-section-title">Thông tin nhận hoàn tiền</h3>
+
+            <div className="deposit-grid-2">
+              <select
+                name="refundBankBin"
+                value={formData.refundBankBin}
+                onChange={handleChange}
+              >
+                <option value="">Chọn ngân hàng nhận hoàn</option>
+                {bankOptions.map((bank) => (
+                  <option key={bank.bin} value={bank.bin}>
+                    {bank.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                name="refundBankAccountNumber"
+                placeholder="Số tài khoản nhận hoàn"
+                value={formData.refundBankAccountNumber}
+                onChange={handleChange}
+              />
+            </div>
+
+            <input
+              type="text"
+              name="refundBankAccountName"
+              placeholder="Tên chủ tài khoản"
+              value={formData.refundBankAccountName}
+              onChange={handleChange}
+            />
 
             <h3 className="deposit-section-title">Thông tin đặt cọc</h3>
 
@@ -427,6 +504,9 @@ export default function DepositPage() {
                 </p>
                 <p>
                   <strong>Số tiền cọc tối thiểu:</strong> {formatPrice(minimumDeposit)}
+                </p>
+                <p>
+                  <strong>Ngân hàng nhận hoàn:</strong> {selectedRefundBankName}
                 </p>
               </div>
 

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { Lock, ArrowRight } from "lucide-react";
 import "../../styles/user/Auth.css";
+import bgVideo from "../../assets/login-bg.mp4";
+import logoWhite from "../../assets/logo-white.png";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -15,6 +18,7 @@ export default function ResetPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+    setMessage("");
 
     if (!token) {
       setMessage("Thiếu token đặt lại mật khẩu");
@@ -46,37 +50,61 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-overlay"></div>
+    <div className="lux-login-page">
+      <video className="lux-login-video" autoPlay muted loop playsInline>
+        <source src={bgVideo} type="video/mp4" />
+      </video>
 
-      <div className="auth-box">
-        <h1>Đặt lại mật khẩu</h1>
-        <p>Nhập mật khẩu mới của bạn</p>
+      <div className="lux-login-overlay" />
 
-        <form className="auth-form" onSubmit={handleResetPassword}>
-          <input
-            type="password"
-            placeholder="Nhập mật khẩu mới"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
+      <div className="lux-login-layout">
+        <div className="lux-login-left">
+          <img src={logoWhite} alt="logo" className="lux-login-logo" />
 
-          <input
-            type="password"
-            placeholder="Nhập lại mật khẩu mới"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <h1>Đặt lại mật khẩu</h1>
+          <p>Tạo mật khẩu mới để tiếp tục truy cập hệ thống mua bán xe cao cấp</p>
+        </div>
 
-          <button type="submit">Xác nhận</button>
-        </form>
+        <div className="lux-login-card">
+          <div className="lux-login-card-head">
+            <h2>Mật khẩu mới</h2>
+            <p>Nhập và xác nhận mật khẩu mới của bạn</p>
+          </div>
 
-        {message && (
-          <p style={{ marginTop: "12px", color: "yellow" }}>{message}</p>
-        )}
+          <form className="lux-login-form" onSubmit={handleResetPassword}>
+            <div className="lux-login-input">
+              <Lock size={18} />
+              <input
+                type="password"
+                placeholder="Nhập mật khẩu mới"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
 
-        <div className="auth-footer">
-          <Link to="/login">Quay lại đăng nhập</Link>
+            <div className="lux-login-input">
+              <Lock size={18} />
+              <input
+                type="password"
+                placeholder="Nhập lại mật khẩu mới"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
+
+            <button type="submit" className="lux-login-submit">
+              <span>Xác nhận</span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
+
+          {message && <p className="lux-login-message">{message}</p>}
+
+          <div className="lux-login-footer">
+            <Link to="/login">Quay lại đăng nhập</Link>
+          </div>
         </div>
       </div>
     </div>

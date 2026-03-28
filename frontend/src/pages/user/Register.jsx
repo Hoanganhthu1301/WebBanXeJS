@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { User, Mail, Phone, Lock, ArrowRight } from "lucide-react";
 import "../../styles/user/Auth.css";
+import bgVideo from "../../assets/login-bg.mp4";
+import logoWhite from "../../assets/logo-white.png";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,14 +20,15 @@ export default function Register() {
   const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setMessage("");
 
     if (formData.password !== formData.confirmPassword) {
       setMessage("Mật khẩu nhập lại không khớp");
@@ -55,61 +59,94 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-overlay"></div>
+    <div className="lux-login-page">
+      <video className="lux-login-video" autoPlay muted loop playsInline>
+        <source src={bgVideo} type="video/mp4" />
+      </video>
 
-      <div className="auth-box">
-        <h1>Đăng ký</h1>
-        <p>Tạo tài khoản để bắt đầu mua bán xe</p>
+      <div className="lux-login-overlay" />
 
-        <form className="auth-form" onSubmit={handleRegister}>
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Nhập họ và tên"
-            value={formData.fullName}
-            onChange={handleChange}
-          />
+      <div className="lux-login-layout">
+        <div className="lux-login-left">
+          <img src={logoWhite} alt="logo" className="lux-login-logo" />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Nhập email"
-            value={formData.email}
-            onChange={handleChange}
-          />
+          <h1>Đăng ký</h1>
+          <p>Tạo tài khoản để bắt đầu trải nghiệm hệ thống mua bán xe cao cấp</p>
+        </div>
 
-          <input
-            type="text"
-            name="phone"
-            placeholder="Nhập số điện thoại"
-            value={formData.phone}
-            onChange={handleChange}
-          />
+        <div className="lux-login-card">
+          <div className="lux-login-card-head">
+            <h2>Tạo tài khoản mới</h2>
+            <p>Điền đầy đủ thông tin để bắt đầu sử dụng hệ thống</p>
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Nhập mật khẩu"
-            value={formData.password}
-            onChange={handleChange}
-          />
+          <form className="lux-login-form" onSubmit={handleRegister}>
+            <div className="lux-login-input">
+              <User size={18} />
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Nhập họ và tên"
+                value={formData.fullName}
+                onChange={handleChange}
+              />
+            </div>
 
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Nhập lại mật khẩu"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-          />
+            <div className="lux-login-input">
+              <Mail size={18} />
+              <input
+                type="email"
+                name="email"
+                placeholder="Nhập email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
 
-          <button type="submit">Đăng ký</button>
-        </form>
+            <div className="lux-login-input">
+              <Phone size={18} />
+              <input
+                type="text"
+                name="phone"
+                placeholder="Nhập số điện thoại"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
 
-        {message && <p style={{ marginTop: "12px", color: "yellow" }}>{message}</p>}
+            <div className="lux-login-input">
+              <Lock size={18} />
+              <input
+                type="password"
+                name="password"
+                placeholder="Nhập mật khẩu"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
 
-        <div className="auth-footer">
-          Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+            <div className="lux-login-input">
+              <Lock size={18} />
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Nhập lại mật khẩu"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+            </div>
+
+            <button type="submit" className="lux-login-submit">
+              <span>Đăng ký</span>
+              <ArrowRight size={18} />
+            </button>
+          </form>
+
+          {message && <p className="lux-login-message">{message}</p>}
+
+          <div className="lux-login-footer">
+            Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+          </div>
         </div>
       </div>
     </div>

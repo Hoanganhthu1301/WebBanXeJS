@@ -11,7 +11,6 @@ export default function MyDepositsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState("deposit");
-  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,13 +48,13 @@ export default function MyDepositsPage() {
   };
 
   const handleUserCancel = async (id) => {
-    const confirm = window.confirm("Bạn chắc chắn muốn hủy đơn này?");
-    if (!confirm) return;
+    const confirmCancel = window.confirm("Bạn chắc chắn muốn hủy đơn này?");
+    if (!confirmCancel) return;
 
     try {
       const token = localStorage.getItem("token");
 
-      await axios.put(
+      const res = await axios.put(
         `http://localhost:5000/api/deposits/${id}/user-cancel`,
         {},
         {
@@ -65,6 +64,7 @@ export default function MyDepositsPage() {
         }
       );
 
+      alert(res.data?.message || "Hủy đơn thành công");
       fetchMyDeposits();
     } catch (error) {
       alert(error.response?.data?.message || "Không hủy được đơn");
@@ -83,31 +83,25 @@ export default function MyDepositsPage() {
   const getStatusText = (deposit) => {
     if (deposit.status === "completed") return "Đã mua";
     if (deposit.status === "cancelled") return "Đã hủy";
-
+    if (deposit.status === "refunded") return "Đã hoàn cọc";
     if (deposit.paymentStatus === "paid") return "Đã thanh toán cọc";
     if (deposit.paymentStatus === "cancelled") return "Đã hủy thanh toán";
-
     return "Chờ thanh toán";
   };
 
   const getStatusClass = (deposit) => {
     if (deposit.status === "completed") return "status-completed";
     if (deposit.status === "cancelled") return "status-cancelled";
+    if (deposit.status === "refunded") return "status-paid";
     if (deposit.paymentStatus === "paid") return "status-paid";
     return "status-pending";
   };
 
-  const getRemainingAmount = (deposit) => {
-    const total = Number(deposit.carPrice || 0);
-    const paid = Number(deposit.depositAmount || 0);
-    return Math.max(total - paid, 0);
-  };
-
   const getRefundText = (deposit) => {
-    if (deposit.refundStatus === "refunded") return "Đã hoàn cọc";
+    if (deposit.refundStatus === "refunded") return "Đã hoàn";
     if (deposit.refundStatus === "forfeited") return "Mất cọc";
-    if (deposit.refundStatus === "pending_refund") return "Đang chờ hoàn cọc";
-    return "Không có";
+    if (deposit.refundStatus === "pending_refund") return "Chờ hoàn";
+    return "Chưa có";
   };
 
   const depositOrders = useMemo(() => {
@@ -161,14 +155,11 @@ export default function MyDepositsPage() {
           <div className="orders-horizontal-list">
             {currentList.map((item) => (
               <div className="order-row-card" key={item._id}>
-                <div className="order-row-main">
-                  <div className="order-row-title">
-                    <h3>{item.carName}</h3>
-                    <span className={`order-status ${getStatusClass(item)}`}>
-                      {getStatusText(item)}
-                    </span>
-                  </div>
+                <div className="order-row-top">
+                  <h3>{item.carName}</h3>
+                </div>
 
+                <div className="order-row-bottom">
                   <div className="order-row-info">
                     <div>
                       <label>Ngày tạo</label>
@@ -187,63 +178,45 @@ export default function MyDepositsPage() {
 
                     <div>
                       <label>Còn lại</label>
-                      <p>{formatMoney(getRemainingAmount(item))}</p>
+                      <p>{formatMoney(item.remainingAmount)}</p>
+                    </div>
+
+                    <div>
+                      <label>Hoàn cọc</label>
+                      <p>{getRefundText(item)}</p>
                     </div>
                   </div>
-                </div>
 
-                <div className="order-row-actions">
-                  <button onClick={() => setSelectedOrder(item)}>
-                    Xem chi tiết
-                  </button>
+                  <div className="order-row-side">
+                    <span className={`order-status ${getStatusClass(item)}`}>
+                      {getStatusText(item)}
+                    </span>
 
-                  {item.status !== "completed" &&
-                    item.status !== "cancelled" && (
+                    <div className="order-row-actions">
                       <button
-                        className="cancel-btn"
-                        onClick={() => handleUserCancel(item._id)}
+                        onClick={() => navigate(`/my-deposits/${item._id}`)}
                       >
-                        Hủy đơn
+                        Xem chi tiết
                       </button>
-                    )}
+
+                      {item.status !== "completed" &&
+                        item.status !== "cancelled" &&
+                        item.status !== "refunded" && (
+                          <button
+                            className="cancel-btn"
+                            onClick={() => handleUserCancel(item._id)}
+                          >
+                            Hủy đơn
+                          </button>
+                        )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {selectedOrder && (
-        <div
-          className="order-detail-overlay"
-          onClick={() => setSelectedOrder(null)}
-        >
-          <div
-            className="order-detail-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="order-detail-header">
-              <h2>Chi tiết đơn hàng</h2>
-              <button onClick={() => setSelectedOrder(null)}>✕</button>
-            </div>
-
-            <div className="order-detail-body">
-              <div className="detail-box">
-                <p><strong>Tên xe:</strong> {selectedOrder.carName}</p>
-                <p><strong>Trạng thái:</strong> {getStatusText(selectedOrder)}</p>
-                <p><strong>Ngày tạo:</strong> {formatDate(selectedOrder.createdAt)}</p>
-                <p><strong>Đã cọc:</strong> {formatMoney(selectedOrder.depositAmount)}</p>
-                <p><strong>Còn lại:</strong> {formatMoney(getRemainingAmount(selectedOrder))}</p>
-                <p><strong>Hoàn cọc:</strong> {getRefundText(selectedOrder)}</p>
-              </div>
-            </div>
-
-            <div className="order-detail-footer">
-              <button onClick={() => setSelectedOrder(null)}>Đóng</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

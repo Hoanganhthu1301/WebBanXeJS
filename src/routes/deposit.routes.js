@@ -36,5 +36,5 @@ router.put(
   upload.single("invoice"),
   depositController.uploadInvoiceForDeposit
 );
-
+router.put("/:id/confirm-refund", verifyToken, depositController.confirmRefundCompleted);
 module.exports = router;

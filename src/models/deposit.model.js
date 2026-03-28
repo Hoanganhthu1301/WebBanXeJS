@@ -236,6 +236,31 @@ const depositSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    refundBankBin: {
+  type: String,
+  default: "",
+  trim: true,
+},
+refundBankAccountNumber: {
+  type: String,
+  default: "",
+  trim: true,
+},
+refundBankAccountName: {
+  type: String,
+  default: "",
+  trim: true,
+},
+refundReferenceId: {
+  type: String,
+  default: "",
+  trim: true,
+},
+refundMethod: {
+  type: String,
+  enum: ["", "payos_payout", "manual"],
+  default: "",
+},
     cancelledBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
