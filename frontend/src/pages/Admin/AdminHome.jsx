@@ -1,16 +1,19 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import "../../styles/admin/AdminHome.css";
+import axios from "axios";
+import "../../styles/admin/AdminLayout.css";
 
-export default function AdminHome() {
+export default function AdminDashboard() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    if (!user || user.role !== "admin") {
-      navigate("/login");
-    }
-  }, [user, navigate]);
+  const [stats, setStats] = useState({
+    cars: 0,
+    users: 0,
+    orders: 0,
+    featuredCars: 0,
+  });
+
+  const [recentCars, setRecentCars] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -18,33 +21,88 @@ export default function AdminHome() {
     navigate("/login");
   };
 
-  const recentCars = [
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const [carsRes, usersRes, depositsRes] = await Promise.all([
+      axios.get("http://localhost:5000/api/cars", config),
+      axios.get("http://localhost:5000/api/admin/users", config),
+      axios.get("http://localhost:5000/api/deposits", config),
+    ]);
+
+    const cars =
+      carsRes.data?.cars ||
+      carsRes.data?.data ||
+      (Array.isArray(carsRes.data) ? carsRes.data : []);
+
+    const users =
+      usersRes.data?.users ||
+      usersRes.data?.data ||
+      (Array.isArray(usersRes.data) ? usersRes.data : []);
+
+    const deposits =
+      depositsRes.data?.deposits ||
+      depositsRes.data?.data ||
+      (Array.isArray(depositsRes.data) ? depositsRes.data : []);
+
+    const featuredCars = cars.filter(
+      (car) => car.isFeatured === true || car.featured === true
+    );
+
+    setStats({
+      cars: cars.length,
+      users: users.length,
+      orders: deposits.length,
+      featuredCars: featuredCars.length,
+    });
+
+    setRecentCars(cars.slice(0, 5));
+  } catch (error) {
+    console.error("Lỗi lấy dữ liệu dashboard:", error.response?.data || error.message);
+  }
+};
+
+  const quickActions = [
     {
-      id: 1,
-      name: "Mercedes C-Class",
-      price: "1.599.000.000đ",
-      status: "Đang bán",
+      title: "Quản lý xe",
+      desc: "Thêm, sửa, xóa các mẫu xe trong hệ thống",
+      to: "/admin/cars",
     },
     {
-      id: 2,
-      name: "BMW 320i",
-      price: "1.435.000.000đ",
-      status: "Đang bán",
+      title: "Quản lý người dùng",
+      desc: "Xem danh sách người dùng và phân quyền",
+      to: "/admin/users",
     },
     {
-      id: 3,
-      name: "Audi A6",
-      price: "2.100.000.000đ",
-      status: "Ẩn",
+      title: "Quản lý đơn hàng",
+      desc: "Theo dõi yêu cầu mua xe và liên hệ",
+      to: "/admin/orders",
+    },
+    {
+      title: "Quản lý banner",
+      desc: "Cập nhật ảnh banner và nội dung trang chủ",
+      to: "/admin/banner",
     },
   ];
-
-  if (!user || user.role !== "admin") return null;
 
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
-        <div className="admin-logo">ADMIN PANEL</div>
+        <div className="admin-sidebar-brand">
+          <h2>ADMIN PANEL</h2>
+          <p>Quản trị hệ thống</p>
+        </div>
 
         <nav className="admin-menu">
           <Link to="/admin" className="active">Tổng quan</Link>
@@ -53,75 +111,64 @@ export default function AdminHome() {
           <Link to="/admin/deposits">Đơn hàng</Link>
           <Link to="/admin/categories">Danh mục</Link>
           <Link to="/admin/brands">Hãng xe</Link>
-          <Link to="/admin/banners">Banner</Link>
+          <Link to="/admin/banner">Banner</Link>
           <Link to="/admin/contacts">Yêu cầu tư vấn</Link>
         </nav>
       </aside>
 
-      <main className="admin-main">
-        <header className="admin-topbar">
-          <div>
+      <main className="admin-content">
+        <div className="admin-topbar">
+          <div className="admin-topbar-left">
             <h1>Trang chủ Admin</h1>
-            <p>Chào mừng {user?.fullName || "Admin"} quay lại hệ thống</p>
+            <p>Chào mừng Admin quay lại hệ thống</p>
           </div>
 
-          <button className="logout-btn" onClick={handleLogout}>
+          <button className="admin-logout-btn" onClick={handleLogout}>
             Đăng xuất
           </button>
-        </header>
+        </div>
 
-        <section className="stats-grid">
-          <div className="stat-card">
-            <h3>128</h3>
+        <div className="admin-grid-4">
+          <div className="admin-stat-card">
+            <h3>{stats.cars}</h3>
             <p>Tổng số xe</p>
           </div>
 
-          <div className="stat-card">
-            <h3>46</h3>
+          <div className="admin-stat-card">
+            <h3>{stats.users}</h3>
             <p>Người dùng</p>
           </div>
 
-          <div className="stat-card">
-            <h3>18</h3>
+          <div className="admin-stat-card">
+            <h3>{stats.orders}</h3>
             <p>Đơn hàng</p>
           </div>
 
-          <div className="stat-card">
-            <h3>12</h3>
+          <div className="admin-stat-card">
+            <h3>{stats.featuredCars}</h3>
             <p>Xe nổi bật</p>
           </div>
-        </section>
+        </div>
 
-        <section className="quick-actions">
+        <section className="admin-section">
           <h2>Quản lý nhanh</h2>
-
-          <div className="action-grid">
-            <Link to="/admin/cars" className="action-card">
-              <h3>Quản lý xe</h3>
-              <p>Thêm, sửa, xóa các mẫu xe trong hệ thống</p>
-            </Link>
-
-            <Link to="/admin/users" className="action-card">
-              <h3>Quản lý người dùng</h3>
-              <p>Xem danh sách người dùng và phân quyền</p>
-            </Link>
-
-            <Link to="/admin/deposits" className="action-card">
-              <h3>Quản lý đơn hàng</h3>
-              <p>Theo dõi các yêu cầu mua xe và liên hệ</p>
-            </Link>
-
-            <Link to="/admin/banners" className="action-card">
-              <h3>Quản lý banner</h3>
-              <p>Cập nhật ảnh banner và nội dung trang chủ</p>
-            </Link>
+          <div className="admin-quick-grid">
+            {quickActions.map((item) => (
+              <Link
+                key={item.title}
+                to={item.to}
+                className="admin-quick-card"
+              >
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </Link>
+            ))}
           </div>
         </section>
 
-        <section className="recent-section">
+        <section className="admin-section">
           <h2>Xe mới thêm</h2>
-
-          <div className="table-wrapper">
+          <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
@@ -132,24 +179,20 @@ export default function AdminHome() {
                 </tr>
               </thead>
               <tbody>
-                {recentCars.map((car) => (
-                  <tr key={car.id}>
-                    <td>{car.id}</td>
+                {recentCars.map((car, index) => (
+                  <tr key={car._id || index}>
+                    <td>{car._id ? car._id.slice(-5) : index + 1}</td>
                     <td>{car.name}</td>
-                    <td>{car.price}</td>
-                    <td>
-                      <span
-                        className={
-                          car.status === "Đang bán"
-                            ? "status selling"
-                            : "status hidden"
-                        }
-                      >
-                        {car.status}
-                      </span>
-                    </td>
+                    <td>{car.price?.toLocaleString("vi-VN")}đ</td>
+                    <td>{car.status || "Đang bán"}</td>
                   </tr>
                 ))}
+
+                {recentCars.length === 0 && (
+                  <tr>
+                    <td colSpan="4">Chưa có dữ liệu xe</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

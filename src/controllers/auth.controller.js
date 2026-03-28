@@ -90,6 +90,17 @@ const login = async (req, res) => {
         message: 'Email hoặc mật khẩu không đúng'
       });
     }
+    if (user.isDeleted) {
+      return res.status(400).json({
+        message: 'Tài khoản không tồn tại'
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        message: 'Tài khoản đã bị khóa'
+      });
+    }
 
     if (user.provider !== 'local') {
       return res.status(400).json({
@@ -373,9 +384,23 @@ const googleLogin = async (req, res) => {
         password: null,
         provider: 'google',
         googleId,
-        isEmailVerified: !!emailVerified
+        isEmailVerified: !!emailVerified,
+        isBlocked: false,
+        isDeleted: false
       });
     } else {
+      if (user.isDeleted === true) {
+        return res.status(400).json({
+          message: 'Tài khoản không tồn tại'
+        });
+      }
+
+      if (user.isBlocked === true) {
+        return res.status(403).json({
+          message: 'Tài khoản đã bị khóa'
+        });
+      }
+
       if (!user.googleId) {
         user.googleId = googleId;
       }

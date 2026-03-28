@@ -40,6 +40,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    favorites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Car'
+      }
+    ],
     resetPasswordToken: {
       type: String,
       default: ''

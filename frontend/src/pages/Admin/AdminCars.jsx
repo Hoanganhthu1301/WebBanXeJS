@@ -20,6 +20,7 @@ const initialForm = {
   brand: "",
   category: "",
   price: "",
+  quantity: 1,
   year: "",
   fuel: "",
   transmission: "",
@@ -64,16 +65,17 @@ export default function AdminCars() {
     fetchCars();
     fetchCategories();
     fetchBrands();
-
   }, []);
+
   const fetchBrands = async () => {
-  try {
-    const res = await axios.get("http://localhost:5000/api/brands");
-    setBrands(res.data.brands || []);
-  } catch (error) {
-    console.log("Không lấy được danh sách hãng", error);
-  }
-};
+    try {
+      const res = await axios.get("http://localhost:5000/api/brands");
+      setBrands(res.data.brands || []);
+    } catch (error) {
+      console.log("Không lấy được danh sách hãng", error);
+    }
+  };
+
   const fetchCars = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/cars/admin/all");
@@ -93,9 +95,16 @@ export default function AdminCars() {
   };
 
   const handleChange = (e) => {
+    const { name, value, type } = e.target;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]:
+        type === "number"
+          ? value === ""
+            ? ""
+            : Number(value)
+          : value,
     });
   };
 
@@ -144,6 +153,8 @@ export default function AdminCars() {
         brand: formData.brand,
         category: formData.category,
         price: Number(formData.price),
+        quantity:
+          formData.quantity === "" ? 1 : Math.max(0, Number(formData.quantity)),
         year: Number(formData.year) || new Date().getFullYear(),
         fuel: formData.fuel,
         transmission: formData.transmission,
@@ -189,6 +200,8 @@ export default function AdminCars() {
       brand: car.brand || "",
       category: car.category || "",
       price: car.price || "",
+      quantity:
+        car.quantity !== undefined && car.quantity !== null ? car.quantity : 1,
       year: car.year || "",
       fuel: car.fuel || "",
       transmission: car.transmission || "",
@@ -250,6 +263,13 @@ export default function AdminCars() {
     return "https://via.placeholder.com/100x70?text=No+Image";
   };
 
+  const renderStatus = (car) => {
+    if (car.status === "hidden") return "Ẩn";
+    if ((car.quantity || 0) <= 0 || car.status === "sold") return "Hết hàng";
+    if (car.status === "reserved") return "Đã giữ chỗ";
+    return "Đang bán";
+  };
+
   if (!user || user.role !== "admin") return null;
 
   return (
@@ -263,12 +283,15 @@ export default function AdminCars() {
         <h2>{editingId ? "Cập nhật xe" : "Thêm xe mới"}</h2>
 
         <form className="car-form" onSubmit={handleSubmit}>
-          <input type="text" name="name" placeholder="Tên xe" value={formData.name} onChange={handleChange} />
-          <select
-            name="brand"
-            value={formData.brand}
+          <input
+            type="text"
+            name="name"
+            placeholder="Tên xe"
+            value={formData.name}
             onChange={handleChange}
-          >
+          />
+
+          <select name="brand" value={formData.brand} onChange={handleChange}>
             <option value="">-- Chọn hãng xe --</option>
             {brands
               .filter((item) => item.status === "active")
@@ -278,7 +301,12 @@ export default function AdminCars() {
                 </option>
               ))}
           </select>
-          <select name="category" value={formData.category} onChange={handleChange}>
+
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+          >
             <option value="">-- Chọn danh mục xe --</option>
             {categories
               .filter((item) => item.status === "active")
@@ -289,17 +317,76 @@ export default function AdminCars() {
               ))}
           </select>
 
-          <input type="number" name="price" placeholder="Giá" value={formData.price} onChange={handleChange} />
-          <input type="number" name="year" placeholder="Năm sản xuất" value={formData.year} onChange={handleChange} />
-          <input type="text" name="fuel" placeholder="Nhiên liệu" value={formData.fuel} onChange={handleChange} />
-          <input type="text" name="transmission" placeholder="Hộp số" value={formData.transmission} onChange={handleChange} />
-          <input type="number" name="mileage" placeholder="Số km đã đi" value={formData.mileage} onChange={handleChange} />
-          <input type="text" name="color" placeholder="Màu xe" value={formData.color} onChange={handleChange} />
-          <input type="text" name="image" placeholder="Ảnh chính" value={formData.image} onChange={handleChange} />
+          <input
+            type="number"
+            name="price"
+            placeholder="Giá"
+            value={formData.price}
+            onChange={handleChange}
+          />
+
+          <input
+            type="number"
+            name="quantity"
+            placeholder="Số lượng xe"
+            min="0"
+            value={formData.quantity}
+            onChange={handleChange}
+          />
+
+          <input
+            type="number"
+            name="year"
+            placeholder="Năm sản xuất"
+            value={formData.year}
+            onChange={handleChange}
+          />
+
+          <input
+            type="text"
+            name="fuel"
+            placeholder="Nhiên liệu"
+            value={formData.fuel}
+            onChange={handleChange}
+          />
+
+          <input
+            type="text"
+            name="transmission"
+            placeholder="Hộp số"
+            value={formData.transmission}
+            onChange={handleChange}
+          />
+
+          <input
+            type="number"
+            name="mileage"
+            placeholder="Số km đã đi"
+            value={formData.mileage}
+            onChange={handleChange}
+          />
+
+          <input
+            type="text"
+            name="color"
+            placeholder="Màu xe"
+            value={formData.color}
+            onChange={handleChange}
+          />
+
+          <input
+            type="text"
+            name="image"
+            placeholder="Ảnh chính"
+            value={formData.image}
+            onChange={handleChange}
+          />
 
           <select name="status" value={formData.status} onChange={handleChange}>
             <option value="available">Đang bán</option>
+            <option value="reserved">Đã giữ chỗ</option>
             <option value="hidden">Ẩn</option>
+            <option value="sold">Hết hàng</option>
           </select>
 
           <textarea
@@ -424,6 +511,7 @@ export default function AdminCars() {
                 <th>Hãng</th>
                 <th>Danh mục</th>
                 <th>Giá</th>
+                <th>Số lượng</th>
                 <th>Năm</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
@@ -448,13 +536,17 @@ export default function AdminCars() {
                     <td>{car.brand}</td>
                     <td>{car.category}</td>
                     <td>{Number(car.price).toLocaleString("vi-VN")}đ</td>
+                    <td>{car.quantity ?? 1}</td>
                     <td>{car.year}</td>
-                    <td>{car.status === "available" ? "Đang bán" : "Ẩn"}</td>
+                    <td>{renderStatus(car)}</td>
                     <td>
                       <button className="edit-btn" onClick={() => handleEdit(car)}>
                         Sửa
                       </button>
-                      <button className="delete-btn" onClick={() => handleDelete(car._id)}>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(car._id)}
+                      >
                         Xóa
                       </button>
                     </td>
@@ -462,7 +554,7 @@ export default function AdminCars() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: "center" }}>
+                  <td colSpan="9" style={{ textAlign: "center" }}>
                     Chưa có xe nào
                   </td>
                 </tr>

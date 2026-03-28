@@ -20,6 +20,8 @@ import MyDepositsPage from "./pages/user/MyDepositsPage";
 import UserDepositDetail from "./pages/user/UserDepositDetail";
 import AdminDeposits from "./pages/Admin/AdminDeposits";
 import AdminDepositDetail from "./pages/Admin/AdminDepositDetail";
+import AdminUsers from "./pages/Admin/AdminUsers";
+import Favorites from "./pages/user/Favorites";
 
 function App() {
   return (
@@ -50,6 +52,8 @@ function App() {
 
         <Route path="/my-deposits" element={<MyDepositsPage />} />
         <Route path="/my-deposits/:id" element={<UserDepositDetail />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/favorites" element={<Favorites />} />
       </Routes>
     </BrowserRouter>
   );

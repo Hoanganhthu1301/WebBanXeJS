@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Heart } from "lucide-react";
 import "../../styles/user/Home.css";
 import MainNavbar from "../../components/MainNavbar";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   const [cars, setCars] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [favoriteIds, setFavoriteIds] = useState([]);
 
   useEffect(() => {
     fetchCars();
+    fetchFavorites();
   }, []);
 
   const fetchCars = async () => {
@@ -26,6 +31,73 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setFavoriteIds([]);
+        return;
+      }
+
+      const res = await axios.get("http://localhost:5000/api/favorites", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const favorites = res.data.favorites || [];
+      setFavoriteIds(favorites.map((item) => item._id));
+    } catch (error) {
+      console.log("Lỗi lấy danh sách yêu thích:", error);
+      setFavoriteIds([]);
+    }
+  };
+
+  const handleToggleFavorite = async (e, carId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `http://localhost:5000/api/favorites/toggle/${carId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const isFavorite = res.data.isFavorite;
+
+      setFavoriteIds((prev) =>
+        isFavorite
+          ? [...new Set([...prev, carId])]
+          : prev.filter((id) => id !== carId)
+      );
+    } catch (error) {
+      console.log("Lỗi cập nhật yêu thích:", error);
+      alert(
+        error?.response?.data?.message || "Không cập nhật được mục yêu thích"
+      );
+    }
+  };
+
+  const isFavorite = (carId) => favoriteIds.includes(carId);
+
+  const getCarImage = (car) => {
+    if (car.image && car.image.trim() !== "") return car.image;
+    if (Array.isArray(car.images) && car.images.length > 0) return car.images[0];
+    return "https://via.placeholder.com/400x250?text=No+Images";
   };
 
   return (
@@ -82,16 +154,39 @@ export default function Home() {
             {cars.length > 0 ? (
               cars.map((car, index) => (
                 <div className="car-card" key={car._id || index}>
-                  <div className="car-images-wrap">
+                  <div className="car-images-wrap" style={{ position: "relative" }}>
                     <img
-                      src={
-                        car.images && car.images.length > 0
-                          ? car.images[0]
-                          : "https://via.placeholder.com/400x250?text=No+Images"
-                      }
+                      src={getCarImage(car)}
                       alt={car.name}
                       className="car-images"
                     />
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleFavorite(e, car._id)}
+                      style={{
+                        position: "absolute",
+                        top: "12px",
+                        right: "12px",
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "50%",
+                        border: "none",
+                        background: "rgba(0, 0, 0, 0.45)",
+                        backdropFilter: "blur(6px)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        zIndex: 2,
+                      }}
+                    >
+                      <Heart
+                        size={20}
+                        color={isFavorite(car._id) ? "#ff4d6d" : "#ffffff"}
+                        fill={isFavorite(car._id) ? "#ff4d6d" : "none"}
+                      />
+                    </button>
                   </div>
 
                   <div className="car-info">

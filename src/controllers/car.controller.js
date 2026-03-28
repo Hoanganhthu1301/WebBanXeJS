@@ -1,9 +1,30 @@
 const Car = require("../models/car.model");
 
+const normalizeCarStatus = (quantity, currentStatus) => {
+  const qty = Number(quantity) || 0;
+
+  if (currentStatus === "hidden") {
+    return "hidden";
+  }
+
+  if (qty <= 0) {
+    return "sold";
+  }
+
+  if (currentStatus === "reserved") {
+    return "reserved";
+  }
+
+  return "available";
+};
+
 // USER
 const getAllCars = async (req, res) => {
   try {
-    const cars = await Car.find({ status: "available" }).sort({ createdAt: -1 });
+    const cars = await Car.find({
+      status: "available",
+      quantity: { $gt: 0 },
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       message: "Lấy danh sách xe thành công",
@@ -63,6 +84,8 @@ const createCar = async (req, res) => {
       brand,
       category,
       price,
+      quantity,
+      soldCount,
       year,
       fuel,
       transmission,
@@ -78,17 +101,27 @@ const createCar = async (req, res) => {
       status,
     } = req.body;
 
-    if (!name || !brand || !category || !price) {
+    if (!name || !brand || !category || price === undefined || price === null) {
       return res.status(400).json({
         message: "Vui lòng nhập tên xe, hãng xe, danh mục và giá",
       });
     }
+
+    const parsedQuantity =
+      quantity !== undefined && quantity !== null ? Number(quantity) : 1;
+
+    const parsedSoldCount =
+      soldCount !== undefined && soldCount !== null ? Number(soldCount) : 0;
+
+    const finalStatus = normalizeCarStatus(parsedQuantity, status || "available");
 
     const newCar = await Car.create({
       name: String(name).trim(),
       brand: String(brand).trim(),
       category: String(category).trim(),
       price: Number(price),
+      quantity: parsedQuantity,
+      soldCount: parsedSoldCount,
       year: year ? Number(year) : new Date().getFullYear(),
       fuel: fuel || "Xăng",
       transmission: transmission || "Tự động",
@@ -101,7 +134,7 @@ const createCar = async (req, res) => {
       overviewText: overviewText || "",
       highlights: Array.isArray(highlights) ? highlights : [],
       features: Array.isArray(features) ? features : [],
-      status: status || "available",
+      status: finalStatus,
     });
 
     return res.status(201).json({
@@ -119,11 +152,21 @@ const createCar = async (req, res) => {
 
 const updateCar = async (req, res) => {
   try {
+    const oldCar = await Car.findById(req.params.id);
+
+    if (!oldCar) {
+      return res.status(404).json({
+        message: "Không tìm thấy xe để cập nhật",
+      });
+    }
+
     const {
       name,
       brand,
       category,
       price,
+      quantity,
+      soldCount,
       year,
       fuel,
       transmission,
@@ -139,35 +182,49 @@ const updateCar = async (req, res) => {
       status,
     } = req.body;
 
+    const parsedQuantity =
+      quantity !== undefined && quantity !== null
+        ? Number(quantity)
+        : oldCar.quantity;
+
+    const parsedSoldCount =
+      soldCount !== undefined && soldCount !== null
+        ? Number(soldCount)
+        : oldCar.soldCount;
+
+    const finalStatus = normalizeCarStatus(
+      parsedQuantity,
+      status !== undefined ? status : oldCar.status
+    );
+
     const updatedCar = await Car.findByIdAndUpdate(
       req.params.id,
       {
-        name,
-        brand,
-        category,
-        price: price ? Number(price) : price,
-        year: year ? Number(year) : year,
-        fuel,
-        transmission,
-        mileage: mileage ? Number(mileage) : mileage,
-        color,
-        image,
-        images: Array.isArray(images) ? images : [],
-        description,
-        overviewTitle,
-        overviewText,
-        highlights: Array.isArray(highlights) ? highlights : [],
-        features: Array.isArray(features) ? features : [],
-        status,
+        name: name !== undefined ? name : oldCar.name,
+        brand: brand !== undefined ? brand : oldCar.brand,
+        category: category !== undefined ? category : oldCar.category,
+        price: price !== undefined ? Number(price) : oldCar.price,
+        quantity: parsedQuantity,
+        soldCount: parsedSoldCount,
+        year: year !== undefined ? Number(year) : oldCar.year,
+        fuel: fuel !== undefined ? fuel : oldCar.fuel,
+        transmission:
+          transmission !== undefined ? transmission : oldCar.transmission,
+        mileage: mileage !== undefined ? Number(mileage) : oldCar.mileage,
+        color: color !== undefined ? color : oldCar.color,
+        image: image !== undefined ? image : oldCar.image,
+        images: Array.isArray(images) ? images : oldCar.images,
+        description: description !== undefined ? description : oldCar.description,
+        overviewTitle:
+          overviewTitle !== undefined ? overviewTitle : oldCar.overviewTitle,
+        overviewText:
+          overviewText !== undefined ? overviewText : oldCar.overviewText,
+        highlights: Array.isArray(highlights) ? highlights : oldCar.highlights,
+        features: Array.isArray(features) ? features : oldCar.features,
+        status: finalStatus,
       },
       { new: true, runValidators: true }
     );
-
-    if (!updatedCar) {
-      return res.status(404).json({
-        message: "Không tìm thấy xe để cập nhật",
-      });
-    }
 
     return res.status(200).json({
       message: "Cập nhật xe thành công",

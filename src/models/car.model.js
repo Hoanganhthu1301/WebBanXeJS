@@ -38,7 +38,21 @@ const carSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
+
+    quantity: {
+      type: Number,
+      default: 1,
+      min: 0,
+    },
+
+    soldCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     year: {
       type: Number,
       default: new Date().getFullYear(),
@@ -54,6 +68,7 @@ const carSchema = new mongoose.Schema(
     mileage: {
       type: Number,
       default: 0,
+      min: 0,
     },
     color: {
       type: String,
