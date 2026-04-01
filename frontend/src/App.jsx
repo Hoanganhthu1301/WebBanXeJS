@@ -28,6 +28,8 @@ import Favorites from "./pages/user/Favorites";
 import AdminRevenue from "./pages/Admin/AdminRevenue";
 import AdminPromotions from "./pages/Admin/AdminPromotions";
 import UserConsultations from "./pages/user/ContactConsultations";  
+import QuotationPage from "./pages/user/QuotationPage";
+import AppointmentPage from "./pages/user/AppointmentPage";
 
 
 function App() {
@@ -99,6 +101,8 @@ function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/admin/revenue" element={<AdminRevenue />} />
         <Route path="/admin/promotions" element={<AdminPromotions />} />
+        <Route path="/cars/:id/quotation" element={<QuotationPage />} />
+        <Route path="/cars/:id/appointment" element={<AppointmentPage />} />
         
       </Routes>
     </BrowserRouter>

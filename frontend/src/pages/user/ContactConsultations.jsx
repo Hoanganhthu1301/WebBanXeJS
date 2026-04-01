@@ -12,41 +12,79 @@ export default function ContactConsultations() {
     }
   }, []);
 
-  const [contacts, setContacts] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchMyContacts();
+    fetchMyRequests();
   }, []);
 
-  const fetchMyContacts = async () => {
+  const fetchMyRequests = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const res = await axios.get("http://localhost:5000/api/contacts");
-      let data = res.data?.contacts || [];
+      const results = await Promise.allSettled([
+        axios.get("http://localhost:5000/api/contacts"),
+        axios.get("http://localhost:5000/api/quotations"),
+        axios.get("http://localhost:5000/api/appointments"),
+      ]);
 
-      if (user) {
-        data = data.filter((item) => {
-          const sameEmail =
-            user.email &&
-            item.email &&
-            user.email.toLowerCase() === item.email.toLowerCase();
+      const contactRes =
+        results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
 
-          const samePhone =
-            user.phone &&
-            item.phone &&
-            user.phone.trim() === item.phone.trim();
+      const quotationRes =
+        results[1].status === "fulfilled"
+          ? results[1].value.data
+          : { quotations: [] };
 
-          return sameEmail || samePhone;
-        });
-      }
+      const appointmentRes =
+        results[2].status === "fulfilled"
+          ? results[2].value.data
+          : { appointments: [] };
 
-      setContacts(data);
+      let contacts = (contactRes.contacts || []).map((item) => ({
+        ...item,
+        requestType: "consultation",
+        requestTypeLabel: "Tư vấn",
+      }));
+
+      let quotations = (quotationRes.quotations || []).map((item) => ({
+        ...item,
+        requestType: "quotation",
+        requestTypeLabel: "Báo giá",
+      }));
+
+      let appointments = (appointmentRes.appointments || []).map((item) => ({
+        ...item,
+        requestType: item.type === "test_drive" ? "test_drive" : "view",
+        requestTypeLabel: item.type === "test_drive" ? "Lái thử" : "Xem xe",
+      }));
+
+      let merged = [...contacts, ...quotations, ...appointments];
+
+      // if (user) {
+      //   merged = merged.filter((item) => {
+      //     const sameEmail =
+      //       user.email &&
+      //       item.email &&
+      //       user.email.toLowerCase() === item.email.toLowerCase();
+
+      //     const samePhone =
+      //       user.phone &&
+      //       item.phone &&
+      //       user.phone.trim() === item.phone.trim();
+
+      //     return sameEmail || samePhone;
+      //   });
+      // }
+
+      merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setRequests(merged);
     } catch (error) {
-      setMessage("Không tải được danh sách yêu cầu tư vấn");
+      setMessage("Không tải được danh sách yêu cầu");
     } finally {
       setLoading(false);
     }
@@ -60,6 +98,43 @@ export default function ContactConsultations() {
     return "https://via.placeholder.com/320x200?text=No+Image";
   };
 
+  const getStatusLabel = (item) => {
+    if (item.requestType === "consultation") {
+      if (item.status === "processing") return "Đang xử lý";
+      if (item.status === "contacted") return "Đã liên hệ";
+      return "Mới";
+    }
+
+    if (item.requestType === "quotation") {
+      if (item.status === "quoted") return "Đã báo giá";
+      if (item.status === "done") return "Hoàn tất";
+      return "Mới";
+    }
+
+    if (item.status === "confirmed") return "Đã xác nhận";
+    if (item.status === "done") return "Hoàn tất";
+    if (item.status === "cancelled") return "Đã hủy";
+    return "Chờ xác nhận";
+  };
+
+  const getStatusClass = (item) => {
+    const status = item.status;
+
+    if (status === "done" || status === "contacted" || status === "quoted") {
+      return "done";
+    }
+
+    if (status === "processing" || status === "confirmed") {
+      return "processing";
+    }
+
+    if (status === "cancelled") {
+      return "cancelled";
+    }
+
+    return "new";
+  };
+
   return (
     <>
       <MainNavbar />
@@ -67,10 +142,10 @@ export default function ContactConsultations() {
       <div className="contact-consultations-page">
         <div className="contact-consultations-container">
           <div className="contact-consultations-header">
-            <p className="contact-consultations-subtitle">MY CONSULTATIONS</p>
-            <h1>Yêu cầu tư vấn của tôi</h1>
+            <p className="contact-consultations-subtitle">MY REQUESTS</p>
+            <h1>Yêu cầu của tôi</h1>
             <p className="contact-consultations-desc">
-              Danh sách các yêu cầu tư vấn bạn đã gửi cho showroom.
+              Danh sách các yêu cầu bạn đã gửi và phản hồi từ showroom.
             </p>
           </div>
 
@@ -78,15 +153,15 @@ export default function ContactConsultations() {
             <div className="contact-consultations-state">Đang tải dữ liệu...</div>
           ) : message ? (
             <div className="contact-consultations-state error">{message}</div>
-          ) : contacts.length === 0 ? (
+          ) : requests.length === 0 ? (
             <div className="contact-consultations-empty">
-              <h3>Chưa có yêu cầu tư vấn nào</h3>
-              <p>Hãy vào trang chi tiết xe để gửi yêu cầu tư vấn.</p>
+              <h3>Chưa có yêu cầu nào</h3>
+              <p>Hãy vào trang chi tiết xe để gửi yêu cầu tư vấn, báo giá hoặc đặt lịch.</p>
             </div>
           ) : (
             <div className="contact-consultations-grid">
-              {contacts.map((item) => (
-                <div className="consultation-card" key={item._id}>
+              {requests.map((item) => (
+                <div className="consultation-card" key={`${item.requestType}-${item._id}`}>
                   <div className="consultation-card-image-wrap">
                     <img
                       src={getThumb(item)}
@@ -98,51 +173,56 @@ export default function ContactConsultations() {
                       }}
                     />
                     <span
-                      className={`consultation-status ${
-                        item.status === "contacted" ? "done" : "new"
-                      }`}
+                      className={`consultation-status ${getStatusClass(item)}`}
                     >
-                      {item.status === "contacted" ? "Đã liên hệ" : "Mới"}
+                      {getStatusLabel(item)}
                     </span>
                   </div>
 
                   <div className="consultation-card-body">
+                    <div style={{ marginBottom: 8, color: "#60a5fa", fontWeight: 700 }}>
+                      {item.requestTypeLabel}
+                    </div>
+
                     <h3>{item.carName || "Xe quan tâm"}</h3>
 
                     <div className="consultation-meta">
-                      <div>
-                        <strong>Họ tên:</strong>{" "}
-                        {[item.salutation, item.firstName, item.lastName]
-                          .filter(Boolean)
-                          .join(" ")}
-                      </div>
                       <div>
                         <strong>SĐT:</strong> {item.phone || "—"}
                       </div>
                       <div>
                         <strong>Email:</strong> {item.email || "—"}
                       </div>
-                      <div>
-                        <strong>Ưu tiên:</strong>{" "}
-                        {item.preferredContact === "email" ? "Email" : "Gọi điện"}
-                      </div>
-                      <div>
-                        <strong>Ngân sách:</strong> {item.budget || "—"}
-                      </div>
-                      <div>
-                        <strong>Số km:</strong> {item.mileage || "—"}
-                      </div>
-                      <div>
-                        <strong>Năm xe:</strong> {item.year || "—"}
-                      </div>
-                      <div>
-                        <strong>Lý do:</strong> {item.reason || "—"}
-                      </div>
+
+                      {item.province && (
+                        <div>
+                          <strong>Khu vực:</strong> {item.province}
+                        </div>
+                      )}
+
+                      {(item.requestType === "view" || item.requestType === "test_drive") && (
+                        <>
+                          <div>
+                            <strong>Ngày hẹn:</strong> {item.appointmentDate || "—"}
+                          </div>
+                          <div>
+                            <strong>Giờ hẹn:</strong> {item.appointmentTime || "—"}
+                          </div>
+                          <div>
+                            <strong>Địa điểm:</strong> {item.location || "—"}
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="consultation-extra">
-                      <strong>Thông tin bổ sung:</strong>
+                      <strong>Nội dung yêu cầu:</strong>
                       <p>{item.additionalInfo || "Không có"}</p>
+                    </div>
+
+                    <div className="consultation-extra">
+                      <strong>Phản hồi từ showroom:</strong>
+                      <p>{item.adminReply || "Chưa có phản hồi từ admin."}</p>
                     </div>
 
                     <div className="consultation-footer">

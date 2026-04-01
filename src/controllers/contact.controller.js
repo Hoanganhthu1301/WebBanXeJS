@@ -1,26 +1,16 @@
 const Contact = require("../models/contact.model");
 const Car = require("../models/car.model");
+const { sendRequestReplyEmail } = require("../utils/mailer");
 
 const createContact = async (req, res) => {
   try {
     const {
-      salutation,
       firstName,
       lastName,
-      company,
-      street,
-      district,
-      zipCode,
-      city,
       preferredContact,
       phone,
       email,
       carId,
-      country,
-      budget,
-      mileage,
-      year,
-      reason,
       additionalInfo,
     } = req.body;
 
@@ -39,25 +29,14 @@ const createContact = async (req, res) => {
     }
 
     const newContact = await Contact.create({
-      salutation: salutation || "",
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      company: company || "",
-      street: street || "",
-      district: district || "",
-      zipCode: zipCode || "",
-      city: city || "",
       preferredContact: preferredContact || "call",
       phone: phone.trim(),
-      email: email || "",
+      email: (email || "").trim(),
       carId: car._id,
       carName: car.name,
-      country: country || "Việt Nam",
-      budget: budget || "",
-      mileage: mileage || "",
-      year: year || "",
-      reason: reason || "",
-      additionalInfo: additionalInfo || "",
+      additionalInfo: (additionalInfo || "").trim(),
     });
 
     return res.status(201).json({
@@ -92,27 +71,32 @@ const getAllContacts = async (req, res) => {
 
 const updateContactStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, adminReply } = req.body;
 
     const updatedContact = await Contact.findByIdAndUpdate(
       req.params.id,
-      { status },
+      { status, adminReply },
       { new: true, runValidators: true }
     );
 
-    if (!updatedContact) {
-      return res.status(404).json({
-        message: "Không tìm thấy yêu cầu tư vấn",
-      });
-    }
+    if (updatedContact.email && adminReply) {
+    await sendRequestReplyEmail({
+      to: updatedContact.email,
+      customerName: `${updatedContact.lastName} ${updatedContact.firstName}`,
+      carName: updatedContact.carName,
+      requestType: "consultation",
+      status,
+      adminReply,
+    });
+  }
 
     return res.status(200).json({
-      message: "Cập nhật trạng thái thành công",
+      message: "Cập nhật yêu cầu thành công",
       contact: updatedContact,
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Lỗi server khi cập nhật trạng thái",
+      message: "Lỗi server khi cập nhật yêu cầu",
       error: error.message,
     });
   }

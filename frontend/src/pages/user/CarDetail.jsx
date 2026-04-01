@@ -265,27 +265,27 @@ export default function CarDetail() {
             <p className="mb-overview-text">{car.overviewText}</p>
           )}
 
-          <div className="mb-hero-actions">
-            <button
-              type="button"
-              className="mb-btn mb-btn-light"
-              onClick={handleConsultationClick}
-            >
-              Yêu cầu tư vấn
-            </button>
+         <div className="mb-hero-actions">
+          <button
+            type="button"
+            className="mb-btn mb-btn-light"
+            onClick={handleConsultationClick}
+          >
+            Yêu cầu tư vấn
+          </button>
 
-            <button
-              type="button"
-              className="mb-btn mb-btn-dark"
-              onClick={handleDepositClick}
-            >
-              Đặt cọc giữ xe
-            </button>
+          <button
+            type="button"
+            className="mb-btn mb-btn-dark"
+            onClick={handleDepositClick}
+          >
+            Đặt cọc giữ xe
+          </button>
 
-            <a href="#specs" className="mb-btn mb-btn-dark">
-              Xem thông số
-            </a>
-          </div>
+          <a href="#specs" className="mb-btn mb-btn-dark">
+            Xem thông số
+          </a>
+        </div>
         </div>
 
         {selectedPromotion && (
@@ -509,15 +509,16 @@ export default function CarDetail() {
               : "Để đảm bảo quản lý yêu cầu tư vấn, lịch sử liên hệ và phản hồi từ showroom một cách chuyên nghiệp, vui lòng đăng nhập trước khi gửi yêu cầu."}
           </p>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "14px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            {user ? (
+        <div
+          style={{
+            display: "flex",
+            gap: "14px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {user ? (
+            <>
               <button
                 type="button"
                 className="mb-btn mb-btn-light"
@@ -525,24 +526,35 @@ export default function CarDetail() {
               >
                 Đi tới trang yêu cầu tư vấn
               </button>
-            ) : (
-              <button
-                type="button"
-                className="mb-btn mb-btn-light"
-                onClick={() => navigate("/login")}
-              >
-                Đăng nhập ngay
-              </button>
-            )}
 
+              <Link to={`/cars/${car._id}/quotation`} className="mb-btn mb-btn-dark">
+                Yêu cầu báo giá
+              </Link>
+
+              <Link
+                to={`/cars/${car._id}/appointment?type=view`}
+                className="mb-btn mb-btn-dark"
+              >
+                Đặt lịch xem xe
+              </Link>
+
+              <Link
+                to={`/cars/${car._id}/appointment?type=test_drive`}
+                className="mb-btn mb-btn-dark"
+              >
+                Đặt lịch lái thử
+              </Link>
+            </>
+          ) : (
             <button
               type="button"
-              className="mb-btn mb-btn-dark"
-              onClick={handleDepositClick}
+              className="mb-btn mb-btn-light"
+              onClick={() => navigate("/login")}
             >
-              Đặt cọc giữ xe
+              Đăng nhập ngay
             </button>
-          </div>
+          )}
+        </div>
         </div>
       </section>
 

@@ -281,26 +281,16 @@ export default function ContactPage() {
             />
             </div>
 
-            <h3>Lý do gửi yêu cầu</h3>
-
-            <select
-              name="reason"
-              value={formData.reason}
-              onChange={handleChange}
-            >
-              <option value="">Vui lòng chọn lý do gửi yêu cầu của bạn</option>
-              <option value="Tu van mua xe">Tư vấn mua xe</option>
-              <option value="Dat lich xem xe">Đặt lịch xem xe</option>
-              <option value="Bao gia">Báo giá</option>
-              <option value="Tra gop">Tư vấn trả góp</option>
-            </select>
-
+           <h3>Yêu cầu tư vấn</h3>
+            <p className="contact-note">
+              Vui lòng mô tả nhu cầu của bạn để chúng tôi hỗ trợ tốt nhất.
+            </p>
             <textarea
-              name="additionalInfo"
-              rows="5"
-              placeholder="Thông tin bổ sung *"
-              value={formData.additionalInfo}
-              onChange={handleChange}
+                name="additionalInfo"
+                rows="5"
+                placeholder="Ví dụ: Tôi muốn tư vấn về giá lăn bánh, hỗ trợ trả góp, khuyến mãi hiện tại..."
+                value={formData.additionalInfo}
+                onChange={handleChange}
             ></textarea>
 
             <button type="submit" className="contact-submit-btn" disabled={loading}>

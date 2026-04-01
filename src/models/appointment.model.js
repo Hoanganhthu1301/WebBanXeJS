@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const contactSchema = new mongoose.Schema(
+const appointmentSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -12,11 +12,6 @@ const contactSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    preferredContact: {
-      type: String,
-      enum: ["call", "email"],
-      default: "call",
-    },
     phone: {
       type: String,
       required: true,
@@ -25,6 +20,25 @@ const contactSchema = new mongoose.Schema(
     email: {
       type: String,
       default: "",
+      trim: true,
+    },
+    type: {
+      type: String,
+      enum: ["view", "test_drive"],
+      required: true,
+      default: "view",
+    },
+    appointmentDate: {
+      type: String,
+      required: true,
+    },
+    appointmentTime: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+      required: true,
       trim: true,
     },
     carId: {
@@ -44,16 +58,16 @@ const contactSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "processing", "contacted"],
-      default: "new",
+      enum: ["pending", "confirmed", "done", "cancelled"],
+      default: "pending",
     },
     adminReply: {
-    type: String,
-    default: "",
-    trim: true,
-    },
+        type: String,
+        default: "",
+        trim: true,
+        },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Contact", contactSchema);
+module.exports = mongoose.model("Appointment", appointmentSchema);

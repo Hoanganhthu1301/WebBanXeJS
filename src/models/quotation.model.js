@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const contactSchema = new mongoose.Schema(
+const quotationSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -12,11 +12,6 @@ const contactSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    preferredContact: {
-      type: String,
-      enum: ["call", "email"],
-      default: "call",
-    },
     phone: {
       type: String,
       required: true,
@@ -25,6 +20,11 @@ const contactSchema = new mongoose.Schema(
     email: {
       type: String,
       default: "",
+      trim: true,
+    },
+    province: {
+      type: String,
+      default: "Việt Nam",
       trim: true,
     },
     carId: {
@@ -44,16 +44,16 @@ const contactSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "processing", "contacted"],
+      enum: ["new", "quoted", "done"],
       default: "new",
     },
     adminReply: {
-    type: String,
-    default: "",
-    trim: true,
-    },
+        type: String,
+        default: "",
+        trim: true,
+        },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Contact", contactSchema);
+module.exports = mongoose.model("Quotation", quotationSchema);
