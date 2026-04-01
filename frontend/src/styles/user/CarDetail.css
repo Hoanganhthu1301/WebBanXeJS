@@ -15,13 +15,13 @@ body {
 .mb-detail-page {
   background: #000;
   color: #f5f5f5;
-  font-family: Arial, sans-serif;
+  font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
 }
 
 /* HERO */
 .mb-hero {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
 }
 
@@ -37,9 +37,9 @@ body {
   inset: 0;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.75),
-    rgba(0, 0, 0, 0.35),
-    rgba(0, 0, 0, 0.55)
+    rgba(0, 0, 0, 0.78),
+    rgba(0, 0, 0, 0.34),
+    rgba(0, 0, 0, 0.54)
   );
 }
 
@@ -98,27 +98,219 @@ body {
 .mb-hero-actions {
   display: flex;
   gap: 14px;
+  flex-wrap: wrap;
 }
 
 .mb-btn {
   padding: 14px 24px;
-  border-radius: 6px;
+  border-radius: 10px;
   text-decoration: none;
   font-weight: bold;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
 .mb-btn-light {
   background: white;
   color: black;
+  border: none;
+}
+
+.mb-btn-light:hover {
+  background: #ececec;
 }
 
 .mb-btn-dark {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.34);
   color: white;
+}
+
+.mb-btn-dark:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* PRICE PROMO */
+.mb-price-box {
+  margin-bottom: 18px;
+}
+
+.mb-price-old {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: line-through;
+  margin-bottom: 8px;
+}
+
+.mb-price-sale {
+  margin-bottom: 8px;
+}
+
+.mb-price-save {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 215, 64, 0.14);
+  border: 1px solid rgba(255, 215, 64, 0.3);
+  color: #ffd740;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.mb-promo-floating-list {
+  position: absolute;
+  top: 300px;
+  right: 70px;
+  z-index: 3;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+} 
+
+.mb-promo-floating {
+  position: relative;
+  width: 100%;
+  padding: 22px;
+  border-radius: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(24, 24, 27, 0.92),
+    rgba(14, 14, 18, 0.96)
+  );
+  border: 1px solid rgba(214, 176, 74, 0.14);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.mb-promo-floating::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d5a93c, #f2d36f, #d5a93c);
+  opacity: 0.95;
+}
+
+.mb-promo-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mb-promo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d6a939, #f2d36f);
+  color: #111;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  box-shadow: 0 10px 24px rgba(214, 169, 57, 0.24);
+}
+
+.mb-promo-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mb-promo-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.mb-promo-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mb-promo-counter {
+  min-width: 42px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.mb-promo-content h3 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  line-height: 1.25;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mb-promo-content p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.75;
+  font-size: 15px;
+}
+
+.mb-promo-highlight {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(214, 169, 57, 0.1);
+  border: 1px solid rgba(214, 169, 57, 0.2);
+  font-size: 16px;
+  font-weight: 700;
+  color: #f2d36f;
+}
+
+.mb-promo-gifts {
+  margin: 16px 0 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.mb-promo-gifts li {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 18px;
+  color: #f3f3f3;
+  line-height: 1.7;
+}
+
+.mb-promo-gifts li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d6a939, #f2d36f);
+  box-shadow: 0 0 10px rgba(242, 211, 111, 0.38);
+}
+
+.mb-promo-date {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* NAV */
@@ -400,6 +592,14 @@ body {
 }
 
 /* RESPONSIVE */
+@media (max-width: 1200px) {
+  .mb-promo-floating-list {
+    right: 30px;
+    top: 110px;
+    width: 360px;
+  }
+}
+
 @media (max-width: 1100px) {
   .mb-highlight-grid {
     grid-template-columns: 1fr;
@@ -411,10 +611,21 @@ body {
 }
 
 @media (max-width: 900px) {
+  .mb-hero {
+    height: auto;
+    min-height: 100vh;
+    padding-bottom: 24px;
+  }
+
   .mb-hero-content {
+    position: relative;
     left: 30px;
     right: 30px;
+    top: auto;
+    transform: none;
     max-width: unset;
+    padding-top: 110px;
+    padding-right: 30px;
   }
 
   .mb-hero-content h1 {
@@ -437,6 +648,15 @@ body {
     overflow-x: auto;
     justify-content: flex-start;
   }
+
+  .mb-promo-floating-list {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: auto;
+    max-width: unset;
+    margin: 20px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -454,5 +674,25 @@ body {
 
   .mb-feature-drawer-image {
     height: 260px;
+  }
+
+  .mb-promo-floating {
+    margin: 0;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .mb-promo-content h3 {
+    font-size: 20px;
+  }
+
+  .mb-promo-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mb-promo-nav {
+    width: 100%;
+    justify-content: space-between;
   }
 }

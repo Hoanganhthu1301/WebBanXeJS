@@ -1,4 +1,10 @@
+const mongoose = require("mongoose");
 const Car = require("../models/car.model");
+const Promotion = require("../models/promotion.model");
+const {
+  findBestPromotionForCar,
+  calculatePricing,
+} = require("../services/promotion.service")
 
 const normalizeCarStatus = (quantity, currentStatus) => {
   const qty = Number(quantity) || 0;
@@ -16,6 +22,46 @@ const normalizeCarStatus = (quantity, currentStatus) => {
   }
 
   return "available";
+};
+
+const isSameId = (a, b) => {
+  if (!a || !b) return false;
+  return String(a) === String(b);
+};
+
+const findAllPromotionsForCar = async (car) => {
+  const now = new Date();
+
+  const promotions = await Promotion.find({
+    status: "active",
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+  }).sort({ createdAt: -1 });
+
+  return promotions.filter((promo) => {
+    if (promo.applyScope === "all") {
+      return true;
+    }
+
+    if (promo.applyScope === "brand") {
+      return (
+        promo.brand &&
+        car.brand &&
+        String(promo.brand).trim().toLowerCase() ===
+          String(car.brand).trim().toLowerCase()
+      );
+    }
+
+    if (promo.applyScope === "car") {
+      if (!Array.isArray(promo.carIds) || promo.carIds.length === 0) {
+        return false;
+      }
+
+      return promo.carIds.some((id) => isSameId(id, car._id));
+    }
+
+    return false;
+  });
 };
 
 // USER
@@ -65,9 +111,16 @@ const getCarById = async (req, res) => {
       });
     }
 
+    const promotions = await findAllPromotionsForCar(car);
+    const bestPromotion = await findBestPromotionForCar(car);
+    const pricing = calculatePricing(car.price, bestPromotion);
+
     return res.status(200).json({
       message: "Lấy chi tiết xe thành công",
       car,
+      promotion: bestPromotion || null,
+      promotions,
+      pricing,
     });
   } catch (error) {
     return res.status(500).json({

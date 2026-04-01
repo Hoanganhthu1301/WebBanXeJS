@@ -102,6 +102,21 @@ export default function AdminDeposits() {
     item.assignedStaffId?.name ||
     "Chưa gán";
 
+  const hasVoucher = (item) =>
+    !!item.promotionId ||
+    !!item.promotionTitle ||
+    Number(item.discountAmount || 0) > 0;
+
+  const getFinalPrice = (item) => {
+    if (Number(item.finalEstimatedPrice || 0) > 0) {
+      return Number(item.finalEstimatedPrice);
+    }
+    return Math.max(
+      Number(item.totalEstimatedPrice || 0) - Number(item.discountAmount || 0),
+      0
+    );
+  };
+
   const filteredDeposits = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
 
@@ -118,6 +133,7 @@ export default function AdminDeposits() {
         getStaffName(item),
         item.status,
         item.paymentStatus,
+        item.promotionTitle,
       ]
         .join(" ")
         .toLowerCase();
@@ -219,7 +235,8 @@ export default function AdminDeposits() {
     const isCompleted = item.status === "completed";
     const isRefunded = item.status === "refunded";
 
-    const canAssign = !item.assignedStaffId && !isCancelled && !isCompleted && !isRefunded;
+    const canAssign =
+      !item.assignedStaffId && !isCancelled && !isCompleted && !isRefunded;
 
     const canCancel =
       !["cancelled", "completed", "refunded"].includes(item.status);
@@ -311,7 +328,7 @@ export default function AdminDeposits() {
       <div className="admin-deposits-header">
         <div>
           <h2>Quản lý đơn đặt cọc / bán xe</h2>
-          <p>Theo dõi đơn cọc, người phụ trách, thanh toán và giao xe</p>
+          <p>Theo dõi đơn cọc, người phụ trách, thanh toán, voucher và giao xe</p>
         </div>
 
         <button
@@ -328,7 +345,7 @@ export default function AdminDeposits() {
       <div className="admin-deposits-toolbar">
         <input
           type="text"
-          placeholder="Tìm mã đơn, khách hàng, xe, người phụ trách..."
+          placeholder="Tìm mã đơn, khách hàng, xe, voucher, người phụ trách..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           className="admin-deposits-search"
@@ -371,9 +388,9 @@ export default function AdminDeposits() {
         </div>
 
         <div className="admin-deposits-summary-card">
-          <span>Sẵn sàng giao</span>
+          <span>Có voucher</span>
           <strong>
-            {deposits.filter((x) => x.status === "ready_to_deliver").length}
+            {deposits.filter((x) => hasVoucher(x)).length}
           </strong>
         </div>
 
@@ -391,7 +408,7 @@ export default function AdminDeposits() {
             <tr>
               <th>Mã đơn</th>
               <th>Khách hàng</th>
-              <th>Xe</th>
+              <th>Xe / Voucher</th>
               <th>Tiền cọc</th>
               <th>Còn lại</th>
               <th>Thanh toán cọc</th>
@@ -440,9 +457,44 @@ export default function AdminDeposits() {
                     <div className="admin-deposits-main-text">
                       {getCarName(item)}
                     </div>
-                    <div className="admin-deposits-sub-text">
-                      Giá xe: {formatMoney(item.carPrice)}
-                    </div>
+
+                    {!hasVoucher(item) && (
+                      <div className="admin-deposits-sub-text">
+                        Giá xe: {formatMoney(item.carPrice)}
+                      </div>
+                    )}
+
+                    {hasVoucher(item) && (
+                      <>
+                        <div
+                          className="admin-deposits-sub-text"
+                          style={{
+                            textDecoration: "line-through",
+                            opacity: 0.7,
+                          }}
+                        >
+                          Giá gốc: {formatMoney(item.carPrice)}
+                        </div>
+                        <div
+                          className="admin-deposits-sub-text"
+                          style={{ color: "#0f766e", fontWeight: 700 }}
+                        >
+                          Voucher: {item.promotionTitle || "Ưu đãi áp dụng"}
+                        </div>
+                        <div
+                          className="admin-deposits-sub-text"
+                          style={{ color: "#dc2626", fontWeight: 700 }}
+                        >
+                          Giảm: -{formatMoney(item.discountAmount)}
+                        </div>
+                        <div
+                          className="admin-deposits-sub-text"
+                          style={{ color: "#ca8a04", fontWeight: 800 }}
+                        >
+                          Giá sau giảm: {formatMoney(getFinalPrice(item))}
+                        </div>
+                      </>
+                    )}
                   </td>
 
                   <td>{formatMoney(item.depositAmount)}</td>

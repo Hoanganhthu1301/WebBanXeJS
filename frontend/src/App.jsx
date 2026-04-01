@@ -1,4 +1,7 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import socket from "./socket";
 
 import Home from "./pages/user/Home";
 import Login from "./pages/user/Login";
@@ -22,8 +25,47 @@ import AdminDeposits from "./pages/Admin/AdminDeposits";
 import AdminDepositDetail from "./pages/Admin/AdminDepositDetail";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import Favorites from "./pages/user/Favorites";
+import AdminRevenue from "./pages/Admin/AdminRevenue";
+import AdminPromotions from "./pages/Admin/AdminPromotions";
+import UserConsultations from "./pages/user/ContactConsultations";  
+
 
 function App() {
+  useEffect(() => {
+    const registerSocket = () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (!user) return;
+
+        const userId = user._id || user.id;
+        if (!userId) return;
+
+        const role =
+          String(user.role || "").toLowerCase() === "admin" ? "admin" : "user";
+
+        socket.emit("register", {
+          userId,
+          role,
+        });
+
+        console.log("✅ Socket registered:", { userId, role });
+      } catch (error) {
+        console.log("Socket register error:", error);
+      }
+    };
+
+    if (socket.connected) {
+      registerSocket();
+    }
+
+    socket.on("connect", registerSocket);
+
+    return () => {
+      socket.off("connect", registerSocket);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -41,19 +83,23 @@ function App() {
         <Route path="/admin/contacts" element={<AdminContacts />} />
         <Route path="/admin/deposits" element={<AdminDeposits />} />
         <Route path="/admin/deposits/:id" element={<AdminDepositDetail />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
 
         <Route path="/cars" element={<CarsPage />} />
         <Route path="/cars/:id" element={<CarDetail />} />
         <Route path="/cars/:id/contact" element={<ContactPage />} />
         <Route path="/cars/:id/deposit" element={<DepositPage />} />
+        <Route path="/consultations" element={<UserConsultations />} />
 
         <Route path="/deposit/success" element={<DepositSuccess />} />
         <Route path="/deposit/cancel" element={<DepositCancel />} />
 
         <Route path="/my-deposits" element={<MyDepositsPage />} />
         <Route path="/my-deposits/:id" element={<UserDepositDetail />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/favorites" element={<Favorites />} />
+        <Route path="/admin/revenue" element={<AdminRevenue />} />
+        <Route path="/admin/promotions" element={<AdminPromotions />} />
+        
       </Routes>
     </BrowserRouter>
   );

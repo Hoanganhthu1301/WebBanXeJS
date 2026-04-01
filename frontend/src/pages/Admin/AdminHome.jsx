@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/admin/AdminLayout.css";
+import NotificationBell from "../../components/NotificationBell";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -26,52 +27,55 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchDashboardData = async () => {
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
-    const [carsRes, usersRes, depositsRes] = await Promise.all([
-      axios.get("http://localhost:5000/api/cars", config),
-      axios.get("http://localhost:5000/api/admin/users", config),
-      axios.get("http://localhost:5000/api/deposits", config),
-    ]);
+      const [carsRes, usersRes, depositsRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/cars", config),
+        axios.get("http://localhost:5000/api/admin/users", config),
+        axios.get("http://localhost:5000/api/deposits", config),
+      ]);
 
-    const cars =
-      carsRes.data?.cars ||
-      carsRes.data?.data ||
-      (Array.isArray(carsRes.data) ? carsRes.data : []);
+      const cars =
+        carsRes.data?.cars ||
+        carsRes.data?.data ||
+        (Array.isArray(carsRes.data) ? carsRes.data : []);
 
-    const users =
-      usersRes.data?.users ||
-      usersRes.data?.data ||
-      (Array.isArray(usersRes.data) ? usersRes.data : []);
+      const users =
+        usersRes.data?.users ||
+        usersRes.data?.data ||
+        (Array.isArray(usersRes.data) ? usersRes.data : []);
 
-    const deposits =
-      depositsRes.data?.deposits ||
-      depositsRes.data?.data ||
-      (Array.isArray(depositsRes.data) ? depositsRes.data : []);
+      const deposits =
+        depositsRes.data?.deposits ||
+        depositsRes.data?.data ||
+        (Array.isArray(depositsRes.data) ? depositsRes.data : []);
 
-    const featuredCars = cars.filter(
-      (car) => car.isFeatured === true || car.featured === true
-    );
+      const featuredCars = cars.filter(
+        (car) => car.isFeatured === true || car.featured === true
+      );
 
-    setStats({
-      cars: cars.length,
-      users: users.length,
-      orders: deposits.length,
-      featuredCars: featuredCars.length,
-    });
+      setStats({
+        cars: cars.length,
+        users: users.length,
+        orders: deposits.length,
+        featuredCars: featuredCars.length,
+      });
 
-    setRecentCars(cars.slice(0, 5));
-  } catch (error) {
-    console.error("Lỗi lấy dữ liệu dashboard:", error.response?.data || error.message);
-  }
-};
+      setRecentCars(cars.slice(0, 5));
+    } catch (error) {
+      console.error(
+        "Lỗi lấy dữ liệu dashboard:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   const quickActions = [
     {
@@ -87,7 +91,7 @@ export default function AdminDashboard() {
     {
       title: "Quản lý đơn hàng",
       desc: "Theo dõi yêu cầu mua xe và liên hệ",
-      to: "/admin/orders",
+      to: "/admin/deposits",
     },
     {
       title: "Quản lý banner",
@@ -105,14 +109,17 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="admin-menu">
-          <Link to="/admin" className="active">Tổng quan</Link>
+          <Link to="/admin" className="active">
+            Tổng quan
+          </Link>
           <Link to="/admin/cars">Quản lý xe</Link>
           <Link to="/admin/users">Người dùng</Link>
           <Link to="/admin/deposits">Đơn hàng</Link>
           <Link to="/admin/categories">Danh mục</Link>
           <Link to="/admin/brands">Hãng xe</Link>
-          <Link to="/admin/banner">Banner</Link>
           <Link to="/admin/contacts">Yêu cầu tư vấn</Link>
+          <Link to="/admin/revenue">Báo cáo doanh thu</Link>
+          <Link to="/admin/promotions">Khuyến mãi</Link>
         </nav>
       </aside>
 
@@ -123,9 +130,15 @@ export default function AdminDashboard() {
             <p>Chào mừng Admin quay lại hệ thống</p>
           </div>
 
-          <button className="admin-logout-btn" onClick={handleLogout}>
-            Đăng xuất
-          </button>
+          <div
+            className="admin-topbar-right"
+            style={{ display: "flex", alignItems: "center", gap: "12px" }}
+          >
+            <NotificationBell dark={false} />
+            <button className="admin-logout-btn" onClick={handleLogout}>
+              Đăng xuất
+            </button>
+          </div>
         </div>
 
         <div className="admin-grid-4">
@@ -154,11 +167,7 @@ export default function AdminDashboard() {
           <h2>Quản lý nhanh</h2>
           <div className="admin-quick-grid">
             {quickActions.map((item) => (
-              <Link
-                key={item.title}
-                to={item.to}
-                className="admin-quick-card"
-              >
+              <Link key={item.title} to={item.to} className="admin-quick-card">
                 <h3>{item.title}</h3>
                 <p>{item.desc}</p>
               </Link>

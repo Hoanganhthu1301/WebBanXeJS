@@ -88,6 +88,26 @@ export default function AdminDepositDetail() {
     }
   };
 
+  const hasVoucher = () => {
+    return (
+      deposit?.promotionId ||
+      deposit?.promotionTitle ||
+      Number(deposit?.discountAmount || 0) > 0
+    );
+  };
+
+  const finalPrice = () => {
+    if (Number(deposit?.finalEstimatedPrice || 0) > 0) {
+      return Number(deposit.finalEstimatedPrice);
+    }
+
+    return Math.max(
+      Number(deposit?.totalEstimatedPrice || 0) -
+        Number(deposit?.discountAmount || 0),
+      0
+    );
+  };
+
   const getStatusLabel = (status) => {
     switch (status) {
       case "pending_payment":
@@ -217,8 +237,8 @@ export default function AdminDepositDetail() {
           <div className="deposit-detail-hero-left">
             <h1>Chi tiết đơn đặt cọc</h1>
             <p>
-              Theo dõi thông tin khách hàng, xe, hóa đơn và chứng từ của đơn đặt
-              cọc theo phong cách trực quan, dễ đọc.
+              Theo dõi thông tin khách hàng, xe, hóa đơn, voucher và chứng từ
+              của đơn đặt cọc theo phong cách trực quan, dễ đọc.
             </p>
           </div>
 
@@ -268,6 +288,40 @@ export default function AdminDepositDetail() {
                       : "Chưa có"}
                   </div>
                 </div>
+
+                {hasVoucher() && (
+                  <>
+                    <div className="lux-info-row">
+                      <div className="lux-info-label">Voucher áp dụng</div>
+                      <div
+                        className="lux-info-value"
+                        style={{ color: "#0f766e", fontWeight: 700 }}
+                      >
+                        {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                      </div>
+                    </div>
+
+                    <div className="lux-info-row">
+                      <div className="lux-info-label">Giảm giá</div>
+                      <div
+                        className="lux-info-value"
+                        style={{ color: "#dc2626", fontWeight: 700 }}
+                      >
+                        -{formatMoney(deposit.discountAmount)}
+                      </div>
+                    </div>
+
+                    <div className="lux-info-row">
+                      <div className="lux-info-label">Tổng sau ưu đãi</div>
+                      <div
+                        className="lux-info-value"
+                        style={{ color: "#ca8a04", fontWeight: 800 }}
+                      >
+                        {formatMoney(finalPrice())}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="lux-info-row">
                   <div className="lux-info-label">Ngày tạo</div>
@@ -371,10 +425,45 @@ export default function AdminDepositDetail() {
                   <span>Bảo hiểm</span>
                   <strong>{formatMoney(deposit.insuranceFee)}</strong>
                 </div>
+
                 <div className="lux-bill-row total">
-                  <span>Tổng chi phí dự kiến</span>
-                  <strong>{formatMoney(deposit.totalEstimatedPrice)}</strong>
+                  <span>{hasVoucher() ? "Tổng chi phí gốc" : "Tổng chi phí dự kiến"}</span>
+                  <strong
+                    style={
+                      hasVoucher()
+                        ? { textDecoration: "line-through", opacity: 0.65 }
+                        : {}
+                    }
+                  >
+                    {formatMoney(deposit.totalEstimatedPrice)}
+                  </strong>
                 </div>
+
+                {hasVoucher() && (
+                  <>
+                    <div className="lux-bill-row">
+                      <span>Voucher</span>
+                      <strong style={{ color: "#0f766e" }}>
+                        {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                      </strong>
+                    </div>
+
+                    <div className="lux-bill-row">
+                      <span>Giảm giá</span>
+                      <strong style={{ color: "#dc2626" }}>
+                        -{formatMoney(deposit.discountAmount)}
+                      </strong>
+                    </div>
+
+                    <div className="lux-bill-row total">
+                      <span>Tổng sau ưu đãi</span>
+                      <strong style={{ color: "#ca8a04" }}>
+                        {formatMoney(finalPrice())}
+                      </strong>
+                    </div>
+                  </>
+                )}
+
                 <div className="lux-bill-row deposit">
                   <span>Tiền cọc</span>
                   <strong>{formatMoney(deposit.depositAmount)}</strong>
@@ -511,8 +600,40 @@ export default function AdminDepositDetail() {
                 </div>
                 <div>
                   <strong>Giá xe niêm yết:</strong>{" "}
-                  {formatMoney(car.price || deposit.carPrice)}
+                  <span
+                    style={
+                      hasVoucher()
+                        ? { textDecoration: "line-through", opacity: 0.65 }
+                        : {}
+                    }
+                  >
+                    {formatMoney(car.price || deposit.carPrice)}
+                  </span>
                 </div>
+
+                {hasVoucher() && (
+                  <>
+                    <div>
+                      <strong>Voucher:</strong>{" "}
+                      <span style={{ color: "#0f766e", fontWeight: 700 }}>
+                        {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>Giảm giá:</strong>{" "}
+                      <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                        -{formatMoney(deposit.discountAmount)}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>Giá sau ưu đãi:</strong>{" "}
+                      <span style={{ color: "#ca8a04", fontWeight: 800 }}>
+                        {formatMoney(finalPrice())}
+                      </span>
+                    </div>
+                  </>
+                )}
+
                 <div>
                   <strong>Trạng thái xe:</strong> {getCarStatusLabel(car.status)}
                 </div>
@@ -548,10 +669,43 @@ export default function AdminDepositDetail() {
                   <span>Bảo hiểm</span>
                   <strong>{formatMoney(deposit.insuranceFee)}</strong>
                 </div>
+
                 <div className="lux-mini-bill-row total">
-                  <span>Tổng chi phí dự kiến</span>
-                  <strong>{formatMoney(deposit.totalEstimatedPrice)}</strong>
+                  <span>{hasVoucher() ? "Tổng chi phí gốc" : "Tổng chi phí dự kiến"}</span>
+                  <strong
+                    style={
+                      hasVoucher()
+                        ? { textDecoration: "line-through", opacity: 0.65 }
+                        : {}
+                    }
+                  >
+                    {formatMoney(deposit.totalEstimatedPrice)}
+                  </strong>
                 </div>
+
+                {hasVoucher() && (
+                  <>
+                    <div className="lux-mini-bill-row">
+                      <span>Voucher</span>
+                      <strong style={{ color: "#0f766e" }}>
+                        {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                      </strong>
+                    </div>
+                    <div className="lux-mini-bill-row">
+                      <span>Giảm giá</span>
+                      <strong style={{ color: "#dc2626" }}>
+                        -{formatMoney(deposit.discountAmount)}
+                      </strong>
+                    </div>
+                    <div className="lux-mini-bill-row total">
+                      <span>Tổng sau ưu đãi</span>
+                      <strong style={{ color: "#ca8a04" }}>
+                        {formatMoney(finalPrice())}
+                      </strong>
+                    </div>
+                  </>
+                )}
+
                 <div className="lux-mini-bill-row deposit">
                   <span>Tiền cọc</span>
                   <strong>{formatMoney(deposit.depositAmount)}</strong>

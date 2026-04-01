@@ -5,10 +5,10 @@ import {
   Globe,
   User,
   LogOut,
-  Bell,
   Menu,
   Heart,
 } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
 
 export default function MainNavbar() {
@@ -58,11 +58,11 @@ export default function MainNavbar() {
               Đơn hàng
             </Link>
             <Link
-              to={user ? "/consultations" : "/login"}
-              className="lux-nav-link"
-            >
-              Tư vấn
-            </Link>
+  to={user ? "/consultations" : "/login"}
+  className="lux-nav-link"
+>
+  Tư vấn
+</Link>
           </nav>
         </div>
 
@@ -79,17 +79,19 @@ export default function MainNavbar() {
             />
           </form>
 
-          <Link to={user ? "/favorites" : "/login"} className="lux-icon-btn" title="Yêu thích">
+          <Link
+            to={user ? "/favorites" : "/login"}
+            className="lux-icon-btn"
+            title="Yêu thích"
+          >
             <Heart size={18} />
           </Link>
 
-          <button className="lux-icon-btn" title="Ngôn ngữ">
+          <button type="button" className="lux-icon-btn" title="Ngôn ngữ">
             <Globe size={18} />
           </button>
 
-          <button className="lux-icon-btn" title="Thông báo">
-            <Bell size={18} />
-          </button>
+          {user && <NotificationBell dark />}
 
           {!user ? (
             <Link to="/login" className="lux-user-link">
@@ -99,6 +101,7 @@ export default function MainNavbar() {
           ) : (
             <>
               <button
+                type="button"
                 className="lux-user-link"
                 onClick={() =>
                   navigate(
@@ -112,6 +115,7 @@ export default function MainNavbar() {
               </button>
 
               <button
+                type="button"
                 className="lux-icon-btn lux-logout-btn"
                 onClick={handleLogout}
                 title="Đăng xuất"
@@ -122,6 +126,7 @@ export default function MainNavbar() {
           )}
 
           <button
+            type="button"
             className="lux-icon-btn lux-menu-btn"
             title="Menu"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -143,11 +148,11 @@ export default function MainNavbar() {
             Đơn hàng
           </Link>
           <Link
-            to={user ? "/consultations" : "/login"}
-            onClick={() => setMobileOpen(false)}
-          >
-            Tư vấn
-          </Link>
+  to={user ? "/consultations" : "/login"}
+  onClick={() => setMobileOpen(false)}
+>
+  Tư vấn
+</Link>
           <Link
             to={user ? "/favorites" : "/login"}
             onClick={() => setMobileOpen(false)}

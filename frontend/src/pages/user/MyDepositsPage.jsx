@@ -104,6 +104,28 @@ export default function MyDepositsPage() {
     return "Chưa có";
   };
 
+  const hasVoucherApplied = (deposit) => {
+    return (
+      !!deposit.promotionId ||
+      !!deposit.promotionTitle ||
+      Number(deposit.discountAmount || 0) > 0
+    );
+  };
+
+  const getOriginalPrice = (deposit) => {
+    return Number(deposit.carPrice || 0);
+  };
+
+  const getDiscountedPrice = (deposit) => {
+    if (Number(deposit.finalEstimatedPrice || 0) > 0) {
+      return Number(deposit.finalEstimatedPrice || 0);
+    }
+
+    const original = Number(deposit.carPrice || 0);
+    const discount = Number(deposit.discountAmount || 0);
+    return Math.max(original - discount, 0);
+  };
+
   const depositOrders = useMemo(() => {
     return deposits.filter((item) => item.status !== "completed");
   }, [deposits]);
@@ -167,9 +189,35 @@ export default function MyDepositsPage() {
                     </div>
 
                     <div>
-                      <label>Giá xe</label>
-                      <p>{formatMoney(item.carPrice)}</p>
+                      <label>Giá gốc</label>
+                      <p>{formatMoney(getOriginalPrice(item))}</p>
                     </div>
+
+                    {hasVoucherApplied(item) && (
+                      <>
+                        <div>
+                          <label>Voucher</label>
+                          <p>{item.promotionTitle || "Ưu đãi đã áp dụng"}</p>
+                        </div>
+
+                        <div>
+                          <label>Giảm giá</label>
+                          <p>-{formatMoney(item.discountAmount)}</p>
+                        </div>
+
+                        <div>
+                          <label>Giá đã giảm</label>
+                          <p>{formatMoney(getDiscountedPrice(item))}</p>
+                        </div>
+                      </>
+                    )}
+
+                    {!hasVoucherApplied(item) && (
+                      <div>
+                        <label>Giá xe</label>
+                        <p>{formatMoney(item.carPrice)}</p>
+                      </div>
+                    )}
 
                     <div>
                       <label>Đã cọc</label>

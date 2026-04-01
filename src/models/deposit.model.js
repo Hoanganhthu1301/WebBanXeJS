@@ -78,6 +78,33 @@ const depositSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+        promotionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Promotion",
+      default: null,
+    },
+    promotionTitle: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    promotionType: {
+      type: String,
+      enum: ["amount", "percent", "gift", ""],
+      default: "",
+    },
+    promotionValue: {
+      type: Number,
+      default: 0,
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
+    finalEstimatedPrice: {
+      type: Number,
+      default: 0,
+    },
 
     pickupDate: {
       type: String,
@@ -276,7 +303,9 @@ refundMethod: {
       default: null,
     },
   },
+  
   { timestamps: true }
+  
 );
 
 module.exports = mongoose.model("Deposit", depositSchema);

@@ -9,9 +9,11 @@ export default function CarDetail() {
   const navigate = useNavigate();
 
   const [car, setCar] = useState(null);
+  const [promotions, setPromotions] = useState([]);
   const [message, setMessage] = useState("");
   const [activeFeature, setActiveFeature] = useState(null);
   const [user, setUser] = useState(null);
+  const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
 
   useEffect(() => {
     fetchCar();
@@ -26,14 +28,60 @@ export default function CarDetail() {
     }
   }, [id]);
 
+  useEffect(() => {
+    setCurrentPromoIndex(0);
+  }, [id, promotions.length]);
+
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
-      setCar(res.data.car);
+      const [carRes, promoRes] = await Promise.all([
+        axios.get(`http://localhost:5000/api/cars/${id}`),
+        axios.get(`http://localhost:5000/api/promotions/car/${id}`),
+      ]);
+
+      setCar(carRes.data.car || null);
+      setPromotions(promoRes.data.promotions || []);
       setMessage("");
     } catch (error) {
+      console.log("Lỗi fetch car detail:", error);
       setMessage("Không lấy được chi tiết xe");
     }
+  };
+
+  const formatPrice = (value) => {
+    return Number(value || 0).toLocaleString("vi-VN") + "đ";
+  };
+
+  const calculatePricingByPromotion = (carPrice, promotion) => {
+    const originalPrice = Number(carPrice || 0);
+
+    if (!promotion) {
+      return {
+        originalPrice,
+        discountAmount: 0,
+        finalPrice: originalPrice,
+      };
+    }
+
+    let discountAmount = 0;
+
+    if (promotion.type === "amount") {
+      discountAmount = Number(promotion.value || 0);
+    } else if (promotion.type === "percent") {
+      discountAmount = Math.round(
+        originalPrice * (Number(promotion.value || 0) / 100)
+      );
+    }
+
+    if (discountAmount > originalPrice) {
+      discountAmount = originalPrice;
+    }
+
+    return {
+      originalPrice,
+      discountAmount,
+      finalPrice: Math.max(0, originalPrice - discountAmount),
+    };
   };
 
   const carImages = useMemo(() => {
@@ -146,6 +194,23 @@ export default function CarDetail() {
           },
         ];
 
+  const selectedPromotion =
+    promotions.length > 0 ? promotions[currentPromoIndex] || promotions[0] : null;
+
+  const selectedPricing =
+    selectedPromotion && selectedPromotion.type !== "gift"
+      ? calculatePricingByPromotion(car.price, selectedPromotion)
+      : {
+          originalPrice: Number(car.price || 0),
+          discountAmount: 0,
+          finalPrice: Number(car.price || 0),
+        };
+
+  const hasDiscountPromotion =
+    selectedPromotion &&
+    selectedPromotion.type !== "gift" &&
+    Number(selectedPricing.discountAmount || 0) > 0;
+
   return (
     <div className="mb-detail-page">
       <MainNavbar />
@@ -160,6 +225,13 @@ export default function CarDetail() {
               "https://via.placeholder.com/1600x900?text=Image+Error";
           }}
         />
+
+        {promotions.length > 0 && (
+          <div className="voucher-ribbon">
+            <span>SALE</span>
+          </div>
+        )}
+
         <div className="mb-hero-overlay"></div>
 
         <div className="mb-hero-content">
@@ -169,9 +241,22 @@ export default function CarDetail() {
 
           <p className="mb-label">{car.brand}</p>
           <h1>{car.name}</h1>
-          <p className="mb-price">
-            Giá từ {Number(car.price).toLocaleString("vi-VN")}đ
-          </p>
+
+          {hasDiscountPromotion ? (
+            <div className="mb-price-box">
+              <div className="mb-price-old">
+                {formatPrice(selectedPricing.originalPrice)}
+              </div>
+              <p className="mb-price mb-price-sale">
+                Giá ưu đãi {formatPrice(selectedPricing.finalPrice)}
+              </p>
+              <div className="mb-price-save">
+                Tiết kiệm {formatPrice(selectedPricing.discountAmount)}
+              </div>
+            </div>
+          ) : (
+            <p className="mb-price">Giá từ {formatPrice(car.price)}</p>
+          )}
 
           {car.overviewTitle && (
             <h3 className="mb-overview-title">{car.overviewTitle}</h3>
@@ -202,6 +287,91 @@ export default function CarDetail() {
             </a>
           </div>
         </div>
+
+        {selectedPromotion && (
+          <div className="mb-promo-floating-list">
+            <div className="mb-promo-floating" key={selectedPromotion._id}>
+              <div className="mb-promo-topbar">
+                <div className="mb-promo-badge">ƯU ĐÃI</div>
+
+                {promotions.length > 1 && (
+                  <div className="mb-promo-nav">
+                    <button
+                      type="button"
+                      className="mb-promo-nav-btn"
+                      onClick={() =>
+                        setCurrentPromoIndex((prev) =>
+                          prev === 0 ? promotions.length - 1 : prev - 1
+                        )
+                      }
+                    >
+                      ‹
+                    </button>
+
+                    <span className="mb-promo-counter">
+                      {currentPromoIndex + 1}/{promotions.length}
+                    </span>
+
+                    <button
+                      type="button"
+                      className="mb-promo-nav-btn"
+                      onClick={() =>
+                        setCurrentPromoIndex((prev) =>
+                          prev === promotions.length - 1 ? 0 : prev + 1
+                        )
+                      }
+                    >
+                      ›
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-promo-content">
+                <h3>{selectedPromotion.title}</h3>
+
+                {selectedPromotion.description ? (
+                  <p>{selectedPromotion.description}</p>
+                ) : (
+                  <p>Chương trình ưu đãi đang áp dụng cho mẫu xe này.</p>
+                )}
+
+                {selectedPromotion.type === "amount" && (
+                  <div className="mb-promo-highlight">
+                    Giảm trực tiếp {formatPrice(selectedPromotion.value)}
+                  </div>
+                )}
+
+                {selectedPromotion.type === "percent" && (
+                  <div className="mb-promo-highlight">
+                    Giảm {selectedPromotion.value}% giá trị xe
+                  </div>
+                )}
+
+                {selectedPromotion.type === "gift" &&
+                  Array.isArray(selectedPromotion.giftItems) &&
+                  selectedPromotion.giftItems.length > 0 && (
+                    <ul className="mb-promo-gifts">
+                      {selectedPromotion.giftItems.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                <div className="mb-promo-date">
+                  Áp dụng từ{" "}
+                  {new Date(selectedPromotion.startDate).toLocaleDateString(
+                    "vi-VN"
+                  )}{" "}
+                  đến{" "}
+                  {new Date(selectedPromotion.endDate).toLocaleDateString(
+                    "vi-VN"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <nav className="mb-sticky-nav">
@@ -280,13 +450,34 @@ export default function CarDetail() {
         </div>
 
         <div className="mb-specs-card">
-          <div><span>Hãng</span><strong>{car.brand}</strong></div>
-          <div><span>Danh mục</span><strong>{car.category}</strong></div>
-          <div><span>Năm sản xuất</span><strong>{car.year}</strong></div>
-          <div><span>Nhiên liệu</span><strong>{car.fuel}</strong></div>
-          <div><span>Hộp số</span><strong>{car.transmission}</strong></div>
-          <div><span>Số km đã đi</span><strong>{car.mileage}</strong></div>
-          <div><span>Màu xe</span><strong>{car.color}</strong></div>
+          <div>
+            <span>Hãng</span>
+            <strong>{car.brand}</strong>
+          </div>
+          <div>
+            <span>Danh mục</span>
+            <strong>{car.category}</strong>
+          </div>
+          <div>
+            <span>Năm sản xuất</span>
+            <strong>{car.year}</strong>
+          </div>
+          <div>
+            <span>Nhiên liệu</span>
+            <strong>{car.fuel}</strong>
+          </div>
+          <div>
+            <span>Hộp số</span>
+            <strong>{car.transmission}</strong>
+          </div>
+          <div>
+            <span>Số km đã đi</span>
+            <strong>{car.mileage}</strong>
+          </div>
+          <div>
+            <span>Màu xe</span>
+            <strong>{car.color}</strong>
+          </div>
           <div>
             <span>Trạng thái</span>
             <strong>{car.status === "available" ? "Đang bán" : "Ẩn"}</strong>

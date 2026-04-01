@@ -63,6 +63,9 @@ export default function DepositPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [promotions, setPromotions] = useState([]);
+  const [selectedPromotionId, setSelectedPromotionId] = useState("");
+
   const [formData, setFormData] = useState({
     fullName: currentUser?.fullName || currentUser?.name || "",
     phone: currentUser?.phone || "",
@@ -83,12 +86,30 @@ export default function DepositPage() {
     fetchCar();
   }, [id]);
 
+  useEffect(() => {
+    if (car?._id) {
+      fetchPromotionsByCar(car._id);
+    }
+  }, [car?._id]);
+
   const fetchCar = async () => {
     try {
       const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
       setCar(res.data.car);
     } catch {
       setMessage("Không lấy được thông tin xe");
+    }
+  };
+
+  const fetchPromotionsByCar = async (carId) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/promotions/car/${carId}`
+      );
+      setPromotions(res.data.promotions || []);
+    } catch (error) {
+      console.log("Lỗi lấy voucher:", error);
+      setPromotions([]);
     }
   };
 
@@ -115,6 +136,28 @@ export default function DepositPage() {
     return carPrice + vatAmount + registrationFee + licensePlateFee + insuranceFee;
   }, [carPrice, vatAmount, registrationFee]);
 
+  const selectedPromotion = useMemo(() => {
+    return promotions.find((item) => item._id === selectedPromotionId) || null;
+  }, [promotions, selectedPromotionId]);
+
+  const discountAmount = useMemo(() => {
+    if (!selectedPromotion) return 0;
+
+    if (selectedPromotion.type === "amount") {
+      return Number(selectedPromotion.value || 0);
+    }
+
+    if (selectedPromotion.type === "percent") {
+      return Math.round((carPrice * Number(selectedPromotion.value || 0)) / 100);
+    }
+
+    return 0;
+  }, [selectedPromotion, carPrice]);
+
+  const finalEstimatedPrice = useMemo(() => {
+    return Math.max(totalEstimatedPrice - discountAmount, 0);
+  }, [totalEstimatedPrice, discountAmount]);
+
   useEffect(() => {
     setFormData((prev) => {
       const current = Number(prev.depositAmount || 0);
@@ -127,7 +170,10 @@ export default function DepositPage() {
   }, [minimumDeposit]);
 
   const depositInput = Number(formData.depositAmount || 0);
-  const remainingAmount = Math.max(totalEstimatedPrice - depositInput, 0);
+  const remainingAmountAfterVoucher = Math.max(
+    finalEstimatedPrice - depositInput,
+    0
+  );
 
   const carStatusText = useMemo(() => {
     if (!car?.status) return "Đang cập nhật";
@@ -138,7 +184,9 @@ export default function DepositPage() {
   }, [car]);
 
   const activeSlots = useMemo(() => {
-    return formData.deliveryMethod === "home_delivery" ? deliverySlots : showroomSlots;
+    return formData.deliveryMethod === "home_delivery"
+      ? deliverySlots
+      : showroomSlots;
   }, [formData.deliveryMethod]);
 
   const selectedRefundBankName = useMemo(() => {
@@ -249,6 +297,7 @@ export default function DepositPage() {
         refundBankBin: formData.refundBankBin,
         refundBankAccountNumber: formData.refundBankAccountNumber,
         refundBankAccountName: formData.refundBankAccountName,
+        promotionId: selectedPromotionId || null,
       };
 
       const token = localStorage.getItem("token");
@@ -396,9 +445,37 @@ export default function DepositPage() {
               </p>
               <p>
                 <strong>Số tiền còn lại sau khi cọc:</strong>{" "}
-                {formatPrice(remainingAmount)}
+                {formatPrice(remainingAmountAfterVoucher)}
               </p>
             </div>
+
+            <h3 className="deposit-section-title">Voucher ưu đãi</h3>
+
+            <select
+              value={selectedPromotionId}
+              onChange={(e) => setSelectedPromotionId(e.target.value)}
+            >
+              <option value="">Không chọn voucher</option>
+              {promotions.map((promo) => (
+                <option key={promo._id} value={promo._id}>
+                  {promo.title}{" "}
+                  {promo.type === "amount"
+                    ? `- ${Number(promo.value || 0).toLocaleString("vi-VN")}đ`
+                    : `- ${promo.value || 0}%`}
+                </option>
+              ))}
+            </select>
+
+            {selectedPromotion && (
+              <div className="deposit-highlight-box">
+                <p>
+                  <strong>Voucher đã chọn:</strong> {selectedPromotion.title}
+                </p>
+                <p>
+                  <strong>Giảm giá:</strong> {formatPrice(discountAmount)}
+                </p>
+              </div>
+            )}
 
             <h3 className="deposit-section-title">Lịch nhận xe</h3>
 
@@ -503,10 +580,15 @@ export default function DepositPage() {
                   <strong>Tỷ lệ cọc:</strong> 5%
                 </p>
                 <p>
-                  <strong>Số tiền cọc tối thiểu:</strong> {formatPrice(minimumDeposit)}
+                  <strong>Số tiền cọc tối thiểu:</strong>{" "}
+                  {formatPrice(minimumDeposit)}
                 </p>
                 <p>
                   <strong>Ngân hàng nhận hoàn:</strong> {selectedRefundBankName}
+                </p>
+                <p>
+                  <strong>Voucher áp dụng:</strong>{" "}
+                  {selectedPromotion ? selectedPromotion.title : "Không có"}
                 </p>
               </div>
 
@@ -538,9 +620,14 @@ export default function DepositPage() {
                   <strong>{formatPrice(insuranceFee)}</strong>
                 </div>
 
+                <div className="deposit-price-row">
+                  <span>Giảm giá voucher</span>
+                  <strong>-{formatPrice(discountAmount)}</strong>
+                </div>
+
                 <div className="deposit-price-row total">
-                  <span>Tổng chi phí dự kiến</span>
-                  <strong>{formatPrice(totalEstimatedPrice)}</strong>
+                  <span>Tổng sau ưu đãi</span>
+                  <strong>{formatPrice(finalEstimatedPrice)}</strong>
                 </div>
 
                 <div className="deposit-price-row paid">
@@ -550,7 +637,7 @@ export default function DepositPage() {
 
                 <div className="deposit-price-row remain">
                   <span>Còn phải thanh toán</span>
-                  <strong>{formatPrice(remainingAmount)}</strong>
+                  <strong>{formatPrice(remainingAmountAfterVoucher)}</strong>
                 </div>
               </div>
 

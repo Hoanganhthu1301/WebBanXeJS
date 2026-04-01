@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   User,
   Image as ImageIcon,
+  Tag,
 } from "lucide-react";
 import MainNavbar from "../../components/MainNavbar";
 import "../../styles/user/UserDepositDetail.css";
@@ -61,7 +62,9 @@ export default function UserDepositDetail() {
       setDeposit(res.data?.deposit || null);
     } catch (error) {
       console.error("fetchDepositDetail error:", error);
-      setMessage(error?.response?.data?.message || "Không lấy được chi tiết đơn đặt cọc");
+      setMessage(
+        error?.response?.data?.message || "Không lấy được chi tiết đơn đặt cọc"
+      );
     } finally {
       setLoading(false);
     }
@@ -69,6 +72,26 @@ export default function UserDepositDetail() {
 
   const formatCurrency = (value) => {
     return Number(value || 0).toLocaleString("vi-VN") + "đ";
+  };
+
+  const hasVoucher = () => {
+    return (
+      deposit?.promotionId ||
+      deposit?.promotionTitle ||
+      Number(deposit?.discountAmount || 0) > 0
+    );
+  };
+
+  const finalPrice = () => {
+    if (Number(deposit?.finalEstimatedPrice || 0) > 0) {
+      return Number(deposit.finalEstimatedPrice);
+    }
+
+    return Math.max(
+      Number(deposit?.totalEstimatedPrice || 0) -
+        Number(deposit?.discountAmount || 0),
+      0
+    );
   };
 
   const formatDateTime = (value) => {
@@ -161,7 +184,8 @@ export default function UserDepositDetail() {
 
   const getBadgeClass = (status) => {
     if (["cancelled"].includes(status)) return "user-status-badge danger";
-    if (["confirmed", "completed"].includes(status)) return "user-status-badge success";
+    if (["confirmed", "completed"].includes(status))
+      return "user-status-badge success";
     if (["pending_payment", "waiting_full_payment"].includes(status)) {
       return "user-status-badge warning";
     }
@@ -199,7 +223,10 @@ export default function UserDepositDetail() {
         <div className="user-deposit-detail-container">
           <div className="user-error-box">
             <p>{message || "Không tìm thấy đơn đặt cọc"}</p>
-            <button className="user-back-btn" onClick={() => navigate("/my-deposits")}>
+            <button
+              className="user-back-btn"
+              onClick={() => navigate("/my-deposits")}
+            >
               <ArrowLeft size={18} />
               <span>Quay lại</span>
             </button>
@@ -233,6 +260,7 @@ export default function UserDepositDetail() {
   const email = deposit.email || customer.email || "Chưa có";
 
   const assignedStaff =
+    deposit.assignedStaffName ||
     invoiceUploadedBy.fullName ||
     invoiceUploadedBy.name ||
     "Chưa phân công";
@@ -242,7 +270,10 @@ export default function UserDepositDetail() {
       <MainNavbar />
 
       <div className="user-deposit-detail-container">
-        <button className="user-back-btn" onClick={() => navigate("/my-deposits")}>
+        <button
+          className="user-back-btn"
+          onClick={() => navigate("/my-deposits")}
+        >
           <ArrowLeft size={18} />
           <span>Quay lại</span>
         </button>
@@ -251,8 +282,8 @@ export default function UserDepositDetail() {
           <div>
             <h1>Chi tiết đơn đặt cọc</h1>
             <p>
-              Xem thông tin đơn hàng, khách hàng, xe, thanh toán, hóa đơn và trạng thái xử lý
-              theo giao diện gọn gàng, dễ theo dõi.
+              Xem thông tin đơn hàng, khách hàng, xe, thanh toán, hóa đơn và
+              trạng thái xử lý theo giao diện gọn gàng, dễ theo dõi.
             </p>
           </div>
 
@@ -296,6 +327,22 @@ export default function UserDepositDetail() {
                     : "Chưa có"}
                 </strong>
               </div>
+
+              {hasVoucher() && (
+                <>
+                  <div className="user-info-row">
+                    <span>Voucher áp dụng</span>
+                    <strong>{deposit.promotionTitle || "Ưu đãi áp dụng"}</strong>
+                  </div>
+
+                  <div className="user-info-row">
+                    <span>Giá trị giảm</span>
+                    <strong style={{ color: "#dc2626" }}>
+                      -{formatCurrency(deposit.discountAmount)}
+                    </strong>
+                  </div>
+                </>
+              )}
 
               <div className="user-info-row">
                 <span>Ngày tạo</span>
@@ -366,7 +413,8 @@ export default function UserDepositDetail() {
                   <strong>Hãng xe:</strong> {brandName}
                 </p>
                 <p>
-                  <strong>Giá xe niêm yết:</strong> {formatCurrency(car.price || deposit.carPrice)}
+                  <strong>Giá xe niêm yết:</strong>{" "}
+                  {formatCurrency(car.price || deposit.carPrice)}
                 </p>
                 <p>
                   <strong>Trạng thái xe:</strong> {getCarStatusLabel(car.status)}
@@ -375,8 +423,17 @@ export default function UserDepositDetail() {
                   <strong>Tỷ lệ cọc:</strong> {deposit.depositPercent || 5}%
                 </p>
                 <p>
-                  <strong>Số tiền cọc:</strong> {formatCurrency(deposit.depositAmount)}
+                  <strong>Số tiền cọc:</strong>{" "}
+                  {formatCurrency(deposit.depositAmount)}
                 </p>
+                {hasVoucher() && (
+                  <p>
+                    <strong>Voucher:</strong>{" "}
+                    <span style={{ color: "#0f766e", fontWeight: 700 }}>
+                      {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
           </section>
@@ -392,10 +449,60 @@ export default function UserDepositDetail() {
                   <Car size={18} />
                 </div>
                 <div>
-                  <span>Giá xe</span>
-                  <strong>{formatCurrency(deposit.carPrice)}</strong>
+                  <span>{hasVoucher() ? "Giá gốc" : "Giá xe"}</span>
+                  <strong
+                    style={
+                      hasVoucher()
+                        ? { textDecoration: "line-through", opacity: 0.6 }
+                        : {}
+                    }
+                  >
+                    {formatCurrency(deposit.carPrice)}
+                  </strong>
                 </div>
               </div>
+
+              {hasVoucher() && (
+                <div className="user-finance-item">
+                  <div className="user-finance-icon">
+                    <Tag size={18} />
+                  </div>
+                  <div>
+                    <span>Voucher</span>
+                    <strong style={{ color: "#0f766e" }}>
+                      {deposit.promotionTitle || "Ưu đãi áp dụng"}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              {hasVoucher() && (
+                <div className="user-finance-item">
+                  <div className="user-finance-icon">
+                    <CircleDollarSign size={18} />
+                  </div>
+                  <div>
+                    <span>Giảm giá</span>
+                    <strong style={{ color: "#dc2626" }}>
+                      -{formatCurrency(deposit.discountAmount)}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              {hasVoucher() && (
+                <div className="user-finance-item">
+                  <div className="user-finance-icon">
+                    <Receipt size={18} />
+                  </div>
+                  <div>
+                    <span>Giá sau ưu đãi</span>
+                    <strong style={{ color: "#ca8a04" }}>
+                      {formatCurrency(finalPrice())}
+                    </strong>
+                  </div>
+                </div>
+              )}
 
               <div className="user-finance-item">
                 <div className="user-finance-icon">
@@ -486,9 +593,42 @@ export default function UserDepositDetail() {
             </div>
 
             <div className="user-bill-row highlight">
-              <span>Tổng chi phí dự kiến</span>
-              <strong>{formatCurrency(deposit.totalEstimatedPrice)}</strong>
+              <span>{hasVoucher() ? "Tổng chi phí gốc" : "Tổng chi phí dự kiến"}</span>
+              <strong
+                style={
+                  hasVoucher()
+                    ? { textDecoration: "line-through", opacity: 0.6 }
+                    : {}
+                }
+              >
+                {formatCurrency(deposit.totalEstimatedPrice)}
+              </strong>
             </div>
+
+            {hasVoucher() && (
+              <>
+                <div className="user-bill-row">
+                  <span>Voucher</span>
+                  <strong style={{ color: "#0f766e" }}>
+                    {deposit.promotionTitle || "Ưu đãi"}
+                  </strong>
+                </div>
+
+                <div className="user-bill-row">
+                  <span>Giảm giá</span>
+                  <strong style={{ color: "#dc2626" }}>
+                    -{formatCurrency(deposit.discountAmount)}
+                  </strong>
+                </div>
+
+                <div className="user-bill-row highlight">
+                  <span>Tổng sau ưu đãi</span>
+                  <strong style={{ color: "#ca8a04" }}>
+                    {formatCurrency(finalPrice())}
+                  </strong>
+                </div>
+              </>
+            )}
 
             <div className="user-bill-row">
               <span>Tiền cọc</span>
@@ -527,7 +667,9 @@ export default function UserDepositDetail() {
                   </div>
                   <div>
                     <strong>Người upload:</strong>{" "}
-                    {invoiceUploadedBy.fullName || invoiceUploadedBy.name || "Chưa có"}
+                    {invoiceUploadedBy.fullName ||
+                      invoiceUploadedBy.name ||
+                      "Chưa có"}
                   </div>
                   <div>
                     <strong>Thời gian upload:</strong>{" "}

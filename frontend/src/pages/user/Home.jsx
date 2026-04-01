@@ -1,9 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Heart } from "lucide-react";
+import {
+  Heart,
+  CarFront,
+  BadgeDollarSign,
+  ShieldCheck,
+  Wrench,
+  Phone,
+  Mail,
+  MapPin,
+  Clock3,
+} from "lucide-react";
 import "../../styles/user/Home.css";
 import MainNavbar from "../../components/MainNavbar";
+import heroVideo from "../../assets/tiktok_nwm_7521664058559532310.mp4";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -12,6 +23,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [favoriteIds, setFavoriteIds] = useState([]);
+  const [promotionMap, setPromotionMap] = useState({});
 
   useEffect(() => {
     fetchCars();
@@ -21,15 +33,45 @@ export default function Home() {
   const fetchCars = async () => {
     try {
       setLoading(true);
-
       const res = await axios.get("http://localhost:5000/api/cars");
-      setCars(res.data.cars || []);
+      const carsData = res.data.cars || [];
+      setCars(carsData);
       setMessage("");
+      await fetchPromotionsForCars(carsData);
     } catch (error) {
       console.log("Lỗi lấy xe:", error);
       setMessage("Không lấy được danh sách xe");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPromotionsForCars = async (carsData) => {
+    try {
+      const requests = carsData.map((car) =>
+        axios
+          .get(`http://localhost:5000/api/promotions/car/${car._id}`)
+          .then((res) => ({
+            carId: car._id,
+            promotions: res.data.promotions || [],
+          }))
+          .catch(() => ({
+            carId: car._id,
+            promotions: [],
+          }))
+      );
+
+      const results = await Promise.all(requests);
+
+      const map = {};
+      results.forEach((item) => {
+        map[item.carId] = item.promotions;
+      });
+
+      setPromotionMap(map);
+    } catch (error) {
+      console.log("Lỗi lấy voucher cho xe:", error);
+      setPromotionMap({});
     }
   };
 
@@ -94,31 +136,43 @@ export default function Home() {
 
   const isFavorite = (carId) => favoriteIds.includes(carId);
 
+  const hasVoucher = (carId) => {
+    return Array.isArray(promotionMap[carId]) && promotionMap[carId].length > 0;
+  };
+
   const getCarImage = (car) => {
     if (car.image && car.image.trim() !== "") return car.image;
     if (Array.isArray(car.images) && car.images.length > 0) return car.images[0];
     return "https://via.placeholder.com/400x250?text=No+Images";
   };
 
+  const topSellingCars = useMemo(() => {
+    return [...cars]
+      .sort((a, b) => Number(b.soldCount || 0) - Number(a.soldCount || 0))
+      .slice(0, 3);
+  }, [cars]);
+
   return (
     <div className="home-page">
       <MainNavbar />
 
       <section className="hero">
+        <video className="hero-video" autoPlay muted loop playsInline>
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+
         <div className="hero-overlay"></div>
 
-        <img
-          className="hero-bg"
-          src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80"
-          alt="banner car"
-        />
-
         <div className="hero-content">
-          <p className="hero-subtitle">Mẫu xe sang trọng đẳng cấp</p>
-          <h1>Mercedes-Benz S-Class</h1>
+          <p className="hero-subtitle">Luxury Performance Showroom</p>
+          <h1>
+            Khẳng định phong cách
+            <br />
+            dẫn đầu
+          </h1>
           <p className="hero-desc">
-            Khám phá những mẫu xe nổi bật với thiết kế hiện đại, công nghệ tiên
-            tiến và trải nghiệm lái đỉnh cao.
+            Khám phá những mẫu xe nổi bật với thiết kế cuốn hút, công nghệ hiện
+            đại và trải nghiệm sở hữu xứng tầm phong cách sống đẳng cấp.
           </p>
 
           <div className="hero-buttons">
@@ -130,112 +184,269 @@ export default function Home() {
             </Link>
           </div>
         </div>
-
-        <div className="hero-tabs">
-          <button className="tab active">Mercedes-Benz</button>
-          <button className="tab">AMG</button>
-          <button className="tab">MAYBACH</button>
-        </div>
       </section>
 
       <section className="featured-section" id="featured">
-        <div className="section-title">
-          <p>DANH MỤC NỔI BẬT</p>
-          <h2>Xe nổi bật</h2>
-        </div>
+        <div className="section-shell">
+          <div className="section-head section-head-light">
+            <p>BEST SELLER</p>
+            <h2>Xe nổi bật</h2>
+            
+          </div>
 
-        <p className="car-count">Hiện có {cars.length} xe đang hiển thị</p>
+      
 
-        {loading && <p className="home-message">Đang tải dữ liệu...</p>}
-        {message && <p className="home-message error">{message}</p>}
+          {loading && <p className="home-message">Đang tải dữ liệu...</p>}
+          {message && <p className="home-message error">{message}</p>}
 
-        {!loading && !message && (
-          <div className="car-grid">
-            {cars.length > 0 ? (
-              cars.map((car, index) => (
-                <div className="car-card" key={car._id || index}>
-                  <div className="car-images-wrap" style={{ position: "relative" }}>
-                    <img
-                      src={getCarImage(car)}
-                      alt={car.name}
-                      className="car-images"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={(e) => handleToggleFavorite(e, car._id)}
-                      style={{
-                        position: "absolute",
-                        top: "12px",
-                        right: "12px",
-                        width: "42px",
-                        height: "42px",
-                        borderRadius: "50%",
-                        border: "none",
-                        background: "rgba(0, 0, 0, 0.45)",
-                        backdropFilter: "blur(6px)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        zIndex: 2,
-                      }}
-                    >
-                      <Heart
-                        size={20}
-                        color={isFavorite(car._id) ? "#ff4d6d" : "#ffffff"}
-                        fill={isFavorite(car._id) ? "#ff4d6d" : "none"}
+          {!loading && !message && (
+            <div className="car-grid">
+              {topSellingCars.length > 0 ? (
+                topSellingCars.map((car, index) => (
+                  <div className="car-card" key={car._id || index}>
+                    <div className="car-images-wrap">
+                      <img
+                        src={getCarImage(car)}
+                        alt={car.name}
+                        className="car-images"
                       />
-                    </button>
-                  </div>
 
-                  <div className="car-info">
-                    <h3>{car.name}</h3>
+                      {hasVoucher(car._id) && (
+                        <div className="voucher-ribbon">
+                          <span>SALE</span>
+                        </div>
+                      )}
 
-                    <div className="car-meta">
-                      <p>
-                        <span>Hãng</span>
-                        <strong>{car.brand || "Chưa cập nhật"}</strong>
-                      </p>
-                      <p>
-                        <span>Danh mục</span>
-                        <strong>{car.category || "Chưa cập nhật"}</strong>
-                      </p>
-                      <p>
-                        <span>Năm</span>
-                        <strong>{car.year || "Chưa cập nhật"}</strong>
-                      </p>
+                      <button
+                        type="button"
+                        className="favorite-btn"
+                        onClick={(e) => handleToggleFavorite(e, car._id)}
+                      >
+                        <Heart
+                          size={18}
+                          color={isFavorite(car._id) ? "#ff4d6d" : "#ffffff"}
+                          fill={isFavorite(car._id) ? "#ff4d6d" : "none"}
+                        />
+                      </button>
                     </div>
 
-                    <p className="car-price">
-                      {Number(car.price || 0).toLocaleString("vi-VN")}đ
-                    </p>
+                    <div className="car-info">
+                      <h3>{car.name}</h3>
 
-                    <Link to={`/cars/${car._id}`} className="detail-link">
-                      Xem chi tiết
-                    </Link>
+                      <div className="car-meta">
+                        <p>
+                          <span>Hãng</span>
+                          <strong>{car.brand || "Chưa cập nhật"}</strong>
+                        </p>
+                        <p>
+                          <span>Danh mục</span>
+                          <strong>{car.category || "Chưa cập nhật"}</strong>
+                        </p>
+                        <p>
+                          <span>Năm</span>
+                          <strong>{car.year || "Chưa cập nhật"}</strong>
+                        </p>
+                      </div>
+
+                      <p className="car-price">
+                        {Number(car.price || 0).toLocaleString("vi-VN")}đ
+                      </p>
+
+                      <Link to={`/cars/${car._id}`} className="detail-link">
+                        Xem chi tiết
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="home-message">Chưa có xe nào để hiển thị</p>
-            )}
-          </div>
-        )}
+                ))
+              ) : (
+                <p className="home-message">Chưa có xe nào để hiển thị</p>
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
-      <section className="info-banner" id="services">
-        <div className="info-box">
-          <h3>Đặt lịch lái thử</h3>
-          <p>Trải nghiệm thực tế các dòng xe mới nhất ngay hôm nay.</p>
+      <section className="showroom-section">
+        <div className="showroom-grid">
+          <div className="showroom-content">
+            <p className="section-label">GIỚI THIỆU SHOWROOM</p>
+            <h2>
+              Không gian trưng bày hiện đại,
+              <br />
+              trải nghiệm mua xe xứng tầm
+            </h2>
+            <p className="showroom-desc">
+              Showroom của chúng tôi mang đến trải nghiệm mua xe chỉn chu từ
+              hình ảnh, chất lượng xe, quy trình tư vấn đến dịch vụ hậu mãi.
+              Mỗi mẫu xe đều được tuyển chọn kỹ lưỡng để đáp ứng tiêu chuẩn về
+              thẩm mỹ, vận hành và giá trị sử dụng lâu dài.
+            </p>
+            <p className="showroom-desc">
+              Khách hàng có thể xem xe trực tiếp, đặt lịch lái thử, nhận tư vấn
+              tài chính, đặt cọc online và được hỗ trợ chăm sóc sau bán hàng
+              một cách chuyên nghiệp.
+            </p>
+
+            <Link to="/cars" className="showroom-btn">
+              Khám phá showroom
+            </Link>
+          </div>
+
+          <div>
+            <img
+              src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+              alt="showroom"
+              className="showroom-image"
+            />
+          </div>
         </div>
-        <div className="info-box">
-          <h3>Hỗ trợ trả góp</h3>
-          <p>Nhiều phương án tài chính linh hoạt, phù hợp với bạn.</p>
+      </section>
+
+      <section className="services-section" id="services">
+        <div className="section-shell">
+          <div className="section-head">
+            <p>DỊCH VỤ</p>
+            <h2>Dịch vụ đồng hành cùng bạn</h2>
+            <span>
+              Từ chọn xe, lái thử, tài chính đến hậu mãi đều được hỗ trợ trọn vẹn.
+            </span>
+          </div>
+
+          <div className="services-list">
+            <div className="service-item">
+              <CarFront size={30} />
+              <h3>Showroom trực tuyến</h3>
+              <p>
+                Tìm xe có sẵn nhanh chóng, xem chi tiết rõ ràng.
+              </p>
+            </div>
+
+            <div className="service-item">
+              <BadgeDollarSign size={30} />
+              <h3>Ưu đãi & tài chính</h3>
+              <p>
+                Hỗ trợ trả góp linh hoạt, tư vấn giá tốt và nhiều chương trình hấp dẫn.
+              </p>
+            </div>
+
+            <div className="service-item">
+              <ShieldCheck size={30} />
+              <h3>Đăng ký lái thử</h3>
+              <p>
+                Trực tiếp cảm nhận cảm giác lái để chọn đúng mẫu xe phù hợp nhất.
+              </p>
+            </div>
+
+            <div className="service-item">
+              <Wrench size={30} />
+              <h3>Hậu mãi chuyên nghiệp</h3>
+              <p>
+                Bảo dưỡng định kỳ, hỗ trợ kỹ thuật và chăm sóc xe tận tâm lâu dài.
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="info-box">
-          <h3>Dịch vụ bảo dưỡng</h3>
-          <p>Chăm sóc xe toàn diện với đội ngũ kỹ thuật chuyên nghiệp.</p>
+      </section>
+
+      <section className="contact-section">
+        <div className="contact-wrap">
+          <div className="contact-shell">
+            <div className="contact-top">
+              <p className="contact-kicker">THÔNG TIN LIÊN HỆ</p>
+              <h2>Sẵn sàng đồng hành cùng bạn</h2>
+              <span>
+                Tư vấn chọn xe, báo giá, xem xe và hỗ trợ hậu mãi trong một trải nghiệm
+                thống nhất, rõ ràng và chuyên nghiệp.
+              </span>
+            </div>
+
+            <div className="contact-main-grid">
+              <div className="contact-main-card">
+                <div className="contact-main-heading">
+                  <h3>WEB BÁN XE VIỆT NAM</h3>
+                  <p>
+                    Đội ngũ tư vấn luôn sẵn sàng hỗ trợ bạn từ bước chọn xe phù hợp,
+                    xem xe thực tế, đặt lịch lái thử đến các giải pháp tài chính và
+                    dịch vụ sau bán hàng.
+                  </p>
+                </div>
+
+                <div className="contact-info-grid">
+                  <div className="contact-info-box">
+                    <div className="contact-info-icon">
+                      <Phone size={18} />
+                    </div>
+                    <div>
+                      <strong>Hotline</strong>
+                      <span>0909 123 456</span>
+                    </div>
+                  </div>
+
+                  <div className="contact-info-box">
+                    <div className="contact-info-icon">
+                      <Mail size={18} />
+                    </div>
+                    <div>
+                      <strong>Email</strong>
+                      <span>support@webbanxe.vn</span>
+                    </div>
+                  </div>
+
+                  <div className="contact-info-box">
+                    <div className="contact-info-icon">
+                      <MapPin size={18} />
+                    </div>
+                    <div>
+                      <strong>Địa chỉ</strong>
+                      <span>475A Điện Biên Phủ, Bình Thạnh, TP.HCM</span>
+                    </div>
+                  </div>
+
+                  <div className="contact-info-box">
+                    <div className="contact-info-icon">
+                      <Clock3 size={18} />
+                    </div>
+                    <div>
+                      <strong>Giờ hỗ trợ</strong>
+                      <span>08:00 - 20:00 mỗi ngày</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="contact-showrooms-panel">
+                  
+                </div>
+              </div>
+
+              <div className="contact-side-column">
+                <div className="contact-side-card">
+                  <p className="contact-side-label">Luxury support</p>
+                  <h4>Đồng hành trên mọi hành trình chọn xe</h4>
+                  <span>
+                    Nhận tư vấn nhanh, cập nhật ưu đãi mới và kết nối trực tiếp với
+                    showroom qua các kênh chính thức.
+                  </span>
+                </div>
+
+                <div className="contact-side-card">
+                  <p className="contact-side-label">Kết nối</p>
+                  <div className="contact-socials">
+                    <a href="#" aria-label="Hotline">
+                      <Phone size={20} />
+                    </a>
+                    <a href="#" aria-label="Email">
+                      <Mail size={20} />
+                    </a>
+                    <a href="#" aria-label="Địa chỉ">
+                      <MapPin size={20} />
+                    </a>
+                  </div>
+                </div>
+
+                
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

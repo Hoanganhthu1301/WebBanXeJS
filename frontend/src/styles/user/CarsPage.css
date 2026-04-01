@@ -7,6 +7,7 @@ body {
   font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
   background: #f3f4f6;
 }
+
 .cars-page {
   min-height: 100vh;
   background: #050505;
@@ -186,20 +187,23 @@ body {
 .cars-card {
   background: #111;
   border: 1px solid #202020;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-  transition: transform 0.25s;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .cars-card:hover {
   transform: translateY(-6px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.4);
 }
 
 .cars-card-image-wrap {
+  position: relative;
   width: 100%;
   height: 250px;
   overflow: hidden;
+  background: #f2f2f2;
 }
 
 .cars-card-image {
@@ -259,8 +263,99 @@ body {
   background: white;
   color: black;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.cars-detail-link:hover {
+  transform: translateY(-2px);
+}
+
+.voucher-ribbon {
+  position: absolute;
+  top: 18px;
+  left: -34px;
+  width: 150px;
+  height: 42px;
+  background: linear-gradient(180deg, #fff202 0%, #d8980f 100%);
+  transform: rotate(-45deg);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 22px rgba(216, 169, 15, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.voucher-ribbon::before,
+.voucher-ribbon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.02));
+}
+
+.voucher-ribbon::before {
+  left: 0;
+}
+
+.voucher-ribbon::after {
+  right: 0;
+}
+
+.voucher-ribbon span {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+
+/* PAGINATION */
+.cars-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.cars-page-btn,
+.cars-page-number {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid #2b2b2b;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.cars-page-btn:hover:not(:disabled),
+.cars-page-number:hover {
+  transform: translateY(-2px);
+  border-color: #f3cc10;
+}
+
+.cars-page-number.active {
+  background: linear-gradient(180deg, #f3cc10 0%, #d9ad05 100%);
+  color: #111;
+  border-color: #f3cc10;
+}
+
+.cars-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* RESPONSIVE */
@@ -308,5 +403,31 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .voucher-ribbon {
+    width: 116px;
+    height: 116px;
+  }
+
+  .voucher-ribbon::before {
+    top: 12px;
+    left: -46px;
+    width: 160px;
+    height: 34px;
+  }
+
+  .voucher-ribbon span {
+    top: 26px;
+    left: 12px;
+    font-size: 12px;
+  }
+
+  .cars-page-btn,
+  .cars-page-number {
+    height: 40px;
+    min-width: 40px;
+    padding: 0 12px;
+    font-size: 14px;
   }
 }

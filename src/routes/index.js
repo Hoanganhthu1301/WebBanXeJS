@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const authRoutes = require('./auth.routes');
+const notificationRoutes = require('./notification.routes');
+const reportRoutes = require("./report.routes");
+const promotionRoutes = require("./promotion.routes");
 
 router.get('/test', (req, res) => {
   res.json({
@@ -19,5 +22,8 @@ router.use('/deposits', require('./deposit.routes'));
 // admin users
 router.use('/admin/users', require('./adminUser.routes'));
 router.use('/favorites', require('./favorite.routes'));
+router.use("/notifications", notificationRoutes);
+router.use("/reports", reportRoutes);
+router.use("/promotions", promotionRoutes);
 
 module.exports = router;

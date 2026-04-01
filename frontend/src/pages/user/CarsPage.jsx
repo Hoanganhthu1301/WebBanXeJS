@@ -8,6 +8,7 @@ export default function CarsPage() {
   const [cars, setCars] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [promotionMap, setPromotionMap] = useState({});
 
   const [keyword, setKeyword] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
@@ -15,22 +16,64 @@ export default function CarsPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const carsPerPage = 6;
+
   useEffect(() => {
     fetchCars();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword, selectedBrand, selectedCategory, minPrice, maxPrice]);
 
   const fetchCars = async () => {
     try {
       setLoading(true);
       const res = await axios.get("http://localhost:5000/api/cars");
-      setCars(res.data.cars || []);
+      const carsData = res.data.cars || [];
+      setCars(carsData);
       setMessage("");
+      await fetchPromotionsForCars(carsData);
     } catch (error) {
       console.log(error);
       setMessage("Không lấy được danh sách xe");
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPromotionsForCars = async (carsData) => {
+    try {
+      const requests = carsData.map((car) =>
+        axios
+          .get(`http://localhost:5000/api/promotions/car/${car._id}`)
+          .then((res) => ({
+            carId: car._id,
+            promotions: res.data.promotions || [],
+          }))
+          .catch(() => ({
+            carId: car._id,
+            promotions: [],
+          }))
+      );
+
+      const results = await Promise.all(requests);
+
+      const map = {};
+      results.forEach((item) => {
+        map[item.carId] = item.promotions;
+      });
+
+      setPromotionMap(map);
+    } catch (error) {
+      console.log("Lỗi lấy voucher cho xe:", error);
+      setPromotionMap({});
+    }
+  };
+
+  const hasVoucher = (carId) => {
+    return Array.isArray(promotionMap[carId]) && promotionMap[carId].length > 0;
   };
 
   const brands = useMemo(() => {
@@ -48,15 +91,11 @@ export default function CarsPage() {
         car.name?.toLowerCase().includes(keyword.toLowerCase()) ||
         car.brand?.toLowerCase().includes(keyword.toLowerCase());
 
-      const matchesBrand =
-        !selectedBrand || car.brand === selectedBrand;
-
+      const matchesBrand = !selectedBrand || car.brand === selectedBrand;
       const matchesCategory =
         !selectedCategory || car.category === selectedCategory;
-
       const matchesMinPrice =
         !minPrice || Number(car.price) >= Number(minPrice);
-
       const matchesMaxPrice =
         !maxPrice || Number(car.price) <= Number(maxPrice);
 
@@ -70,12 +109,17 @@ export default function CarsPage() {
     });
   }, [cars, keyword, selectedBrand, selectedCategory, minPrice, maxPrice]);
 
+  const totalPages = Math.ceil(filteredCars.length / carsPerPage);
+  const startIndex = (currentPage - 1) * carsPerPage;
+  const paginatedCars = filteredCars.slice(startIndex, startIndex + carsPerPage);
+
   const resetFilters = () => {
     setKeyword("");
     setSelectedBrand("");
     setSelectedCategory("");
     setMinPrice("");
     setMaxPrice("");
+    setCurrentPage(1);
   };
 
   const getCarImage = (car) => {
@@ -86,8 +130,7 @@ export default function CarsPage() {
 
   return (
     <div className="cars-page">
-     <MainNavbar />
-        
+      <MainNavbar />
 
       <section className="cars-hero">
         <div className="cars-hero-overlay"></div>
@@ -165,61 +208,110 @@ export default function CarsPage() {
 
       <section className="cars-list-section">
         <div className="cars-list-header">
-          <p>Đang hiển thị {filteredCars.length} xe</p>
+          <p>
+            Đang hiển thị {filteredCars.length} xe
+            {filteredCars.length > 0 && totalPages > 1
+              ? ` • Trang ${currentPage}/${totalPages}`
+              : ""}
+          </p>
         </div>
 
         {loading && <p className="cars-message">Đang tải dữ liệu...</p>}
         {message && <p className="cars-message error">{message}</p>}
 
         {!loading && !message && (
-          <div className="cars-grid">
-            {filteredCars.length > 0 ? (
-              filteredCars.map((car) => (
-                <div className="cars-card" key={car._id}>
-                  <div className="cars-card-image-wrap">
-                    <img
-                      src={getCarImage(car)}
-                      alt={car.name}
-                      className="cars-card-image"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/400x250?text=Image+Error";
-                      }}
-                    />
-                  </div>
+          <>
+            <div className="cars-grid">
+              {paginatedCars.length > 0 ? (
+                paginatedCars.map((car) => (
+                  <div className="cars-card" key={car._id}>
+                    <div className="cars-card-image-wrap">
+                      {hasVoucher(car._id) && (
+                        <div className="voucher-ribbon">
+                          <span>SALE</span>
+                        </div>
+                      )}
 
-                  <div className="cars-card-content">
-                    <h3>{car.name}</h3>
-
-                    <div className="cars-card-meta">
-                      <p>
-                        <span>Hãng</span>
-                        <strong>{car.brand}</strong>
-                      </p>
-                      <p>
-                        <span>Danh mục</span>
-                        <strong>{car.category}</strong>
-                      </p>
-                      <p>
-                        <span>Năm</span>
-                        <strong>{car.year}</strong>
-                      </p>
+                      <img
+                        src={getCarImage(car)}
+                        alt={car.name}
+                        className="cars-card-image"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/400x250?text=Image+Error";
+                        }}
+                      />
                     </div>
 
-                    <p className="cars-card-price">
-                      {Number(car.price || 0).toLocaleString("vi-VN")}đ
-                    </p>
+                    <div className="cars-card-content">
+                      <h3>{car.name}</h3>
 
-                    <Link to={`/cars/${car._id}`} className="cars-detail-link">
-                      Xem chi tiết
-                    </Link>
+                      <div className="cars-card-meta">
+                        <p>
+                          <span>Hãng</span>
+                          <strong>{car.brand}</strong>
+                        </p>
+                        <p>
+                          <span>Danh mục</span>
+                          <strong>{car.category}</strong>
+                        </p>
+                        <p>
+                          <span>Năm</span>
+                          <strong>{car.year}</strong>
+                        </p>
+                      </div>
+
+                      <p className="cars-card-price">
+                        {Number(car.price || 0).toLocaleString("vi-VN")}đ
+                      </p>
+
+                      <Link to={`/cars/${car._id}`} className="cars-detail-link">
+                        Xem chi tiết
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="cars-message">Không tìm thấy xe phù hợp</p>
+                ))
+              ) : (
+                <p className="cars-message">Không tìm thấy xe phù hợp</p>
+              )}
+            </div>
+
+            {filteredCars.length > 0 && totalPages > 1 && (
+              <div className="cars-pagination">
+                <button
+                  className="cars-page-btn"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  ← Trước
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      className={`cars-page-number ${
+                        currentPage === page ? "active" : ""
+                      }`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
+                <button
+                  className="cars-page-btn"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Sau →
+                </button>
+              </div>
             )}
-          </div>
+          </>
         )}
       </section>
     </div>
