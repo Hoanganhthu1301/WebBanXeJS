@@ -5,6 +5,7 @@ const authRoutes = require('./auth.routes');
 const notificationRoutes = require('./notification.routes');
 const reportRoutes = require("./report.routes");
 const promotionRoutes = require("./promotion.routes");
+const payosRoutes = require("./payos.routes");
 
 router.get('/test', (req, res) => {
   res.json({
@@ -25,5 +26,5 @@ router.use('/favorites', require('./favorite.routes'));
 router.use("/notifications", notificationRoutes);
 router.use("/reports", reportRoutes);
 router.use("/promotions", promotionRoutes);
-
+router.use("/payos", payosRoutes);
 module.exports = router;
