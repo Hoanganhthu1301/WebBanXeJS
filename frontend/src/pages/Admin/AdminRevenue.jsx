@@ -43,6 +43,7 @@ export default function AdminRevenue() {
   const [year, setYear] = useState(String(today.getFullYear()));
 
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [summary, setSummary] = useState(null);
   const [rows, setRows] = useState([]);
   const [charts, setCharts] = useState({
@@ -75,6 +76,32 @@ export default function AdminRevenue() {
       Number(item.totalEstimatedPrice || 0) - Number(item.discountAmount || 0),
       0
     );
+  };
+
+  const buildSavePayload = () => {
+    if (type === "day") {
+      return {
+        type: "day",
+        date,
+        year: Number(year),
+        note: `Lưu báo cáo doanh thu ngày ${date}`,
+      };
+    }
+
+    if (type === "month") {
+      return {
+        type: "month",
+        month: Number(month),
+        year: Number(year),
+        note: `Lưu báo cáo doanh thu tháng ${month}/${year}`,
+      };
+    }
+
+    return {
+      type: "year",
+      year: Number(year),
+      note: `Lưu báo cáo doanh thu năm ${year}`,
+    };
   };
 
   const fetchReport = async () => {
@@ -119,8 +146,39 @@ export default function AdminRevenue() {
         dailyRevenue: [],
         pieRevenue: [],
       });
+      alert(
+        error?.response?.data?.message || "Không lấy được báo cáo doanh thu"
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveRevenueReport = async () => {
+    try {
+      setSaving(true);
+
+      const token = localStorage.getItem("token");
+      const payload = buildSavePayload();
+
+      const res = await axios.post(
+        "http://localhost:5000/api/reports/revenue/save",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert(res.data.message || "Lưu báo cáo doanh thu thành công");
+    } catch (error) {
+      console.error("Lỗi lưu báo cáo doanh thu:", error);
+      alert(
+        error?.response?.data?.message || "Không lưu được báo cáo doanh thu"
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -138,9 +196,25 @@ export default function AdminRevenue() {
           </p>
         </div>
 
-        <button className="revenue-primary-btn" onClick={fetchReport}>
-          Làm mới
-        </button>
+        <div
+          style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}
+        >
+          <button className="revenue-primary-btn" onClick={fetchReport}>
+            Làm mới
+          </button>
+
+          <button
+            className="revenue-primary-btn"
+            onClick={saveRevenueReport}
+            disabled={saving || loading}
+            style={{
+              background: saving ? "#9ca3af" : "#16a34a",
+              borderColor: saving ? "#9ca3af" : "#16a34a",
+            }}
+          >
+            {saving ? "Đang lưu..." : "Lưu báo cáo"}
+          </button>
+        </div>
       </div>
 
       <div className="revenue-filter-card">
@@ -193,6 +267,8 @@ export default function AdminRevenue() {
           <button className="revenue-primary-btn" onClick={fetchReport}>
             Xem báo cáo
           </button>
+
+          
         </div>
       </div>
 
@@ -370,7 +446,7 @@ export default function AdminRevenue() {
                 </tr>
               ) : (
                 rows.map((item) => (
-                  <tr key={item._id}>
+                  <tr key={item._id || item.depositId}>
                     <td>{item.customerName}</td>
                     <td>{item.carName}</td>
                     <td>{statusLabel[item.status] || item.status}</td>
