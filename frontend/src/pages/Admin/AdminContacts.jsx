@@ -25,6 +25,9 @@ export default function AdminContacts() {
   const [replyContent, setReplyContent] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailRequest, setDetailRequest] = useState(null);
+
   useEffect(() => {
     if (!user || user.role !== "admin") {
       navigate("/login");
@@ -101,6 +104,16 @@ export default function AdminContacts() {
     return requests.filter((item) => item.requestType === activeTab);
   }, [activeTab, requests]);
 
+  const handleOpenDetailModal = (item) => {
+    setDetailRequest(item);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setDetailRequest(null);
+    setDetailModalOpen(false);
+  };
+
   const handleDelete = async (item) => {
     const ok = window.confirm("Bạn có chắc muốn xóa yêu cầu này không?");
     if (!ok) return;
@@ -136,52 +149,53 @@ export default function AdminContacts() {
   };
 
   const handleSendReply = async () => {
-  if (!selectedRequest) return;
+    if (!selectedRequest) return;
 
-  try {
-    if (!replyContent.trim()) {
-      setMessage("Vui lòng nhập nội dung phản hồi trước khi gửi");
-      return;
+    try {
+      if (!replyContent.trim()) {
+        setMessage("Vui lòng nhập nội dung phản hồi trước khi gửi");
+        return;
+      }
+
+      setSendingReply(true);
+
+      if (selectedRequest.requestType === "consultation") {
+        await axios.put(
+          `http://localhost:5000/api/contacts/${selectedRequest._id}`,
+          {
+            status: replyStatus,
+            adminReply: replyContent,
+          }
+        );
+      } else if (selectedRequest.requestType === "quotation") {
+        await axios.put(
+          `http://localhost:5000/api/quotations/${selectedRequest._id}`,
+          {
+            status: replyStatus,
+            adminReply: replyContent,
+          }
+        );
+      } else {
+        await axios.put(
+          `http://localhost:5000/api/appointments/${selectedRequest._id}`,
+          {
+            status: replyStatus,
+            adminReply: replyContent,
+          }
+        );
+      }
+
+      alert("Gửi phản hồi thành công");
+      handleCloseReplyModal();
+      fetchRequests();
+      setMessage("Phản hồi đã được lưu và gửi cho khách hàng");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Gửi phản hồi thất bại");
+    } finally {
+      setSendingReply(false);
     }
+  };
 
-    setSendingReply(true);
-
-    if (selectedRequest.requestType === "consultation") {
-      await axios.put(
-        `http://localhost:5000/api/contacts/${selectedRequest._id}`,
-        {
-          status: replyStatus,
-          adminReply: replyContent,
-        }
-      );
-    } else if (selectedRequest.requestType === "quotation") {
-      await axios.put(
-        `http://localhost:5000/api/quotations/${selectedRequest._id}`,
-        {
-          status: replyStatus,
-          adminReply: replyContent,
-        }
-      );
-    } else {
-      await axios.put(
-        `http://localhost:5000/api/appointments/${selectedRequest._id}`,
-        {
-          status: replyStatus,
-          adminReply: replyContent,
-        }
-      );
-    }
-
-    alert("Gửi phản hồi thành công");
-    handleCloseReplyModal();
-    fetchRequests();
-    setMessage("Phản hồi đã được lưu và gửi cho khách hàng");
-  } catch (error) {
-    setMessage(error.response?.data?.message || "Gửi phản hồi thất bại");
-  } finally {
-    setSendingReply(false);
-  }
-};
   const getThumb = (item) => {
     const car = item.carId;
     if (!car) return "https://via.placeholder.com/100x70?text=No+Image";
@@ -221,6 +235,40 @@ export default function AdminContacts() {
       item.status ||
       "—"
     );
+  };
+
+  const getStatusBadgeStyle = (item) => {
+    const status = item.status;
+
+    if (status === "contacted" || status === "quoted" || status === "done") {
+      return {
+        background: "#dcfce7",
+        color: "#166534",
+        border: "1px solid #bbf7d0",
+      };
+    }
+
+    if (status === "processing" || status === "confirmed") {
+      return {
+        background: "#dbeafe",
+        color: "#1d4ed8",
+        border: "1px solid #bfdbfe",
+      };
+    }
+
+    if (status === "cancelled") {
+      return {
+        background: "#fee2e2",
+        color: "#b91c1c",
+        border: "1px solid #fecaca",
+      };
+    }
+
+    return {
+      background: "#fef3c7",
+      color: "#92400e",
+      border: "1px solid #fde68a",
+    };
   };
 
   if (!user || user.role !== "admin") return null;
@@ -316,7 +364,9 @@ export default function AdminContacts() {
                       {item.preferredContact && (
                         <div>
                           <strong>Ưu tiên:</strong>{" "}
-                          {item.preferredContact === "email" ? "Email" : "Gọi điện"}
+                          {item.preferredContact === "email"
+                            ? "Email"
+                            : "Gọi điện"}
                         </div>
                       )}
                     </td>
@@ -360,31 +410,93 @@ export default function AdminContacts() {
                         : "—"}
                     </td>
 
-                    <td>{getStatusLabel(item)}</td>
+                    <td>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minWidth: "110px",
+                          padding: "8px 12px",
+                          borderRadius: "999px",
+                          fontWeight: 700,
+                          fontSize: "13px",
+                          ...getStatusBadgeStyle(item),
+                        }}
+                      >
+                        {getStatusLabel(item)}
+                      </span>
+                    </td>
 
                     <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "10px",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDetailModal(item)}
+                          style={{
+                            border: "none",
+                            borderRadius: "12px",
+                            padding: "10px 14px",
+                            background: "#111827",
+                            color: "#fff",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <span>👁</span>
+                          <span>Chi tiết</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => handleOpenReplyModal(item)}
                           style={{
                             border: "none",
-                            borderRadius: "10px",
+                            borderRadius: "12px",
                             padding: "10px 14px",
                             background: "#2563eb",
                             color: "#fff",
-                            fontWeight: 600,
+                            fontWeight: 700,
                             cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
                           }}
                         >
-                          Phản hồi
+                          <span>✉</span>
+                          <span>Phản hồi</span>
                         </button>
 
                         <button
-                          className="delete-btn"
+                          type="button"
                           onClick={() => handleDelete(item)}
+                          style={{
+                            border: "1px solid #fecaca",
+                            borderRadius: "12px",
+                            padding: "10px 14px",
+                            background: "#fef2f2",
+                            color: "#dc2626",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                          }}
                         >
-                          Xóa
+                          <span>🗑</span>
+                          <span>Xóa</span>
                         </button>
                       </div>
                     </td>
@@ -401,6 +513,223 @@ export default function AdminContacts() {
           </table>
         </div>
       </div>
+
+      {detailModalOpen && detailRequest && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9998,
+            padding: "20px",
+          }}
+          onClick={handleCloseDetailModal}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "760px",
+              background: "#fff",
+              borderRadius: "20px",
+              padding: "24px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "18px",
+              }}
+            >
+              <div>
+                <h2 style={{ margin: 0 }}>Chi tiết yêu cầu</h2>
+                <p style={{ margin: "6px 0 0", color: "#6b7280" }}>
+                  {detailRequest.requestTypeLabel} • {detailRequest.carName}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCloseDetailModal}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: "28px",
+                  cursor: "pointer",
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "220px 1fr",
+                gap: "20px",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <img
+                  src={getThumb(detailRequest)}
+                  alt={detailRequest.carName}
+                  style={{
+                    width: "100%",
+                    height: "160px",
+                    objectFit: "cover",
+                    borderRadius: "14px",
+                    border: "1px solid #e5e7eb",
+                  }}
+                  onError={(e) => {
+                    e.target.src =
+                      "https://via.placeholder.com/300x200?text=No+Image";
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gap: "10px" }}>
+                <div>
+                  <strong>Loại yêu cầu:</strong> {detailRequest.requestTypeLabel}
+                </div>
+                <div>
+                  <strong>Khách hàng:</strong>{" "}
+                  {[detailRequest.lastName, detailRequest.firstName]
+                    .filter(Boolean)
+                    .join(" ")}
+                </div>
+                <div>
+                  <strong>SĐT:</strong> {detailRequest.phone || "—"}
+                </div>
+                <div>
+                  <strong>Email:</strong> {detailRequest.email || "—"}
+                </div>
+                <div>
+                  <strong>Xe quan tâm:</strong> {detailRequest.carName || "—"}
+                </div>
+                <div>
+                  <strong>Hãng xe:</strong> {detailRequest.carId?.brand || "—"}
+                </div>
+                <div>
+                  <strong>Danh mục:</strong> {detailRequest.carId?.category || "—"}
+                </div>
+                <div>
+                  <strong>Trạng thái:</strong> {getStatusLabel(detailRequest)}
+                </div>
+                <div>
+                  <strong>Ngày gửi:</strong>{" "}
+                  {detailRequest.createdAt
+                    ? new Date(detailRequest.createdAt).toLocaleString("vi-VN")
+                    : "—"}
+                </div>
+
+                {detailRequest.requestType === "quotation" && (
+                  <div>
+                    <strong>Khu vực:</strong> {detailRequest.province || "—"}
+                  </div>
+                )}
+
+                {(detailRequest.requestType === "view" ||
+                  detailRequest.requestType === "test_drive") && (
+                  <>
+                    <div>
+                      <strong>Ngày hẹn:</strong>{" "}
+                      {detailRequest.appointmentDate || "—"}
+                    </div>
+                    <div>
+                      <strong>Giờ hẹn:</strong>{" "}
+                      {detailRequest.appointmentTime || "—"}
+                    </div>
+                    <div>
+                      <strong>Địa điểm:</strong> {detailRequest.location || "—"}
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <strong>Nội dung yêu cầu:</strong>
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      padding: "12px",
+                      background: "#f8fafc",
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                    }}
+                  >
+                    {detailRequest.additionalInfo || "Không có nội dung"}
+                  </div>
+                </div>
+
+                <div>
+                  <strong>Phản hồi hiện tại:</strong>
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      padding: "12px",
+                      background: "#f8fafc",
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                    }}
+                  >
+                    {detailRequest.adminReply || "Chưa có phản hồi"}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleCloseDetailModal}
+                style={{
+                  border: "1px solid #d1d5db",
+                  background: "#fff",
+                  borderRadius: "10px",
+                  padding: "10px 16px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Đóng
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleCloseDetailModal();
+                  handleOpenReplyModal(detailRequest);
+                }}
+                style={{
+                  border: "none",
+                  background: "#2563eb",
+                  color: "#fff",
+                  borderRadius: "10px",
+                  padding: "10px 18px",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Phản hồi ngay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {replyModalOpen && selectedRequest && (
         <div
@@ -552,22 +881,22 @@ export default function AdminContacts() {
                   Hủy
                 </button>
 
-               <button
-                type="button"
-                onClick={handleSendReply}
-                disabled={sendingReply}
-                style={{
-                  border: "none",
-                  background: sendingReply ? "#93c5fd" : "#2563eb",
-                  color: "#fff",
-                  borderRadius: "10px",
-                  padding: "10px 18px",
-                  cursor: sendingReply ? "not-allowed" : "pointer",
-                  fontWeight: 700,
-                }}
-              >
-                {sendingReply ? "Đang gửi..." : "Gửi phản hồi"}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleSendReply}
+                  disabled={sendingReply}
+                  style={{
+                    border: "none",
+                    background: sendingReply ? "#93c5fd" : "#2563eb",
+                    color: "#fff",
+                    borderRadius: "10px",
+                    padding: "10px 18px",
+                    cursor: sendingReply ? "not-allowed" : "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  {sendingReply ? "Đang gửi..." : "Gửi phản hồi"}
+                </button>
               </div>
             </div>
           </div>
