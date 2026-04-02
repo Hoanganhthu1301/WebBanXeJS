@@ -12,28 +12,20 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-
       const res = await axios.get("http://localhost:5000/api/admin/users", {
         params: { q: keyword },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       setUsers(res.data.users || []);
       setMessage("");
     } catch (error) {
       console.error("FETCH USERS ERROR:", error);
-      setMessage(
-        error?.response?.data?.message || "Không tải được danh sách người dùng"
-      );
+      setMessage(error?.response?.data?.message || "Không tải được danh sách người dùng");
       setUsers([]);
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -43,20 +35,13 @@ export default function AdminUsers() {
   const handleToggleBlock = async (id) => {
     try {
       const token = localStorage.getItem("token");
-
       await axios.put(
         `http://localhost:5000/api/admin/users/${id}/toggle-block`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       fetchUsers();
     } catch (error) {
-      console.error(error);
       setMessage(error?.response?.data?.message || "Không cập nhật được trạng thái");
     }
   };
@@ -99,17 +84,13 @@ export default function AdminUsers() {
                   <td>{u.email}</td>
                   <td>{u.phone || t('phone_not_updated')}</td>
                   <td>
-                      <span className={u.isBlocked ? "status blocked" : "status active"}>
+                    <span className={u.isBlocked ? "status blocked" : "status active"}>
                       {u.isBlocked ? t('status_blocked') : t('status_active')}
                     </span>
                   </td>
                   <td>
                     <div className="action-group">
-                      <button
-                        type="button"
-                        className="btn-action"
-                        onClick={() => handleToggleBlock(u._id)}
-                      >
+                      <button type="button" className="btn-action" onClick={() => handleToggleBlock(u._id)}>
                         {u.isBlocked ? t('btn_unblock') : t('btn_block')}
                       </button>
                     </div>
@@ -118,9 +99,7 @@ export default function AdminUsers() {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="empty-row">
-                  Không có dữ liệu
-                </td>
+                <td colSpan="5" className="empty-row">Không có dữ liệu</td>
               </tr>
             )}
           </tbody>

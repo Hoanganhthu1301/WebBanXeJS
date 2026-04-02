@@ -6,6 +6,7 @@ import "../../styles/user/ContactConsultations.css";
 
 export default function ContactConsultations() {
   const { t } = useTranslation();
+  
   const user = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("user")) || null;
@@ -14,41 +15,56 @@ export default function ContactConsultations() {
     }
   }, []);
 
-  const [contacts, setContacts] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchMyContacts();
+    fetchMyRequests();
   }, []);
 
-  const fetchMyContacts = async () => {
+  const fetchMyRequests = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const res = await axios.get("http://localhost:5000/api/contacts");
-      let data = res.data?.contacts || [];
+      // Gom 3 loại yêu cầu từ 3 API khác nhau của Thư
+      const results = await Promise.allSettled([
+        axios.get("http://localhost:5000/api/contacts"),
+        axios.get("http://localhost:5000/api/quotations"),
+        axios.get("http://localhost:5000/api/appointments"),
+      ]);
 
-      if (user) {
-        data = data.filter((item) => {
-          const sameEmail =
-            user.email &&
-            item.email &&
-            user.email.toLowerCase() === item.email.toLowerCase();
+      const contactRes = results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
+      const quotationRes = results[1].status === "fulfilled" ? results[1].value.data : { quotations: [] };
+      const appointmentRes = results[2].status === "fulfilled" ? results[2].value.data : { appointments: [] };
 
-          const samePhone =
-            user.phone &&
-            item.phone &&
-            user.phone.trim() === item.phone.trim();
+      let contacts = (contactRes.contacts || []).map((item) => ({
+        ...item,
+        requestType: "consultation",
+        requestTypeLabel: t('type_consultation'),
+      }));
 
-          return sameEmail || samePhone;
-        });
-      }
+      let quotations = (quotationRes.quotations || []).map((item) => ({
+        ...item,
+        requestType: "quotation",
+        requestTypeLabel: t('type_quotation'),
+      }));
 
-      setContacts(data);
+      let appointments = (appointmentRes.appointments || []).map((item) => ({
+        ...item,
+        requestType: item.type === "test_drive" ? "test_drive" : "view",
+        requestTypeLabel: item.type === "test_drive" ? t('type_test_drive') : t('type_view_car'),
+      }));
+
+      let merged = [...contacts, ...quotations, ...appointments];
+      
+      // Sắp xếp theo thời gian mới nhất
+      merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setRequests(merged);
     } catch (error) {
-      setMessage("Không tải được danh sách yêu cầu tư vấn");
+      setMessage(t('error_fetch_requests'));
     } finally {
       setLoading(false);
     }
@@ -62,101 +78,103 @@ export default function ContactConsultations() {
     return "https://via.placeholder.com/320x200?text=No+Image";
   };
 
+  const getStatusLabel = (item) => {
+    const status = item.status;
+    if (item.requestType === "consultation") {
+      if (status === "processing") return t('status_processing');
+      if (status === "contacted") return t('status_contacted');
+      return t('status_new');
+    }
+    if (item.requestType === "quotation") {
+      if (status === "quoted") return t('status_quoted');
+      if (status === "done") return t('status_done');
+      return t('status_new');
+    }
+    if (status === "confirmed") return t('status_confirmed');
+    if (status === "done") return t('status_done');
+    if (status === "cancelled") return t('status_cancelled');
+    return t('status_pending_confirm');
+  };
+
+  const getStatusClass = (item) => {
+    const status = item.status;
+    if (status === "done" || status === "contacted" || status === "quoted") return "done";
+    if (status === "processing" || status === "confirmed") return "processing";
+    if (status === "cancelled") return "cancelled";
+    return "new";
+  };
+
   return (
     <>
       <MainNavbar />
-
       <div className="contact-consultations-page">
         <div className="contact-consultations-container">
           <div className="contact-consultations-header">
-            <p className="contact-consultations-subtitle">{t('consultations_subtitle')}</p>
-            <h1>{t('consultations_title')}</h1>
-            <p className="contact-consultations-desc">
-              {t('consultations_desc')}
-            </p>
+            <p className="contact-consultations-subtitle">{t('my_requests_subtitle')}</p>
+            <h1>{t('my_requests_title')}</h1>
+            <p className="contact-consultations-desc">{t('my_requests_desc')}</p>
           </div>
 
-          {(() => {
-            if (loading) return <div className="contact-consultations-state">{t('loading')}</div>;
-            if (message) return <div className="contact-consultations-state error">{message}</div>;
-            if (contacts.length === 0)
-              return (
-                <div className="contact-consultations-empty">
-                  <h3>{t('consultations_empty_title')}</h3>
-                  <p>{t('consultations_empty_desc')}</p>
-                </div>
-              );
+          {loading ? (
+            <div className="contact-consultations-state">{t('loading')}</div>
+          ) : message ? (
+            <div className="contact-consultations-state error">{message}</div>
+          ) : requests.length === 0 ? (
+            <div className="contact-consultations-empty">
+              <h3>{t('requests_empty_title')}</h3>
+              <p>{t('requests_empty_desc')}</p>
+            </div>
+          ) : (
+            <div className="contact-consultations-grid">
+              {requests.map((item) => (
+                <div className="consultation-card" key={`${item.requestType}-${item._id}`}>
+                  <div className="consultation-card-image-wrap">
+                    <img src={getThumb(item)} alt={item.carName} className="consultation-card-image" />
+                    <span className={`consultation-status ${getStatusClass(item)}`}>
+                      {getStatusLabel(item)}
+                    </span>
+                  </div>
 
-            return (
-              <div className="contact-consultations-grid">
-                {contacts.map((item) => (
-                  <div className="consultation-card" key={item._id}>
-                    <div className="consultation-card-image-wrap">
-                      <img
-                        src={getThumb(item)}
-                        alt={item.carName}
-                        className="consultation-card-image"
-                        onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/320x200?text=No+Image";
-                        }}
-                      />
-                      <span
-                        className={`consultation-status ${
-                          item.status === "contacted" ? "done" : "new"
-                        }`}
-                      >
-                        {item.status === "contacted" ? t('consultation_status_contacted') : t('consultation_status_new')}
-                      </span>
+                  <div className="consultation-card-body">
+                    <div style={{ marginBottom: 8, color: "#60a5fa", fontWeight: 700 }}>
+                      {item.requestTypeLabel}
+                    </div>
+                    <h3>{item.carName || t('car_unknown')}</h3>
+
+                    <div className="consultation-meta">
+                      <div><strong>{t('field_phone')}:</strong> {item.phone || "—"}</div>
+                      <div><strong>{t('field_email')}:</strong> {item.email || "—"}</div>
+                      {item.province && (
+                        <div><strong>{t('field_area')}:</strong> {item.province}</div>
+                      )}
+
+                      {(item.requestType === "view" || item.requestType === "test_drive") && (
+                        <>
+                          <div><strong>{t('field_date')}:</strong> {item.appointmentDate || "—"}</div>
+                          <div><strong>{t('field_time')}:</strong> {item.appointmentTime || "—"}</div>
+                          <div><strong>{t('field_location')}:</strong> {item.location || "—"}</div>
+                        </>
+                      )}
                     </div>
 
-                    <div className="consultation-card-body">
-                      <h3>{item.carName || t('car_unknown')}</h3>
+                    <div className="consultation-extra">
+                      <strong>{t('field_content')}:</strong>
+                      <p>{item.additionalInfo || t('no_content')}</p>
+                    </div>
 
-                      <div className="consultation-meta">
-                        <div>
-                          <strong>{t('field_name')}:</strong>{" "}
-                          {[item.salutation, item.firstName, item.lastName]
-                            .filter(Boolean)
-                            .join(" ")}
-                        </div>
-                        <div>
-                          <strong>{t('field_phone')}:</strong> {item.phone || t('dash')}
-                        </div>
-                        <div>
-                          <strong>{t('field_email')}:</strong> {item.email || t('dash')}
-                        </div>
-                        <div>
-                          <strong>{t('field_preference')}:</strong> {item.preferredContact === "email" ? t('pref_email') : t('pref_phone')}
-                        </div>
-                        <div>
-                          <strong>{t('field_budget')}:</strong> {item.budget || t('dash')}
-                        </div>
-                        <div>
-                          <strong>{t('field_mileage')}:</strong> {item.mileage || t('dash')}
-                        </div>
-                        <div>
-                          <strong>{t('field_year')}:</strong> {item.year || t('dash')}
-                        </div>
-                        <div>
-                          <strong>{t('field_reason')}:</strong> {item.reason || t('dash')}
-                        </div>
-                      </div>
+                    <div className="consultation-extra">
+                      <strong>{t('field_admin_reply')}:</strong>
+                      <p>{item.adminReply || t('no_admin_reply')}</p>
+                    </div>
 
-                      <div className="consultation-extra">
-                        <strong>{t('extra_info')}:</strong>
-                        <p>{item.additionalInfo || t('no_data')}</p>
-                      </div>
-
-                      <div className="consultation-footer">
-                        {t('sent_at')}: {item.createdAt ? new Date(item.createdAt).toLocaleString() : t('dash')}
-                      </div>
+                    <div className="consultation-footer">
+                      {t('sent_at')}: {item.createdAt ? new Date(item.createdAt).toLocaleString() : "—"}
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })()}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

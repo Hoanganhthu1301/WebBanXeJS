@@ -3,8 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/Favorites.css";
 import MainNavbar from "../../components/MainNavbar";
+import { useTranslation } from 'react-i18next';
+import { addToCompare } from "../../utils/compare";
 
 export default function Favorites() {
+  const { t } = useTranslation();
   const [favorites, setFavorites] = useState([]);
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
@@ -12,6 +15,14 @@ export default function Favorites() {
 
   const navigate = useNavigate();
   const limit = 6;
+
+  const handleCompare = (carId) => {
+    const result = addToCompare(carId);
+    alert(result.message);
+    if (result.ok) {
+      navigate("/compare");
+    }
+  };
 
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
@@ -35,8 +46,7 @@ export default function Favorites() {
     } catch (error) {
       console.error(error);
       setMessage(
-        error?.response?.data?.message ||
-          "Không tải được danh sách yêu thích"
+        error?.response?.data?.message || t('error_fetch_favorites')
       );
     }
   };
@@ -57,15 +67,13 @@ export default function Favorites() {
       );
 
       const results = await Promise.all(requests);
-
       const map = {};
       results.forEach((item) => {
         map[item.carId] = item.promotions;
       });
-
       setPromotionMap(map);
     } catch (error) {
-      console.log("Lỗi lấy voucher cho xe yêu thích:", error);
+      console.log("Lỗi lấy voucher:", error);
       setPromotionMap({});
     }
   };
@@ -83,7 +91,6 @@ export default function Favorites() {
 
   const handleRemove = async (carId) => {
     const token = localStorage.getItem("token");
-
     try {
       await axios.delete(`http://localhost:5000/api/favorites/${carId}`, {
         headers: {
@@ -100,35 +107,14 @@ export default function Favorites() {
       setMessage("");
     } catch (error) {
       console.error(error);
-      setMessage("Không xóa được xe yêu thích");
+      setMessage(t('error_remove_favorite'));
     }
   };
 
   const getSaleText = (car) => {
     if (car?.salePercent > 0) return `SALE ${car.salePercent}%`;
-
     if (car?.discountPercent > 0) return `SALE ${car.discountPercent}%`;
-
-    if (car?.promotion?.type === "percent" && car?.promotion?.value > 0) {
-      return `SALE ${car.promotion.value}%`;
-    }
-
-    if (car?.promotion?.type === "amount" && car?.promotion?.value > 0) {
-      return "SALE";
-    }
-
-    if (Array.isArray(car?.promotions) && car.promotions.length > 0) {
-      const percentPromotion = car.promotions.find(
-        (item) => item?.type === "percent" && item?.value > 0
-      );
-      if (percentPromotion) return `SALE ${percentPromotion.value}%`;
-      return "SALE";
-    }
-
-    if (Array.isArray(car?.vouchers) && car.vouchers.length > 0) {
-      return "SALE";
-    }
-
+    
     const promotions = promotionMap[car._id] || [];
     if (promotions.length > 0) {
       const percentPromotion = promotions.find(
@@ -137,11 +123,6 @@ export default function Favorites() {
       if (percentPromotion) return `SALE ${percentPromotion.value}%`;
       return "SALE";
     }
-
-    if (car?.hasVoucher) {
-      return "SALE";
-    }
-
     return null;
   };
 
@@ -166,8 +147,8 @@ export default function Favorites() {
 
       <div className="favorites-page">
         <div className="favorites-header">
-          <h1>Xe yêu thích</h1>
-          <p>Hiện có {favorites.length} xe đang hiển thị</p>
+          <h1>{t('favorites_title')}</h1>
+          <p>{t('favorites_count_desc', { count: favorites.length })}</p>
         </div>
 
         {message && <div className="favorites-message">{message}</div>}
@@ -190,15 +171,14 @@ export default function Favorites() {
                       src={getCarImage(car)}
                       alt={car.name}
                       onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/400x260?text=Image+Error";
+                        e.target.src = "https://via.placeholder.com/400x260?text=Image+Error";
                       }}
                     />
 
                     <button
                       className="favorite-heart"
                       onClick={() => handleRemove(car._id)}
-                      title="Xóa khỏi yêu thích"
+                      title={t('remove_from_favorites')}
                     >
                       ❤️
                     </button>
@@ -208,17 +188,17 @@ export default function Favorites() {
                     <h3>{car.name}</h3>
 
                     <div className="info-row">
-                      <span>Hãng</span>
-                      <span>{car.brand || "Đang cập nhật"}</span>
+                      <span>{t('label_brand')}</span>
+                      <span>{car.brand || t('updating')}</span>
                     </div>
 
                     <div className="info-row">
-                      <span>Danh mục</span>
-                      <span>{car.category || "Đang cập nhật"}</span>
+                      <span>{t('label_category')}</span>
+                      <span>{car.category || t('updating')}</span>
                     </div>
 
                     <div className="info-row">
-                      <span>Năm</span>
+                      <span>{t('label_year')}</span>
                       <span>{car.year || "2023"}</span>
                     </div>
 
@@ -226,36 +206,38 @@ export default function Favorites() {
                       {Number(car.price || 0).toLocaleString("vi-VN")}đ
                     </div>
 
-                    <Link to={`/cars/${car._id}`} className="btn-detail">
-                      Xem chi tiết
-                    </Link>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "16px" }}>
+                      <Link
+                        to={`/cars/${car._id}`}
+                        style={{ height: "52px", borderRadius: "12px", background: "#fff", color: "#111", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+                      >
+                        {t('btn_view_detail')}
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCompare(car._id)}
+                        style={{ height: "52px", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "12px", background: "rgba(255,255,255,0.04)", color: "#fff", fontWeight: 700, cursor: "pointer" }}
+                      >
+                        {t('btn_compare')}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
             })
           ) : (
             <div className="favorites-message">
-              Bạn chưa có xe yêu thích nào
+              {t('no_favorites_found')}
             </div>
           )}
         </div>
 
         {favorites.length > limit && (
           <div className="favorites-pagination">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-              ←
-            </button>
-
-            <span>
-              {page} / {totalPages}
-            </span>
-
-            <button
-              disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
-            >
-              →
-            </button>
+            <button disabled={page === 1} onClick={() => setPage(page - 1)}> ← </button>
+            <span> {page} / {totalPages} </span>
+            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}> → </button>
           </div>
         )}
       </div>

@@ -7,6 +7,7 @@ import {
   LogOut,
   Menu,
   Heart,
+  Scale,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import NotificationBell from "./NotificationBell";
@@ -18,8 +19,7 @@ export default function MainNavbar() {
   const [keyword, setKeyword] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Lấy cả t (để dịch) và i18n (để đổi ngôn ngữ)
-  const { t, i18n } = useTranslation(); 
+  const { t, i18n } = useTranslation();
 
   const toggleLanguage = () => {
     const currentLang = i18n.language || 'vi';
@@ -96,14 +96,18 @@ export default function MainNavbar() {
             <Heart size={18} />
           </Link>
 
-          <button 
-            type="button" 
-            className="lux-icon-btn lux-lang-btn" 
+          <Link to="/compare" className="nav-icon-btn" title="So sánh xe">
+            <Scale size={20} />
+          </Link>
+
+          <button
+            type="button"
+            className="lux-icon-btn lux-lang-btn"
             title={t('title_language')}
-            onClick={toggleLanguage} 
+            onClick={toggleLanguage}
           >
             <Globe size={18} />
-            <span className="lang-code">{(i18n.language||'vi').startsWith('vi')? 'VI' : 'EN'}</span>
+            <span className="lang-code">{(i18n.language || 'vi').startsWith('vi') ? 'VI' : 'EN'}</span>
           </button>
 
           {user && <NotificationBell dark />}
@@ -156,18 +160,25 @@ export default function MainNavbar() {
           <Link to="/cars" onClick={() => setMobileOpen(false)}>
             {t('nav_cars')}
           </Link>
+
+          <Link to="/showrooms" onClick={() => setMobileOpen(false)}>
+            Showrooms
+          </Link>
+
           <Link
             to={user ? "/my-deposits" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
             {t('nav_orders')}
           </Link>
+
           <Link
             to={user ? "/consultations" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
             {t('nav_consult')}
           </Link>
+
           <Link
             to={user ? "/favorites" : "/login"}
             onClick={() => setMobileOpen(false)}

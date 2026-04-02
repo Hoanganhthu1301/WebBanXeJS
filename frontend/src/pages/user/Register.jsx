@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const navigate = useNavigate();
-
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
@@ -72,7 +71,6 @@ export default function Register() {
       <div className="lux-login-layout">
         <div className="lux-login-left">
           <img src={logoWhite} alt="logo" className="lux-login-logo" />
-
           <h1>{t('register_title')}</h1>
           <p>{t('register_desc')}</p>
         </div>

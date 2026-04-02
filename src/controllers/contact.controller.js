@@ -1,6 +1,6 @@
 const Contact = require("../models/contact.model");
 const Car = require("../models/car.model");
-const mailer = require("../utils/mailer"); // THÊM: Import hàm gửi mail của Thư
+const { sendRequestReplyEmail } = require("../utils/mailer"); 
 
 const createContact = async (req, res) => {
   try {
@@ -18,7 +18,6 @@ const createContact = async (req, res) => {
     }
 
     const car = await Car.findById(carId);
-
     if (!car) {
       return res.status(404).json({
         message: "Xe không tồn tại",
@@ -36,7 +35,7 @@ const createContact = async (req, res) => {
       city: city || "",
       preferredContact: preferredContact || "call",
       phone: phone.trim(),
-      email: email || "",
+      email: (email || "").trim(),
       carId: car._id,
       carName: car.name,
       country: country || "Việt Nam",
@@ -44,18 +43,20 @@ const createContact = async (req, res) => {
       mileage: mileage || "",
       year: year || "",
       reason: reason || "",
-      additionalInfo: additionalInfo || "",
+      additionalInfo: (additionalInfo || "").trim(),
     });
 
-    // THÊM NGHIỆP VỤ XỊN: Tự động gửi email nếu khách có điền email
-    if (email) {
-      const mailOptions = {
-        to: email,
-        subject: `Xác nhận yêu cầu tư vấn xe ${car.name}`,
-        text: `Chào ${lastName} ${firstName},\n\nChúng tôi đã nhận được yêu cầu tư vấn chiếc xe ${car.name} của bạn. Chuyên viên của chúng tôi sẽ liên hệ với bạn qua số điện thoại ${phone} trong thời gian sớm nhất.\n\nXin cảm ơn bạn đã quan tâm!`
-      };
-      // Gửi mail chạy ngầm, không dùng await để tránh làm chậm tốc độ phản hồi API cho khách
-      mailer.sendMail(mailOptions).catch(err => console.log('Lỗi gửi mail tự động:', err));
+    // TÍNH NĂNG CỦA QUÂN: Tự động gửi email xác nhận ngay khi khách gửi yêu cầu
+    if (newContact.email) {
+      // Tận dụng hàm mailer của Thư để gửi mail xác nhận nhanh
+      sendRequestReplyEmail({
+        to: newContact.email,
+        customerName: `${newContact.lastName} ${newContact.firstName}`,
+        carName: car.name,
+        requestType: "consultation",
+        status: "new",
+        adminReply: "Chúng tôi đã nhận được yêu cầu của bạn và sẽ liên hệ sớm nhất qua số điện thoại này.",
+      }).catch(err => console.log('Lỗi gửi mail xác nhận tự động:', err));
     }
 
     return res.status(201).json({
@@ -90,16 +91,16 @@ const getAllContacts = async (req, res) => {
 
 const updateContactStatus = async (req, res) => {
   try {
-    // THÊM: Lấy cả adminNote từ body để Admin có thể lưu lại ghi chú sau khi gọi khách
-    const { status, adminNote } = req.body;
-
-    const updateData = {};
-    if (status) updateData.status = status;
-    if (adminNote !== undefined) updateData.adminNote = adminNote;
+    // GỘP: Lấy cả status, adminReply (của Thư) và adminNote (của Quân)
+    const { status, adminReply, adminNote } = req.body;
 
     const updatedContact = await Contact.findByIdAndUpdate(
       req.params.id,
-      updateData,
+      { 
+        status, 
+        adminReply, 
+        adminNote // Lưu lại ghi chú nội bộ của Admin nếu cần
+      },
       { new: true, runValidators: true }
     );
 
@@ -109,13 +110,25 @@ const updateContactStatus = async (req, res) => {
       });
     }
 
+    // TÍNH NĂNG CỦA THƯ: Gửi email khi Admin phản hồi khách
+    if (updatedContact.email && adminReply) {
+      await sendRequestReplyEmail({
+        to: updatedContact.email,
+        customerName: `${updatedContact.lastName} ${updatedContact.firstName}`,
+        carName: updatedContact.carName,
+        requestType: "consultation",
+        status,
+        adminReply,
+      });
+    }
+
     return res.status(200).json({
-      message: "Cập nhật thành công",
+      message: "Cập nhật yêu cầu thành công",
       contact: updatedContact,
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Lỗi server khi cập nhật",
+      message: "Lỗi server khi cập nhật yêu cầu",
       error: error.message,
     });
   }
@@ -124,13 +137,11 @@ const updateContactStatus = async (req, res) => {
 const deleteContact = async (req, res) => {
   try {
     const deletedContact = await Contact.findByIdAndDelete(req.params.id);
-
     if (!deletedContact) {
       return res.status(404).json({
         message: "Không tìm thấy yêu cầu để xóa",
       });
     }
-
     return res.status(200).json({
       message: "Xóa yêu cầu tư vấn thành công",
     });

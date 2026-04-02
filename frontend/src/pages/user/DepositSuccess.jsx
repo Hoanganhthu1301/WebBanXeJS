@@ -4,6 +4,7 @@ import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from 'react-i18next';
 
 export default function DepositSuccess() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
 
   const orderCode = params.get("orderCode");
@@ -30,8 +31,6 @@ export default function DepositSuccess() {
 
     confirmDeposit();
   }, [orderCode]);
-
-  const { t } = useTranslation();
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f7fb" }}>
@@ -69,7 +68,7 @@ export default function DepositSuccess() {
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link
+            <Link
               to={carId ? `/cars/${carId}` : "/"}
               style={{
                 background: "#1976d2",
@@ -79,7 +78,7 @@ export default function DepositSuccess() {
                 borderRadius: "10px",
                 fontWeight: "600",
               }}
-              >
+            >
               {t('btn_view_car')}
             </Link>
 

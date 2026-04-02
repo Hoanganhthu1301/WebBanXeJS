@@ -20,7 +20,6 @@ export default function MyDepositsPage() {
       navigate("/login");
       return;
     }
-
     fetchMyDeposits();
   }, []);
 
@@ -55,7 +54,6 @@ export default function MyDepositsPage() {
 
     try {
       const token = localStorage.getItem("token");
-
       const res = await axios.put(
         `http://localhost:5000/api/deposits/${id}/user-cancel`,
         {},
@@ -84,11 +82,11 @@ export default function MyDepositsPage() {
 
   const getStatusText = (deposit) => {
     if (deposit.status === "completed") return t('deposit_status_completed');
-      if (deposit.status === "cancelled") return t('deposit_status_cancelled');
-      if (deposit.status === "refunded") return t('deposit_status_refunded');
-      if (deposit.paymentStatus === "paid") return t('payment_status_paid');
-      if (deposit.paymentStatus === "cancelled") return t('payment_status_cancelled');
-      return t('deposit_status_pending_payment');
+    if (deposit.status === "cancelled") return t('deposit_status_cancelled');
+    if (deposit.status === "refunded") return t('deposit_status_refunded');
+    if (deposit.paymentStatus === "paid") return t('payment_status_paid');
+    if (deposit.paymentStatus === "cancelled") return t('payment_status_cancelled');
+    return t('deposit_status_pending_payment');
   };
 
   const getStatusClass = (deposit) => {
@@ -122,7 +120,6 @@ export default function MyDepositsPage() {
     if (Number(deposit.finalEstimatedPrice || 0) > 0) {
       return Number(deposit.finalEstimatedPrice || 0);
     }
-
     const original = Number(deposit.carPrice || 0);
     const discount = Number(deposit.discountAmount || 0);
     return Math.max(original - discount, 0);
@@ -195,28 +192,24 @@ export default function MyDepositsPage() {
                       <p>{formatMoney(getOriginalPrice(item))}</p>
                     </div>
 
-                    {hasVoucherApplied(item) && (
+                    {hasVoucherApplied(item) ? (
                       <>
                         <div>
                           <label>{t('label_voucher')}</label>
                           <p>{item.promotionTitle || t('promo_default_title')}</p>
                         </div>
-
                         <div>
                           <label>{t('label_discount_amount')}</label>
                           <p>-{formatMoney(item.discountAmount)}</p>
                         </div>
-
                         <div>
                           <label>{t('label_price_after_discount')}</label>
                           <p>{formatMoney(getDiscountedPrice(item))}</p>
                         </div>
                       </>
-                    )}
-
-                    {!hasVoucherApplied(item) && (
+                    ) : (
                       <div>
-                        <label>Giá xe</label>
+                        <label>{t('label_car_price') || "Giá xe"}</label>
                         <p>{formatMoney(item.carPrice)}</p>
                       </div>
                     )}
@@ -243,21 +236,19 @@ export default function MyDepositsPage() {
                     </span>
 
                     <div className="order-row-actions">
-                      <button
-                        onClick={() => navigate(`/my-deposits/${item._id}`)}
-                      >
+                      <button onClick={() => navigate(`/my-deposits/${item._id}`)}>
                         {t('btn_view_detail')}
                       </button>
 
                       {item.status !== "completed" &&
                         item.status !== "cancelled" &&
                         item.status !== "refunded" && (
-                            <button
-                              className="cancel-btn"
-                              onClick={() => handleUserCancel(item._id)}
-                            >
-                              {t('btn_cancel_order')}
-                            </button>
+                          <button
+                            className="cancel-btn"
+                            onClick={() => handleUserCancel(item._id)}
+                          >
+                            {t('btn_cancel_order')}
+                          </button>
                         )}
                     </div>
                   </div>
