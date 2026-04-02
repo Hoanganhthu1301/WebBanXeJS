@@ -1,16 +1,15 @@
-const fs = require('fs');
-const path = require('path');
 const jwt = require('jsonwebtoken');
 
-const privateKey = fs.readFileSync(
-  path.join(__dirname, '../../keys/private.key'),
-  'utf8'
-);
+const privateKey = process.env.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const publicKey = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n');
 
-const publicKey = fs.readFileSync(
-  path.join(__dirname, '../../keys/public.key'),
-  'utf8'
-);
+if (!privateKey) {
+  throw new Error('Thiếu biến môi trường JWT_PRIVATE_KEY');
+}
+
+if (!publicKey) {
+  throw new Error('Thiếu biến môi trường JWT_PUBLIC_KEY');
+}
 
 const generateAccessToken = (user) => {
   return jwt.sign(
