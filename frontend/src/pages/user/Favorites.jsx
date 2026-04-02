@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/Favorites.css";
 import MainNavbar from "../../components/MainNavbar";
+import { addToCompare } from "../../utils/compare";
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
@@ -11,8 +12,17 @@ export default function Favorites() {
   const [promotionMap, setPromotionMap] = useState({});
 
   const navigate = useNavigate();
-  const limit = 6;
+  const handleCompare = (carId) => {
+  const result = addToCompare(carId);
+  alert(result.message);
 
+  if (result.ok) {
+    navigate("/compare");
+    }
+  };
+  const limit = 6;
+  
+  
   const fetchFavorites = async () => {
     const token = localStorage.getItem("token");
 
@@ -41,6 +51,7 @@ export default function Favorites() {
     }
   };
 
+  
   const fetchPromotionsForCars = async (carsData) => {
     try {
       const requests = carsData.map((car) =>
@@ -226,9 +237,47 @@ export default function Favorites() {
                       {Number(car.price || 0).toLocaleString("vi-VN")}đ
                     </div>
 
-                    <Link to={`/cars/${car._id}`} className="btn-detail">
+                   <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "12px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Link
+                      to={`/cars/${car._id}`}
+                      style={{
+                        height: "52px",
+                        borderRadius: "12px",
+                        background: "#fff",
+                        color: "#111",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textDecoration: "none",
+                      }}
+                    >
                       Xem chi tiết
                     </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCompare(car._id)}
+                      style={{
+                        height: "52px",
+                        border: "1px solid rgba(255,255,255,0.14)",
+                        borderRadius: "12px",
+                        background: "rgba(255,255,255,0.04)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      So sánh
+                    </button>
+                  </div>
                   </div>
                 </div>
               );

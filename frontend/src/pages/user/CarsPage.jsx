@@ -1,26 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
 import axios from "axios";
 import "../../styles/user/CarsPage.css";
 import MainNavbar from "../../components/MainNavbar";
+import { addToCompare } from "../../utils/compare";
 
 export default function CarsPage() {
   const [cars, setCars] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [promotionMap, setPromotionMap] = useState({});
+  const [favoriteIds, setFavoriteIds] = useState([]);
 
   const [keyword, setKeyword] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  
 
   const [currentPage, setCurrentPage] = useState(1);
   const carsPerPage = 6;
 
   useEffect(() => {
     fetchCars();
+    fetchFavorites();
   }, []);
 
   useEffect(() => {
@@ -35,6 +40,7 @@ export default function CarsPage() {
       setCars(carsData);
       setMessage("");
       await fetchPromotionsForCars(carsData);
+      await fetchFavorites();
     } catch (error) {
       console.log(error);
       setMessage("Không lấy được danh sách xe");
@@ -122,6 +128,79 @@ export default function CarsPage() {
     setCurrentPage(1);
   };
 
+  const navigate = useNavigate();
+
+  const handleCompare = (carId) => {
+    const result = addToCompare(carId);
+    alert(result.message);
+
+    if (result.ok) {
+      navigate("/compare");
+    }
+  };
+
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setFavoriteIds([]);
+        return;
+      }
+
+      try {
+        const res = await axios.get("http://localhost:5000/api/favorites", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const favoritesData = res.data.favorites || [];
+
+        const ids = favoritesData
+          .map((item) => {
+            if (item?._id && item?.name) return item._id; // car object
+            if (item?.carId?._id) return item.carId._id;  // wrapped object
+            if (item?.carId) return item.carId;           // raw id
+            if (item?._id) return item._id;
+            return null;
+          })
+          .filter(Boolean);
+
+        setFavoriteIds(ids);
+      } catch (error) {
+        console.log("Lỗi lấy danh sách yêu thích:", error);
+        setFavoriteIds([]);
+      }
+    };
+
+const isFavorite = (carId) => favoriteIds.includes(carId);
+
+const handleToggleFavorite = async (carId) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Vui lòng đăng nhập để thêm xe vào yêu thích");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    await axios.post(
+      `http://localhost:5000/api/favorites/toggle/${carId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    await fetchFavorites();
+  } catch (error) {
+    console.log(error.response?.data || error.message);
+    alert(error.response?.data?.message || "Không thể cập nhật yêu thích");
+  }
+};
   const getCarImage = (car) => {
     if (car.image && car.image.trim() !== "") return car.image;
     if (Array.isArray(car.images) && car.images.length > 0) return car.images[0];
@@ -232,6 +311,19 @@ export default function CarsPage() {
                         </div>
                       )}
 
+                       <button
+                        type="button"
+                        onClick={() => handleToggleFavorite(car._id)}
+                        className={`cars-favorite-btn ${isFavorite(car._id) ? "active" : ""}`}
+                        title="Yêu thích"
+                      >
+                        <Heart
+                          size={18}
+                          fill={isFavorite(car._id) ? "currentColor" : "none"}
+                        />
+                      </button>
+
+
                       <img
                         src={getCarImage(car)}
                         alt={car.name}
@@ -265,9 +357,48 @@ export default function CarsPage() {
                         {Number(car.price || 0).toLocaleString("vi-VN")}đ
                       </p>
 
-                      <Link to={`/cars/${car._id}`} className="cars-detail-link">
-                        Xem chi tiết
-                      </Link>
+                     <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                    marginTop: "16px",
+                  }}
+                >
+                  <Link
+                    to={`/cars/${car._id}`}
+                    style={{
+                      height: "52px",
+                      borderRadius: "12px",
+                      background: "#fff",
+                      color: "#111",
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textDecoration: "none",
+                    }}
+                  >
+                    Xem chi tiết
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCompare(car._id)}
+                    style={{
+                      height: "52px",
+                      border: "1px solid rgba(255,255,255,0.14)",
+                      borderRadius: "12px",
+                      background: "rgba(255,255,255,0.04)",
+                      color: "#fff",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    So sánh
+                  </button>
+                  </div>
+
                     </div>
                   </div>
                 ))

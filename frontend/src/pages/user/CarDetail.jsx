@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/CarDetail.css";
 import MainNavbar from "../../components/MainNavbar";
+import { addToCompare } from "../../utils/compare";
+
 
 export default function CarDetail() {
   const { id } = useParams();
@@ -14,9 +16,19 @@ export default function CarDetail() {
   const [activeFeature, setActiveFeature] = useState(null);
   const [user, setUser] = useState(null);
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    comment: "",
+  });
+  const [reviewMessage, setReviewMessage] = useState("");
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     fetchCar();
+    fetchReviews();
 
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -47,6 +59,17 @@ export default function CarDetail() {
       setMessage("Không lấy được chi tiết xe");
     }
   };
+
+  const fetchReviews = async () => {
+  try {
+    const res = await axios.get(`http://localhost:5000/api/reviews/car/${id}`);
+    setReviews(res.data.reviews || []);
+    setAvgRating(res.data.avgRating || 0);
+    setReviewCount(res.data.total || 0);
+  } catch (error) {
+    console.log("Lỗi lấy đánh giá:", error);
+  }
+};
 
   const formatPrice = (value) => {
     return Number(value || 0).toLocaleString("vi-VN") + "đ";
@@ -127,6 +150,73 @@ export default function CarDetail() {
     navigate(`/cars/${car._id}/contact`);
   };
 
+  const handleReviewChange = (e) => {
+  const { name, value } = e.target;
+  setReviewForm((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+const handleSubmitReview = async (e) => {
+  e.preventDefault();
+
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const token = localStorage.getItem("token");
+
+  if (!token || !currentUser) {
+    alert("Vui lòng đăng nhập để đánh giá xe");
+    navigate("/login");
+    return;
+  }
+
+  if (!car?._id) {
+    setReviewMessage("Không xác định được xe để đánh giá");
+    return;
+  }
+
+  try {
+    const payload = {
+      carId: car._id,
+      userId: currentUser._id || currentUser.id,
+      userName:
+        currentUser.fullName ||
+        currentUser.name ||
+        currentUser.username ||
+        currentUser.email,
+      rating: Number(reviewForm.rating),
+      comment: reviewForm.comment?.trim() || "",
+    };
+
+    console.log("Review payload:", payload);
+
+    const res = await axios.post("http://localhost:5000/api/reviews", payload);
+
+    setReviewMessage(res.data.message || "Đánh giá thành công");
+    setReviewForm({
+      rating: 5,
+      comment: "",
+    });
+    fetchReviews();
+    setShowReviewForm(false);
+  } catch (error) {
+    setReviewMessage(
+      error.response?.data?.message || "Gửi đánh giá thất bại"
+    );
+  }
+};
+
+    const handleCompareClick = () => {
+    if (!car?._id) return;
+
+    const result = addToCompare(car._id);
+    alert(result.message);
+
+    if (result.ok) {
+      navigate("/compare");
+    }
+  };
+
   const handleDepositClick = () => {
     const token = localStorage.getItem("token");
 
@@ -205,6 +295,10 @@ export default function CarDetail() {
           discountAmount: 0,
           finalPrice: Number(car.price || 0),
         };
+   const renderStars = (rating = 0) => {
+    const full = Math.round(Number(rating) || 0);
+    return "★".repeat(full) + "☆".repeat(5 - full);
+  };
 
   const hasDiscountPromotion =
     selectedPromotion &&
@@ -285,6 +379,14 @@ export default function CarDetail() {
           <a href="#specs" className="mb-btn mb-btn-dark">
             Xem thông số
           </a>
+
+          <button
+            type="button"
+            className="mb-btn mb-btn-dark"
+            onClick={handleCompareClick}
+          >
+            So sánh xe
+          </button>
         </div>
         </div>
 
@@ -378,6 +480,7 @@ export default function CarDetail() {
         <a href="#highlights">Nổi bật</a>
         <a href="#features">Trang bị</a>
         <a href="#specs">Thông số</a>
+        <a href="#reviews">Đánh giá</a>
         <a href="#contact">Tư vấn</a>
       </nav>
 
@@ -489,6 +592,262 @@ export default function CarDetail() {
           <p>{car.description || "Chưa có mô tả cho xe này."}</p>
         </div>
       </section>
+
+     <section id="reviews" className="mb-section">
+      <div className="mb-section-heading">
+        <p>ĐÁNH GIÁ KHÁCH HÀNG</p>
+        <h2>Đánh giá về {car.name}</h2>
+      </div>
+
+      <div
+        style={{
+          background: "#111827",
+          borderRadius: "24px",
+          padding: "28px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          marginBottom: "24px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "20px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: "42px",
+                fontWeight: 800,
+                color: "#fff",
+                lineHeight: 1,
+                marginBottom: "8px",
+              }}
+            >
+              {avgRating || 0}
+              <span style={{ fontSize: "22px", color: "#9ca3af", marginLeft: "6px" }}>
+                /5
+              </span>
+            </div>
+
+            <div
+              style={{
+                fontSize: "24px",
+                letterSpacing: "4px",
+                color: "#fbbf24",
+                marginBottom: "8px",
+              }}
+            >
+              {renderStars(avgRating)}
+            </div>
+
+            <div style={{ color: "#9ca3af", fontSize: "15px" }}>
+              {reviewCount} đánh giá từ khách hàng
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="mb-btn mb-btn-light"
+            onClick={() => setShowReviewForm((prev) => !prev)}
+          >
+            {showReviewForm ? "Đóng đánh giá" : "Viết đánh giá"}
+          </button>
+        </div>
+
+        {showReviewForm && (
+          <div
+            style={{
+              marginTop: "24px",
+              paddingTop: "24px",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <form
+              onSubmit={handleSubmitReview}
+              style={{
+                display: "grid",
+                gap: "14px",
+              }}
+            >
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    color: "#e5e7eb",
+                    marginBottom: "8px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Chọn số sao
+                </label>
+
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() =>
+                        setReviewForm((prev) => ({ ...prev, rating: star }))
+                      }
+                      style={{
+                        border:
+                          Number(reviewForm.rating) === star
+                            ? "1px solid #fbbf24"
+                            : "1px solid rgba(255,255,255,0.12)",
+                        background:
+                          Number(reviewForm.rating) === star
+                            ? "rgba(251,191,36,0.12)"
+                            : "rgba(255,255,255,0.04)",
+                        color:
+                          Number(reviewForm.rating) === star ? "#fbbf24" : "#e5e7eb",
+                        borderRadius: "12px",
+                        padding: "10px 14px",
+                        cursor: "pointer",
+                        fontWeight: 700,
+                        fontSize: "18px",
+                      }}
+                    >
+                      {"★".repeat(star)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    color: "#e5e7eb",
+                    marginBottom: "8px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Nhận xét của bạn
+                </label>
+
+                <textarea
+                  name="comment"
+                  rows="5"
+                  value={reviewForm.comment}
+                  onChange={handleReviewChange}
+                  placeholder="Chia sẻ trải nghiệm của bạn về mẫu xe này..."
+                  style={{
+                    width: "100%",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "#fff",
+                    padding: "14px",
+                    resize: "vertical",
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+                <button
+                  type="submit"
+                  className="mb-btn mb-btn-light"
+                >
+                  Gửi đánh giá
+                </button>
+
+                {reviewMessage && (
+                  <span style={{ color: "#93c5fd", fontWeight: 600 }}>
+                    {reviewMessage}
+                  </span>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gap: "16px",
+        }}
+      >
+        {reviews.length > 0 ? (
+          reviews.map((item) => (
+            <div
+              key={item._id}
+              style={{
+                background: "#111827",
+                borderRadius: "20px",
+                padding: "22px",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                  marginBottom: "10px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "17px",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {item.userName}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#fbbf24",
+                      fontSize: "18px",
+                      letterSpacing: "2px",
+                    }}
+                  >
+                    {"★".repeat(item.rating)}
+                    {"☆".repeat(5 - item.rating)}
+                  </div>
+                </div>
+
+                <div style={{ color: "#9ca3af", fontSize: "14px" }}>
+                  {new Date(item.createdAt).toLocaleString("vi-VN")}
+                </div>
+              </div>
+
+              <p
+                style={{
+                  margin: 0,
+                  color: "#d1d5db",
+                  lineHeight: 1.7,
+                }}
+              >
+                {item.comment || "Không có nhận xét"}
+              </p>
+            </div>
+          ))
+        ) : (
+          <div
+            style={{
+              background: "#111827",
+              borderRadius: "20px",
+              padding: "22px",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "#9ca3af",
+            }}
+          >
+            Chưa có đánh giá nào cho xe này
+          </div>
+        )}
+      </div>
+    </section>
 
       <section id="contact" className="mb-section">
         <div className="mb-section-heading">

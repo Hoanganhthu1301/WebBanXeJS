@@ -7,6 +7,7 @@ const path = require("path");
 const app = express();
 const quotationRoutes = require("./routes/quotation.routes");
 const appointmentRoutes = require("./routes/appointment.routes");
+const reviewRoutes = require("./routes/review.routes");
 
 app.use(cors());
 app.use(morgan('dev'));
@@ -16,6 +17,7 @@ app.use("/uploads", express.static("public/uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.get('/', (req, res) => {
   res.json({

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+
 import {
   Search,
   Globe,
@@ -7,6 +8,7 @@ import {
   LogOut,
   Menu,
   Heart,
+  Scale,
 } from "lucide-react";
 import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
@@ -85,6 +87,10 @@ export default function MainNavbar() {
             title="Yêu thích"
           >
             <Heart size={18} />
+          </Link>
+
+          <Link to="/compare" className="nav-icon-btn" title="So sánh xe">
+            <Scale size={20} />
           </Link>
 
           <button type="button" className="lux-icon-btn" title="Ngôn ngữ">

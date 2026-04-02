@@ -30,6 +30,7 @@ import AdminPromotions from "./pages/Admin/AdminPromotions";
 import UserConsultations from "./pages/user/ContactConsultations";  
 import QuotationPage from "./pages/user/QuotationPage";
 import AppointmentPage from "./pages/user/AppointmentPage";
+import ComparePage from "./pages/user/ComparePage";
 
 
 function App() {
@@ -103,6 +104,7 @@ function App() {
         <Route path="/admin/promotions" element={<AdminPromotions />} />
         <Route path="/cars/:id/quotation" element={<QuotationPage />} />
         <Route path="/cars/:id/appointment" element={<AppointmentPage />} />
+        <Route path="/compare" element={<ComparePage />} />
         
       </Routes>
     </BrowserRouter>
