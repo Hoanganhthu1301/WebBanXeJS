@@ -1,0 +1,102 @@
+body {
+  margin: 0;
+  font-family: "SF Pro Display", Inter, "Segoe UI", sans-serif;
+  background: #f3f4f6;
+}
+.admin-brands-page {
+  padding: 24px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.admin-brands-header {
+  margin-bottom: 24px;
+}
+
+.admin-brands-box {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.brand-form {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 16px;
+}
+
+.brand-form input,
+.brand-form select {
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+}
+
+.save-btn,
+.cancel-btn,
+.edit-btn,
+.delete-btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.save-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.cancel-btn {
+  background: #9ca3af;
+  color: white;
+}
+
+.edit-btn {
+  background: #f59e0b;
+  color: white;
+  margin-right: 8px;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.message-text {
+  margin-top: 16px;
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.brands-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.brands-table th,
+.brands-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.brands-table th {
+  background: #f9fafb;
+}
+
+@media (max-width: 768px) {
+  .brand-form {
+    grid-template-columns: 1fr;
+  }
+}

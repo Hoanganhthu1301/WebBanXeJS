@@ -1,0 +1,287 @@
+.favorites-page {
+  padding: 130px 40px 40px;
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+/* NAVBAR FIXED */
+.favorites-navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* HEADER */
+.favorites-header h1 {
+  font-size: 32px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.favorites-header p {
+  color: #aaa;
+  margin-bottom: 30px;
+}
+
+.favorites-message {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ddd;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* GRID */
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+/* CARD */
+.favorite-card {
+  background: linear-gradient(180deg, #101010 0%, #0a0a0a 100%);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.favorite-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* IMAGE */
+.favorite-image {
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.favorite-image img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+/* 🔥 SALE TREO CHÉO GÓC */
+.sale-corner-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sale-corner-badge span {
+  position: absolute;
+  top: 20px;
+  left: -34px;
+  width: 150px;
+  text-align: center;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #ffe600 0%, #d6a100 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 0;
+  box-shadow: 0 8px 18px rgba(214, 161, 0, 0.35);
+}
+
+/* HEART */
+.favorite-heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.25s ease;
+  z-index: 6;
+}
+
+.favorite-heart:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* BODY */
+.favorite-body {
+  padding: 20px;
+}
+
+.favorite-body h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+/* INFO */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #222;
+  color: #ccc;
+  gap: 16px;
+}
+
+.info-row span:last-child {
+  color: #fff;
+  font-weight: 500;
+  text-align: right;
+}
+
+/* PRICE */
+.price {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 18px 0;
+  color: #f3c96a;
+}
+
+/* BUTTON */
+.btn-detail {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: #fff;
+  color: #000;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.btn-detail:hover {
+  background: #f3c96a;
+  color: #111;
+}
+
+/* PAGINATION */
+.favorites-pagination {
+  margin-top: 34px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.favorites-pagination button {
+  background: #222;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.favorites-pagination button:hover:not(:disabled) {
+  background: #333;
+}
+
+.favorites-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.favorites-pagination span {
+  min-width: 70px;
+  text-align: center;
+  color: #ddd;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .favorites-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .favorites-page {
+    padding: 120px 18px 30px;
+  }
+
+  .favorites-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .favorites-header h1 {
+    font-size: 26px;
+  }
+
+  .favorite-image img {
+    height: 210px;
+  }
+}
+
+
+.voucher-ribbon {
+  position: absolute;
+  top: 18px;
+  left: -34px;
+  width: 150px;
+  height: 42px;
+  background: linear-gradient(180deg, #fff202 0%, #d8980f 100%);
+  transform: rotate(-45deg);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 22px rgba(216, 169, 15, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.voucher-ribbon::before,
+.voucher-ribbon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.02));
+}
+
+.voucher-ribbon::before {
+  left: 0;
+}
+
+.voucher-ribbon::after {
+  right: 0;
+}
+
+.voucher-ribbon span {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+}

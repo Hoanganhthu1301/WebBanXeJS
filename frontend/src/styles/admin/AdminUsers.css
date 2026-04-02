@@ -1,0 +1,221 @@
+:root {
+  --admin-font: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+
+  --admin-bg: #eef1f5;
+  --admin-card: #ffffff;
+  --admin-card-soft: #f7f9fc;
+  --admin-border: #d9e0e8;
+
+  --admin-text: #1f2937;
+  --admin-text-soft: #5b6472;
+  --admin-text-muted: #7b8794;
+
+  --admin-primary: #2f67d8;
+  --admin-primary-hover: #2457c0;
+  --admin-danger: #ef4444;
+  --admin-success: #16a34a;
+
+  --admin-radius-xl: 24px;
+  --admin-radius-lg: 18px;
+  --admin-radius-md: 14px;
+  --admin-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.admin-users-page {
+  min-height: 100vh;
+  padding: 28px;
+  background: var(--admin-bg);
+  font-family: var(--admin-font);
+}
+
+.admin-users-header {
+  margin-bottom: 20px;
+}
+
+.admin-users-header h1 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.admin-users-header p {
+  margin: 8px 0 0;
+  color: var(--admin-text-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.admin-users-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 18px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-users-toolbar input {
+  flex: 1;
+  height: 48px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-text);
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-family: var(--admin-font);
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.admin-users-toolbar input::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.admin-users-toolbar input:focus {
+  border-color: var(--admin-primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(47, 103, 216, 0.12);
+}
+
+.admin-users-toolbar button {
+  height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--admin-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--admin-font);
+  cursor: pointer;
+  transition: 0.2s ease;
+  box-shadow: 0 8px 20px rgba(47, 103, 216, 0.18);
+}
+
+.admin-users-toolbar button:hover {
+  background: var(--admin-primary-hover);
+}
+
+.admin-users-message {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #f4d2d2;
+  background: #fff5f5;
+  color: #d14343;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-users-table-wrap {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 24px;
+  box-shadow: var(--admin-shadow);
+  overflow: hidden;
+}
+
+.admin-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  padding: 16px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.admin-users-table th {
+  background: #fafbfd;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-users-table td {
+  color: var(--admin-text);
+  font-size: 14px;
+}
+
+.admin-users-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status.active {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--admin-success);
+}
+
+.status.blocked {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--admin-danger);
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-action {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(47, 103, 216, 0.12);
+  color: var(--admin-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--admin-font);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-action:hover {
+  background: rgba(47, 103, 216, 0.18);
+}
+
+.empty-row {
+  text-align: center;
+  color: var(--admin-text-muted);
+  padding: 24px 12px !important;
+}
+
+@media (max-width: 768px) {
+  .admin-users-page {
+    padding: 18px;
+  }
+
+  .admin-users-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-users-toolbar button {
+    width: 100%;
+  }
+}

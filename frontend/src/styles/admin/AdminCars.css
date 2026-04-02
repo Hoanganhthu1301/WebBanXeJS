@@ -1,0 +1,283 @@
+:root {
+  --admin-font: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+
+  --admin-bg: #eef1f5;
+  --admin-card: #ffffff;
+  --admin-card-soft: #f7f9fc;
+  --admin-border: #d9e0e8;
+
+  --admin-text: #1f2937;
+  --admin-text-soft: #5b6472;
+  --admin-text-muted: #7b8794;
+
+  --admin-primary: #2f67d8;
+  --admin-primary-hover: #2457c0;
+  --admin-danger: #ef4444;
+  --admin-success: #16a34a;
+
+  --admin-radius-xl: 24px;
+  --admin-radius-lg: 18px;
+  --admin-radius-md: 14px;
+  --admin-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.admin-cars-page {
+  padding: 28px;
+  background: var(--admin-bg);
+  min-height: 100vh;
+  font-family: var(--admin-font);
+}
+
+.admin-cars-header {
+  margin-bottom: 22px;
+}
+
+.admin-cars-header h1 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.admin-cars-header p {
+  margin: 8px 0 0;
+  color: var(--admin-text-soft);
+  font-size: 15px;
+}
+
+.admin-cars-box {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-xl);
+  padding: 24px;
+  box-shadow: var(--admin-shadow);
+  margin-bottom: 22px;
+}
+
+.admin-cars-box h2 {
+  margin: 0 0 18px;
+  color: var(--admin-text);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.car-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.car-form input,
+.car-form select,
+.car-form textarea {
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-text);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: var(--admin-font);
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.car-form input::placeholder,
+.car-form textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.car-form input:focus,
+.car-form select:focus,
+.car-form textarea:focus {
+  border-color: var(--admin-primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(47, 103, 216, 0.12);
+}
+
+.car-form textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.car-form > textarea,
+.car-form .nested-block,
+.car-form .form-actions {
+  grid-column: 1 / -1;
+}
+
+.nested-block {
+  border: 1px solid var(--admin-border);
+  background: #fbfcfe;
+  border-radius: 20px;
+  padding: 18px;
+}
+
+.nested-block h3 {
+  margin: 0 0 14px;
+  color: var(--admin-text);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.nested-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 14px;
+}
+
+.nested-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.save-btn,
+.cancel-btn,
+.edit-btn,
+.delete-btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--admin-font);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.save-btn {
+  background: var(--admin-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(47, 103, 216, 0.18);
+}
+
+.save-btn:hover {
+  background: var(--admin-primary-hover);
+}
+
+.cancel-btn {
+  background: #e5eaf1;
+  color: var(--admin-text);
+}
+
+.cancel-btn:hover {
+  background: #d9e1ea;
+}
+
+.edit-btn {
+  background: rgba(47, 103, 216, 0.12);
+  color: var(--admin-primary);
+  margin-right: 8px;
+}
+
+.edit-btn:hover {
+  background: rgba(47, 103, 216, 0.18);
+}
+
+.delete-btn {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--admin-danger);
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.message-text {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #edf7ee;
+  border: 1px solid #cdebd3;
+  color: var(--admin-success);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cars-table-wrapper {
+  overflow-x: auto;
+  border-radius: 18px;
+}
+
+.cars-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+}
+
+.cars-table th,
+.cars-table td {
+  padding: 15px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.cars-table th {
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cars-table td {
+  color: var(--admin-text);
+  font-size: 14px;
+}
+
+.cars-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.car-thumb {
+  width: 110px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  display: block;
+}
+
+@media (max-width: 1100px) {
+  .car-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-cars-page {
+    padding: 18px;
+  }
+
+  .admin-cars-box {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .save-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,172 @@
+:root {
+  --admin-font: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+
+  --admin-bg: #eef1f5;
+  --admin-card: #ffffff;
+  --admin-card-soft: #f7f9fc;
+  --admin-border: #d9e0e8;
+
+  --admin-text: #1f2937;
+  --admin-text-soft: #5b6472;
+  --admin-text-muted: #7b8794;
+
+  --admin-primary: #2f67d8;
+  --admin-primary-hover: #2457c0;
+  --admin-danger: #ef4444;
+  --admin-success: #16a34a;
+
+  --admin-radius-xl: 24px;
+  --admin-radius-lg: 18px;
+  --admin-radius-md: 14px;
+  --admin-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.admin-contacts-page {
+  min-height: 100vh;
+  padding: 28px;
+  background: var(--admin-bg);
+  font-family: var(--admin-font);
+}
+
+.admin-contacts-header {
+  margin-bottom: 20px;
+}
+
+.admin-contacts-header h1 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.admin-contacts-header p {
+  margin: 8px 0 0;
+  color: var(--admin-text-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.message-text {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #f4d2d2;
+  background: #fff5f5;
+  color: #d14343;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-contacts-box {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 24px;
+  box-shadow: var(--admin-shadow);
+  overflow: hidden;
+}
+
+.contacts-table-wrapper {
+  overflow-x: auto;
+}
+
+.contacts-table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+.contacts-table th,
+.contacts-table td {
+  padding: 16px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: top;
+}
+
+.contacts-table th {
+  background: #fafbfd;
+  color: var(--admin-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.contacts-table td {
+  color: var(--admin-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.contacts-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.contacts-table strong {
+  color: var(--admin-text);
+  font-weight: 700;
+}
+
+.contacts-table span,
+.contacts-table div {
+  color: var(--admin-text-soft);
+}
+
+.contact-thumb {
+  width: 110px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  display: block;
+}
+
+.contacts-table select {
+  width: 100%;
+  min-width: 130px;
+  height: 42px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-text);
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: var(--admin-font);
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.contacts-table select:focus {
+  border-color: var(--admin-primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(47, 103, 216, 0.12);
+}
+
+.delete-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--admin-danger);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--admin-font);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+@media (max-width: 768px) {
+  .admin-contacts-page {
+    padding: 18px;
+  }
+}

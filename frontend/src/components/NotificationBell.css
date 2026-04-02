@@ -1,0 +1,171 @@
+.notification-bell {
+  position: relative;
+}
+
+.notification-bell-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.notification-bell.theme-dark .notification-bell-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: #fff;
+}
+
+.notification-bell.theme-light .notification-bell-btn {
+  border: 1px solid #d7deea;
+  background: #fff;
+  color: #0f172a;
+}
+
+.notification-bell-btn:hover {
+  transform: translateY(-1px);
+}
+
+.notification-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: 360px;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.notification-dropdown-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.notification-dropdown-list {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.notification-empty {
+  padding: 18px 16px;
+  color: #aaa;
+}
+
+.notification-item {
+  width: 100%;
+  border: none;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  color: #fff;
+  transition: 0.2s ease;
+  position: relative;
+}
+
+/* CHƯA ĐỌC: rõ hơn */
+.notification-item.unread {
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 1;
+}
+
+.notification-item.unread .notification-item-title {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.notification-item.unread .notification-item-message {
+  color: #f1f1f1;
+}
+
+.notification-item.unread::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b30;
+}
+
+/* ĐÃ ĐỌC: mờ hơn */
+.notification-item.read {
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.58;
+}
+
+.notification-item.read .notification-item-title {
+  color: #d0d0d0;
+  font-weight: 600;
+}
+
+.notification-item.read .notification-item-message {
+  color: #9f9f9f;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 1;
+}
+
+.notification-item-title {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.notification-item-message {
+  font-size: 13px;
+  line-height: 1.45;
+  padding-right: 16px;
+}
+
+.notification-item-time {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8f8f8f;
+}
+.notification-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notification-read-all-btn {
+  border: none;
+  background: transparent;
+  color: #4da3ff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notification-read-all-btn:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,270 @@
+.lux-navbar {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+.lux-navbar-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: 84px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.lux-navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  min-width: 0;
+}
+
+.lux-brand {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.lux-nav-text {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.lux-nav-link {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.4px;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.lux-nav-link:hover {
+  color: #ffffff;
+}
+
+.lux-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 0;
+  height: 1px;
+  background: #ffffff;
+  transition: width 0.25s ease;
+}
+
+.lux-nav-link:hover::after {
+  width: 100%;
+}
+
+.lux-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.lux-search-form {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  min-width: 250px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lux-search-form input {
+  width: 170px;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #ffffff;
+  padding-right: 16px;
+  font-size: 14px;
+}
+
+.lux-search-form input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.lux-icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  text-decoration: none;
+}
+
+.lux-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lux-user-link {
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  transition: 0.2s ease;
+}
+
+.lux-user-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lux-user-link span {
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lux-logout-btn {
+  color: #fca5a5;
+}
+
+.lux-menu-btn {
+  display: none;
+}
+
+.lux-mobile-menu {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .lux-brand {
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+
+  .lux-nav-text {
+    gap: 18px;
+  }
+
+  .lux-nav-link {
+    font-size: 13px;
+  }
+
+  .lux-search-form {
+    min-width: 220px;
+  }
+
+  .lux-search-form input {
+    width: 130px;
+  }
+
+  .lux-user-link span {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 980px) {
+  .lux-nav-text {
+    display: none;
+  }
+
+  .lux-menu-btn {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 720px) {
+  .lux-navbar-inner {
+    min-height: 72px;
+    padding: 0 14px;
+  }
+
+  .lux-brand {
+    font-size: 20px;
+    letter-spacing: 1.5px;
+  }
+
+  .lux-search-form {
+    display: none;
+  }
+
+  .lux-user-link span {
+    display: none;
+  }
+
+  .lux-mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 22px 22px;
+    background: rgba(0, 0, 0, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .lux-mobile-menu a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+  }
+}
+
+/* Language toggle: keep globe icon and language code stable size */
+.lux-lang-btn {
+  width: auto;
+  min-width: 56px;
+  height: 40px;
+  padding: 6px 8px;
+  gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.lux-lang-btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.lang-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 6px;
+  color: #ffffff;
+  line-height: 1;
+}
