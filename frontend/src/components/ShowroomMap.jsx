@@ -19,7 +19,7 @@ export default function ShowroomMap({ showrooms = [], userLocation = null }) {
       style={{ height: "540px", width: "100%", borderRadius: "18px" }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
+        attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
@@ -37,13 +37,26 @@ export default function ShowroomMap({ showrooms = [], userLocation = null }) {
               <p>{item.address}</p>
               <p>SĐT: {item.phone || "—"}</p>
               <p>Giờ mở cửa: {item.openHours || "—"}</p>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Chỉ đường
-              </a>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Chỉ đường đến {item.name}
+                </a>
+
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${item.name} ${item.address}`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Xem vị trí {item.name}
+                </a>
+              </div>
             </div>
           </Popup>
         </Marker>
