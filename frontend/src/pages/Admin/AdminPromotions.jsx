@@ -51,7 +51,7 @@ export default function AdminPromotions() {
   const fetchPromotions = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/promotions");
+      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/promotions");
       setPromotions(res.data.promotions || []);
       setMessage("");
     } catch (error) {
@@ -195,12 +195,12 @@ export default function AdminPromotions() {
 
       if (editingId) {
         await axios.put(
-          `https://webbanxe-backend-86dx.onrender.com/api/promotions/${editingId}`,
+          `https://webbanxe-backend-stx9.onrender.com/api/promotions/${editingId}`,
           payload
         );
         setMessage("Cập nhật ưu đãi thành công");
       } else {
-        await axios.post("https://webbanxe-backend-86dx.onrender.com/api/promotions", payload);
+        await axios.post("https://webbanxe-backend-stx9.onrender.com/api/promotions", payload);
         setMessage("Tạo ưu đãi thành công");
       }
 
@@ -241,7 +241,7 @@ export default function AdminPromotions() {
     if (!ok) return;
 
     try {
-      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/promotions/${id}`);
+      await axios.delete(`https://webbanxe-backend-stx9.onrender.com/api/promotions/${id}`);
       setMessage("Xóa ưu đãi thành công");
       fetchPromotions();
       if (editingId === id) resetForm();

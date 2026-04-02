@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const socket = io("https://webbanxe-backend-86dx.onrender.com", {
+const socket = io("https://webbanxe-backend-stx9.onrender.com", {
   transports: ["websocket"],
   withCredentials: true,
 });

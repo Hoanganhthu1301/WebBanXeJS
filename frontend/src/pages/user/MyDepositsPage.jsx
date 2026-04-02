@@ -29,7 +29,7 @@ export default function MyDepositsPage() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "https://webbanxe-backend-86dx.onrender.com/api/deposits/my-deposits",
+        "https://webbanxe-backend-stx9.onrender.com/api/deposits/my-deposits",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export default function MyDepositsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(
-        `https://webbanxe-backend-86dx.onrender.com/api/deposits/${id}/user-cancel`,
+        `https://webbanxe-backend-stx9.onrender.com/api/deposits/${id}/user-cancel`,
         {},
         {
           headers: {

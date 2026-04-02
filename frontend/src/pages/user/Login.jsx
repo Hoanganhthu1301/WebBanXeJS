@@ -30,7 +30,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "https://webbanxe-backend-86dx.onrender.com/api/auth/login",
+        "https://webbanxe-backend-stx9.onrender.com/api/auth/login",
         formData
       );
 
@@ -54,7 +54,7 @@ export default function Login() {
       setMessage("");
 
       const res = await axios.post(
-        "https://webbanxe-backend-86dx.onrender.com/api/auth/google-login",
+        "https://webbanxe-backend-stx9.onrender.com/api/auth/google-login",
         {
           credential: credentialResponse.credential,
         }

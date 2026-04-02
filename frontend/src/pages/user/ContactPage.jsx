@@ -40,7 +40,7 @@ export default function ContactPage() {
 
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`);
+      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`);
       setCar(res.data.car);
     } catch (error) {
       setMessage(t('error_fetch_car_info'));
@@ -84,7 +84,7 @@ export default function ContactPage() {
       setLoading(true);
       setMessage("");
       const payload = { ...formData, carId: car._id };
-      const res = await axios.post("https://webbanxe-backend-86dx.onrender.com/api/contacts", payload);
+      const res = await axios.post("https://webbanxe-backend-stx9.onrender.com/api/contacts", payload);
       setMessage(res.data.message || t('msg_contact_success'));
       setFormData(initialForm);
     } catch (error) {

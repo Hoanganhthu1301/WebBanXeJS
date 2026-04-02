@@ -60,7 +60,7 @@ export default function AdminRevenue() {
       else if (type === "month") { params.month = Number(month); params.year = Number(year); }
       else if (type === "year") { params.year = Number(year); }
 
-      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/reports/revenue", {
+      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/reports/revenue", {
         headers: { Authorization: `Bearer ${token}` },
         params,
       });
@@ -84,7 +84,7 @@ export default function AdminRevenue() {
       setSaving(true);
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "https://webbanxe-backend-86dx.onrender.com/api/reports/revenue/save",
+        "https://webbanxe-backend-stx9.onrender.com/api/reports/revenue/save",
         buildSavePayload(),
         { headers: { Authorization: `Bearer ${token}` } }
       );

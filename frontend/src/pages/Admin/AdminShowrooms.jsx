@@ -24,7 +24,7 @@ export default function AdminShowrooms() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "https://webbanxe-backend-86dx.onrender.com/api/showrooms/admin/all",
+        "https://webbanxe-backend-stx9.onrender.com/api/showrooms/admin/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -75,14 +75,14 @@ export default function AdminShowrooms() {
 
       if (editingId) {
         await axios.put(
-          `https://webbanxe-backend-86dx.onrender.com/api/showrooms/${editingId}`,
+          `https://webbanxe-backend-stx9.onrender.com/api/showrooms/${editingId}`,
           payload,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
       } else {
-        await axios.post("https://webbanxe-backend-86dx.onrender.com/api/showrooms", payload, {
+        await axios.post("https://webbanxe-backend-stx9.onrender.com/api/showrooms", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -128,7 +128,7 @@ export default function AdminShowrooms() {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/showrooms/${id}`, {
+      await axios.delete(`https://webbanxe-backend-stx9.onrender.com/api/showrooms/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

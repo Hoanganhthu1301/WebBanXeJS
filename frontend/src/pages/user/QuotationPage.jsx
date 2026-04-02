@@ -27,7 +27,7 @@ export default function QuotationPage() {
 
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`);
+      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`);
       setCar(res.data.car);
     } catch (error) {
       setMessage("Không lấy được thông tin xe");
@@ -66,7 +66,7 @@ export default function QuotationPage() {
         carId: car._id,
       };
 
-      const res = await axios.post("https://webbanxe-backend-86dx.onrender.com/api/quotations", payload);
+      const res = await axios.post("https://webbanxe-backend-stx9.onrender.com/api/quotations", payload);
       setMessage(res.data.message || "Gửi yêu cầu báo giá thành công");
       setFormData(initialForm);
     } catch (error) {

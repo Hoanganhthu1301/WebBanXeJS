@@ -46,7 +46,7 @@ export default function Register() {
       };
 
       const res = await axios.post(
-        "https://webbanxe-backend-86dx.onrender.com/api/auth/register",
+        "https://webbanxe-backend-stx9.onrender.com/api/auth/register",
         payload
       );
 

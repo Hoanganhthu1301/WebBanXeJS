@@ -50,8 +50,8 @@ export default function CarDetail() {
   const fetchCar = async () => {
     try {
       const [carRes, promoRes] = await Promise.all([
-        axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`),
-        axios.get(`https://webbanxe-backend-86dx.onrender.com/api/promotions/car/${id}`),
+        axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`),
+        axios.get(`https://webbanxe-backend-stx9.onrender.com/api/promotions/car/${id}`),
       ]);
 
       setCar(carRes.data.car || null);
@@ -65,7 +65,7 @@ export default function CarDetail() {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/reviews/car/${id}`);
+      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/reviews/car/${id}`);
       setReviews(res.data.reviews || []);
       setAvgRating(res.data.avgRating || 0);
       setReviewCount(res.data.total || 0);
@@ -150,7 +150,7 @@ export default function CarDetail() {
         comment: reviewForm.comment?.trim() || "",
       };
 
-      const res = await axios.post("https://webbanxe-backend-86dx.onrender.com/api/reviews", payload);
+      const res = await axios.post("https://webbanxe-backend-stx9.onrender.com/api/reviews", payload);
       setReviewMessage(t('review_success_msg'));
       setReviewForm({ rating: 5, comment: "" });
       fetchReviews();

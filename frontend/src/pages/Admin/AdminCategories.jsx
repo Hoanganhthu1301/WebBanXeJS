@@ -27,7 +27,7 @@ export default function AdminCategories() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/categories");
+      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/categories");
       setCategories(res.data.categories || []);
     } catch {
       setMessage("Không lấy được danh sách danh mục");
@@ -52,12 +52,12 @@ export default function AdminCategories() {
     try {
       if (editingId) {
         await axios.put(
-          `https://webbanxe-backend-86dx.onrender.com/api/categories/${editingId}`,
+          `https://webbanxe-backend-stx9.onrender.com/api/categories/${editingId}`,
           formData
         );
         setMessage("Cập nhật danh mục thành công");
       } else {
-        await axios.post("https://webbanxe-backend-86dx.onrender.com/api/categories", formData);
+        await axios.post("https://webbanxe-backend-stx9.onrender.com/api/categories", formData);
         setMessage("Thêm danh mục thành công");
       }
 
@@ -85,7 +85,7 @@ export default function AdminCategories() {
     if (!ok) return;
 
     try {
-      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/categories/${id}`);
+      await axios.delete(`https://webbanxe-backend-stx9.onrender.com/api/categories/${id}`);
       setMessage("Xóa danh mục thành công");
       fetchCategories();
     } catch (error) {

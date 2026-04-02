@@ -16,7 +16,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await axios.post(
-        "https://webbanxe-backend-86dx.onrender.com/api/auth/forgot-password",
+        "https://webbanxe-backend-stx9.onrender.com/api/auth/forgot-password",
         { email }
       );
 

@@ -38,7 +38,7 @@ export default function CarsPage() {
   const fetchCars = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/cars");
+      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/cars");
       const carsData = res.data.cars || [];
       setCars(carsData);
       setMessage("");
@@ -56,7 +56,7 @@ export default function CarsPage() {
     try {
       const requests = carsData.map((car) =>
         axios
-          .get(`https://webbanxe-backend-86dx.onrender.com/api/promotions/car/${car._id}`)
+          .get(`https://webbanxe-backend-stx9.onrender.com/api/promotions/car/${car._id}`)
           .then((res) => ({
             carId: car._id,
             promotions: res.data.promotions || [],
@@ -84,7 +84,7 @@ export default function CarsPage() {
       return;
     }
     try {
-      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/favorites", {
+      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/favorites", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const favoritesData = res.data.favorites || [];
@@ -108,7 +108,7 @@ export default function CarsPage() {
       return;
     }
     try {
-      await axios.post(`https://webbanxe-backend-86dx.onrender.com/api/favorites/toggle/${carId}`, {}, {
+      await axios.post(`https://webbanxe-backend-stx9.onrender.com/api/favorites/toggle/${carId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchFavorites();

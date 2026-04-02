@@ -16,7 +16,7 @@ export default function DepositCancel() {
 
       try {
         await fetch(
-          `https://webbanxe-backend-86dx.onrender.com/api/deposits/order/${orderCode}/cancel`,
+          `https://webbanxe-backend-stx9.onrender.com/api/deposits/order/${orderCode}/cancel`,
           {
             method: "PUT",
             headers: {

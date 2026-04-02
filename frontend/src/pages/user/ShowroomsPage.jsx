@@ -32,7 +32,7 @@ export default function ShowroomsPage() {
   const fetchShowrooms = async () => {
   try {
     setLoading(true);
-    const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/showrooms");
+    const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/showrooms");
     setShowrooms(res.data.showrooms || []);
     setMessage("");
   } catch (error) {
