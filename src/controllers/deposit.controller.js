@@ -225,7 +225,10 @@ const getCarAvailability = async (carId, excludeDepositId = null) => {
   }
 
   const totalQuantity = Number(car.quantity || 0);
-  const reservedQuantity = await getReservedQuantityByCar(car._id, excludeDepositId);
+  const reservedQuantity = await getReservedQuantityByCar(
+    car._id,
+    excludeDepositId
+  );
   const availableQuantity = Math.max(totalQuantity - reservedQuantity, 0);
 
   return {
@@ -1001,7 +1004,8 @@ const getDepositDetail = async (req, res) => {
       .populate("userId", "fullName name email phone")
       .populate("assignedStaffId", "fullName name email phone role")
       .populate("confirmedBy", "fullName name email phone role")
-      .populate("invoiceUploadedBy", "fullName name email phone role");
+      .populate("invoiceUploadedBy", "fullName name email phone role")
+      .populate("refundConfirmedBy", "fullName name email phone role");
 
     if (!deposit) {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn" });
@@ -1028,7 +1032,8 @@ const getDepositByOrderCode = async (req, res) => {
       .populate("carId", "name brand category price image images status quantity soldCount")
       .populate("userId", "fullName name email phone")
       .populate("assignedStaffId", "fullName name email phone role")
-      .populate("confirmedBy", "fullName name email phone role");
+      .populate("confirmedBy", "fullName name email phone role")
+      .populate("refundConfirmedBy", "fullName name email phone role");
 
     if (!deposit) {
       return res.status(404).json({ message: "Không tìm thấy đơn cọc" });
@@ -1131,6 +1136,7 @@ const getMyDeposits = async (req, res) => {
       .populate("carId", "name brand category price image images status quantity soldCount")
       .populate("assignedStaffId", "fullName name email phone role")
       .populate("confirmedBy", "fullName name email phone role")
+      .populate("refundConfirmedBy", "fullName name email phone role")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -1152,6 +1158,7 @@ const getAllDeposits = async (req, res) => {
       .populate("userId", "fullName name email phone")
       .populate("assignedStaffId", "fullName name email phone role")
       .populate("confirmedBy", "fullName name email phone role")
+      .populate("refundConfirmedBy", "fullName name email phone role")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -1358,6 +1365,12 @@ const adminCancelDeposit = async (req, res) => {
       deposit.refundStatus = "none";
       deposit.refundReason = reason || "Admin hủy đơn";
       deposit.refundAmount = 0;
+      deposit.refundAt = null;
+      deposit.refundReferenceId = "";
+      deposit.refundMethod = "";
+      deposit.refundGatewayResponse = null;
+      deposit.refundConfirmedBy = null;
+      deposit.refundConfirmedAt = null;
 
       await deposit.save();
       await syncCarStatusFromDeposit(deposit);
@@ -1419,36 +1432,36 @@ const adminCancelDeposit = async (req, res) => {
     await deposit.save();
     await syncCarStatusFromDeposit(deposit);
 
+    const adminRealtimeMessage = refundResult.ok
+      ? `Admin đã hủy đơn ${deposit.carName} và gửi yêu cầu hoàn cọc`
+      : refundResult.reasonType === "missing_bank_info"
+      ? `Admin đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công do thiếu thông tin tài khoản`
+      : `Admin đã hủy đơn ${deposit.carName}, hoàn cọc tự động thất bại: ${refundResult.message}`;
+
+    const userRealtimeMessage = refundResult.ok
+      ? `Đơn cọc xe ${deposit.carName} đã bị hủy và đang xử lý hoàn cọc`
+      : refundResult.reasonType === "missing_bank_info"
+      ? `Đơn cọc xe ${deposit.carName} đã bị hủy và đang chờ hoàn cọc thủ công do thiếu thông tin tài khoản nhận hoàn`
+      : `Đơn cọc xe ${deposit.carName} đã bị hủy. Hoàn cọc tự động thất bại: ${refundResult.message}. Vui lòng chờ admin xử lý thủ công`;
+
     emitToAdmins("deposit_cancelled", {
-      message: refundResult.pendingManual
-        ? `Admin đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-        : `Admin đã hủy đơn ${deposit.carName} và gửi yêu cầu hoàn cọc`,
+      message: adminRealtimeMessage,
       deposit,
     });
 
     if (deposit.userId) {
       emitToUser(deposit.userId, "deposit_cancelled", {
-        message: refundResult.pendingManual
-          ? `Đơn cọc xe ${deposit.carName} đã bị hủy và đang chờ hoàn cọc thủ công`
-          : `Đơn cọc xe ${deposit.carName} đã bị hủy và đang xử lý hoàn cọc`,
+        message: userRealtimeMessage,
         deposit,
       });
     }
 
-    emitDepositChanged(
-      deposit,
-      "cancelled_by_admin",
-      refundResult.pendingManual
-        ? `Admin đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-        : `Admin đã hủy đơn ${deposit.carName} và gửi yêu cầu hoàn cọc`
-    );
+    emitDepositChanged(deposit, "cancelled_by_admin", adminRealtimeMessage);
 
     await notifyAllAdmins({
       type: "deposit_cancelled_admin",
       title: "Admin đã hủy đơn",
-      message: refundResult.pendingManual
-        ? `Admin đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-        : `Admin đã hủy đơn ${deposit.carName} và gửi yêu cầu hoàn cọc`,
+      message: adminRealtimeMessage,
       link: `/admin/deposits/${deposit._id}`,
       data: {
         depositId: deposit._id,
@@ -1461,9 +1474,7 @@ const adminCancelDeposit = async (req, res) => {
         userId: deposit.userId,
         type: "deposit_cancelled_admin",
         title: "Đơn cọc đã bị hủy",
-        message: refundResult.pendingManual
-          ? `Đơn cọc xe ${deposit.carName} đã bị hủy và đang chờ hoàn cọc thủ công`
-          : `Đơn cọc xe ${deposit.carName} đã bị hủy và đang xử lý hoàn cọc`,
+        message: userRealtimeMessage,
         link: `/my-deposits/${deposit._id}`,
         data: {
           depositId: deposit._id,
@@ -1473,9 +1484,11 @@ const adminCancelDeposit = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: refundResult.pendingManual
-        ? "Admin đã hủy đơn. Đơn được chuyển sang chờ hoàn cọc thủ công."
-        : "Admin đã hủy đơn và hoàn cọc qua payOS",
+      message: refundResult.ok
+        ? "Admin đã hủy đơn và gửi yêu cầu hoàn cọc qua PayOS"
+        : refundResult.reasonType === "missing_bank_info"
+        ? "Admin đã hủy đơn. Đơn được chuyển sang chờ hoàn cọc thủ công do thiếu thông tin tài khoản nhận hoàn."
+        : `Admin đã hủy đơn. Hoàn cọc tự động thất bại: ${refundResult.message}. Đơn được chuyển sang chờ xử lý thủ công.`,
       deposit,
     });
   } catch (error) {
@@ -1486,6 +1499,8 @@ const adminCancelDeposit = async (req, res) => {
     });
   }
 };
+
+
 
 const isWithin24HoursFromPaidAt = (paidAt) => {
   if (!paidAt) return false;
@@ -1503,18 +1518,22 @@ const refundViaPayOS = async (deposit, reason) => {
     deposit.refundAt = null;
     deposit.refundReferenceId = "";
     deposit.refundMethod = "manual";
+    deposit.refundGatewayResponse = null;
+    deposit.refundConfirmedBy = null;
+    deposit.refundConfirmedAt = null;
     deposit.status = "cancelled";
 
     return {
       ok: false,
       pendingManual: true,
-      message: "Thiếu thông tin tài khoản nhận hoàn, chuyển sang chờ hoàn thủ công",
+      reasonType: "missing_bank_info",
+      message: "Thiếu thông tin tài khoản nhận hoàn",
     };
   }
 
   const referenceId = `refund_${deposit.orderCode}_${Date.now()}`;
 
-  await createPayout({
+  const payoutResult = await createPayout({
     referenceId,
     amount: Number(deposit.depositAmount || 0),
     description: `Hoan coc ${deposit.carName}`.slice(0, 25),
@@ -1523,21 +1542,47 @@ const refundViaPayOS = async (deposit, reason) => {
     category: ["refund"],
   });
 
+  if (!payoutResult.success) {
+    deposit.refundStatus = "pending_refund";
+    deposit.refundReason =
+      payoutResult.message || reason || "Gửi yêu cầu hoàn cọc thất bại";
+    deposit.refundAmount = Number(deposit.depositAmount || 0);
+    deposit.refundAt = null;
+    deposit.refundReferenceId = referenceId;
+    deposit.refundMethod = "payos_payout_failed";
+    deposit.refundGatewayResponse = payoutResult.data || null;
+    deposit.refundConfirmedBy = null;
+    deposit.refundConfirmedAt = null;
+    deposit.status = "cancelled";
+
+    return {
+      ok: false,
+      pendingManual: true,
+      reasonType: "payos_failed",
+      message:
+        payoutResult.message ||
+        "Gửi payout thất bại, chuyển sang chờ admin xử lý",
+    };
+  }
+
   deposit.refundStatus = "pending_refund";
-  deposit.refundReason = reason || "Đã gửi yêu cầu hoàn cọc qua payOS";
+  deposit.refundReason = reason || "Đã gửi yêu cầu hoàn cọc qua PayOS";
   deposit.refundAmount = Number(deposit.depositAmount || 0);
   deposit.refundAt = null;
   deposit.refundReferenceId = referenceId;
   deposit.refundMethod = "payos_payout";
+  deposit.refundGatewayResponse = payoutResult.data || null;
+  deposit.refundConfirmedBy = null;
+  deposit.refundConfirmedAt = null;
   deposit.status = "cancelled";
 
   return {
     ok: true,
     pendingManual: false,
-    message: "Đã gửi yêu cầu hoàn cọc qua payOS",
+    reasonType: "payos_sent",
+    message: "Đã gửi yêu cầu hoàn cọc qua PayOS",
   };
 };
-
 const isPickupExpiredOver7Days = (pickupDate) => {
   if (!pickupDate) return false;
 
@@ -1583,6 +1628,12 @@ const userCancelDeposit = async (req, res) => {
       deposit.refundStatus = "none";
       deposit.refundReason = "customer_cancelled_unpaid";
       deposit.refundAmount = 0;
+      deposit.refundAt = null;
+      deposit.refundReferenceId = "";
+      deposit.refundMethod = "";
+      deposit.refundGatewayResponse = null;
+      deposit.refundConfirmedBy = null;
+      deposit.refundConfirmedAt = null;
 
       await deposit.save();
       await syncCarStatusFromDeposit(deposit);
@@ -1606,7 +1657,9 @@ const userCancelDeposit = async (req, res) => {
       await notifyAllAdmins({
         type: "deposit_cancelled_by_user",
         title: "Khách đã hủy đơn",
-        message: `${deposit.fullName || "Khách hàng"} đã hủy đơn cọc xe ${deposit.carName}`,
+        message: `${
+          deposit.fullName || "Khách hàng"
+        } đã hủy đơn cọc xe ${deposit.carName}`,
         link: `/admin/deposits/${deposit._id}`,
         data: {
           depositId: deposit._id,
@@ -1635,75 +1688,84 @@ const userCancelDeposit = async (req, res) => {
     const within24h = isWithin24HoursFromPaidAt(deposit.paidAt);
 
     if (within24h) {
-      const refundResult = await refundViaPayOS(
-        deposit,
-        "Khách hủy cọc trong vòng 24h"
-      );
+  const refundResult = await refundViaPayOS(
+    deposit,
+    "Khách hủy cọc trong vòng 24h"
+  );
 
-      await deposit.save();
-      await syncCarStatusFromDeposit(deposit);
+  await deposit.save();
+  await syncCarStatusFromDeposit(deposit);
 
-      emitToAdmins("deposit_cancelled", {
-        message: refundResult.pendingManual
-          ? `Khách đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-          : `Khách đã hủy đơn ${deposit.carName}, đang xử lý hoàn cọc`,
-        deposit,
-      });
+  const adminRealtimeMessage = refundResult.ok
+    ? `Khách đã hủy đơn ${deposit.carName}, đang xử lý hoàn cọc`
+    : refundResult.reasonType === "missing_bank_info"
+    ? `Khách đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công do thiếu thông tin tài khoản`
+    : `Khách đã hủy đơn ${deposit.carName}, hoàn cọc tự động thất bại: ${refundResult.message}`;
 
-      emitToUser(deposit.userId, "deposit_cancelled", {
-        message: refundResult.pendingManual
-          ? `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang chờ hoàn cọc thủ công`
-          : `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang xử lý hoàn cọc`,
-        deposit,
-      });
+  const userRealtimeMessage = refundResult.ok
+    ? `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang xử lý hoàn cọc`
+    : refundResult.reasonType === "missing_bank_info"
+    ? `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang chờ hoàn cọc thủ công do thiếu thông tin tài khoản nhận hoàn`
+    : `Bạn đã hủy đơn ${deposit.carName}. Hoàn cọc tự động thất bại: ${refundResult.message}. Vui lòng chờ admin xử lý thủ công`;
 
-      emitDepositChanged(
-        deposit,
-        "cancelled_by_user",
-        refundResult.pendingManual
-          ? `Khách đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-          : `Khách đã hủy đơn ${deposit.carName}, đang xử lý hoàn cọc`
-      );
+  emitToAdmins("deposit_cancelled", {
+    message: adminRealtimeMessage,
+    deposit,
+  });
 
-      await notifyAllAdmins({
-        type: "deposit_cancelled_by_user",
-        title: "Khách đã hủy đơn",
-        message: refundResult.pendingManual
-          ? `${deposit.fullName || "Khách hàng"} đã hủy đơn ${deposit.carName}, chờ hoàn cọc thủ công`
-          : `${deposit.fullName || "Khách hàng"} đã hủy đơn ${deposit.carName}, đang xử lý hoàn cọc`,
-        link: `/admin/deposits/${deposit._id}`,
-        data: {
-          depositId: deposit._id,
-          carName: deposit.carName,
-        },
-      });
+  emitToUser(deposit.userId, "deposit_cancelled", {
+    message: userRealtimeMessage,
+    deposit,
+  });
 
-      await notifyUser({
-        userId: deposit.userId,
-        type: "deposit_cancelled_by_user",
-        title: "Đơn của bạn đã bị hủy",
-        message: refundResult.pendingManual
-          ? `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang chờ hoàn cọc thủ công`
-          : `Bạn đã hủy đơn ${deposit.carName}, hệ thống đang xử lý hoàn cọc`,
-        link: `/my-deposits/${deposit._id}`,
-        data: {
-          depositId: deposit._id,
-          carName: deposit.carName,
-        },
-      });
+  emitDepositChanged(
+    deposit,
+    "cancelled_by_user",
+    adminRealtimeMessage
+  );
 
-      return res.status(200).json({
-        message: refundResult.pendingManual
-          ? "Bạn đã hủy đơn. Đơn đang chờ hoàn cọc thủ công do thiếu thông tin tài khoản nhận hoàn."
-          : "Bạn đã hủy đơn và được hoàn cọc qua payOS",
-        deposit,
-      });
-    } else {
+  await notifyAllAdmins({
+    type: "deposit_cancelled_by_user",
+    title: "Khách đã hủy đơn",
+    message: adminRealtimeMessage,
+    link: `/admin/deposits/${deposit._id}`,
+    data: {
+      depositId: deposit._id,
+      carName: deposit.carName,
+    },
+  });
+
+  await notifyUser({
+    userId: deposit.userId,
+    type: "deposit_cancelled_by_user",
+    title: "Đơn của bạn đã bị hủy",
+    message: userRealtimeMessage,
+    link: `/my-deposits/${deposit._id}`,
+    data: {
+      depositId: deposit._id,
+      carName: deposit.carName,
+    },
+  });
+
+  return res.status(200).json({
+    message: refundResult.ok
+      ? "Bạn đã hủy đơn và gửi yêu cầu hoàn cọc qua PayOS"
+      : refundResult.reasonType === "missing_bank_info"
+      ? "Bạn đã hủy đơn. Đơn đang chờ hoàn cọc thủ công do thiếu thông tin tài khoản nhận hoàn."
+      : `Bạn đã hủy đơn. Yêu cầu hoàn cọc tự động thất bại: ${refundResult.message}. Vui lòng chờ admin xử lý thủ công.`,
+    deposit,
+  });
+} else {
       deposit.status = "cancelled";
       deposit.refundStatus = "forfeited";
       deposit.refundReason = "Khách hủy cọc sau 24h, mất cọc";
       deposit.refundAmount = 0;
       deposit.refundAt = new Date();
+      deposit.refundReferenceId = "";
+      deposit.refundMethod = "";
+      deposit.refundGatewayResponse = null;
+      deposit.refundConfirmedBy = null;
+      deposit.refundConfirmedAt = null;
 
       await deposit.save();
       await syncCarStatusFromDeposit(deposit);
@@ -1727,7 +1789,9 @@ const userCancelDeposit = async (req, res) => {
       await notifyAllAdmins({
         type: "deposit_forfeited_by_user",
         title: "Khách hủy đơn quá hạn",
-        message: `${deposit.fullName || "Khách hàng"} đã hủy đơn ${deposit.carName} sau 24h nên mất cọc`,
+        message: `${
+          deposit.fullName || "Khách hàng"
+        } đã hủy đơn ${deposit.carName} sau 24h nên mất cọc`,
         link: `/admin/deposits/${deposit._id}`,
         data: {
           depositId: deposit._id,
@@ -1782,6 +1846,12 @@ const adminMarkNoShowAndForfeit = async (req, res) => {
     deposit.refundStatus = "forfeited";
     deposit.refundReason = "no_show_over_7_days";
     deposit.refundAmount = 0;
+    deposit.refundAt = new Date();
+    deposit.refundReferenceId = "";
+    deposit.refundMethod = "";
+    deposit.refundGatewayResponse = null;
+    deposit.refundConfirmedBy = null;
+    deposit.refundConfirmedAt = null;
 
     await deposit.save();
     await syncCarStatusFromDeposit(deposit);
@@ -1830,7 +1900,8 @@ const adminMarkNoShowAndForfeit = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Đơn đã bị hủy do khách quá hạn nhận xe hơn 7 ngày, cọc bị giữ.",
+      message:
+        "Đơn đã bị hủy do khách quá hạn nhận xe hơn 7 ngày, cọc bị giữ.",
       deposit,
     });
   } catch (error) {
@@ -1856,9 +1927,17 @@ const confirmRefundCompleted = async (req, res) => {
       });
     }
 
+    if (!["payos_payout", "manual"].includes(deposit.refundMethod)) {
+      return res.status(400).json({
+        message: "Đơn chưa có phương thức hoàn tiền hợp lệ để xác nhận",
+      });
+    }
+
     deposit.refundStatus = "refunded";
     deposit.status = "refunded";
     deposit.refundAt = new Date();
+    deposit.refundConfirmedAt = new Date();
+    deposit.refundConfirmedBy = req.user?._id || req.user?.id || null;
 
     await deposit.save();
     await syncCarStatusFromDeposit(deposit);

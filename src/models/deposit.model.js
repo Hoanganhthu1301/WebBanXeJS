@@ -78,7 +78,8 @@ const depositSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-        promotionId: {
+
+    promotionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Promotion",
       default: null,
@@ -264,30 +265,45 @@ const depositSchema = new mongoose.Schema(
       default: null,
     },
     refundBankBin: {
-  type: String,
-  default: "",
-  trim: true,
-},
-refundBankAccountNumber: {
-  type: String,
-  default: "",
-  trim: true,
-},
-refundBankAccountName: {
-  type: String,
-  default: "",
-  trim: true,
-},
-refundReferenceId: {
-  type: String,
-  default: "",
-  trim: true,
-},
-refundMethod: {
-  type: String,
-  enum: ["", "payos_payout", "manual"],
-  default: "",
-},
+      type: String,
+      default: "",
+      trim: true,
+    },
+    refundBankAccountNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    refundBankAccountName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    refundReferenceId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    refundMethod: {
+      type: String,
+      enum: ["", "payos_payout", "manual", "payos_payout_failed"],
+      default: "",
+    },
+
+    refundGatewayResponse: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    refundConfirmedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    refundConfirmedAt: {
+      type: Date,
+      default: null,
+    },
+
     cancelledBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -303,9 +319,7 @@ refundMethod: {
       default: null,
     },
   },
-  
   { timestamps: true }
-  
 );
 
 module.exports = mongoose.model("Deposit", depositSchema);
