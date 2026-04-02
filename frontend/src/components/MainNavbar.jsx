@@ -1,29 +1,29 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Search,
   Globe,
   User,
   LogOut,
   Menu,
   Heart,
   Scale,
+  MapPin,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
+import logo from "../assets/logo-white.png";
 
 export default function MainNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [keyword, setKeyword] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const { t, i18n } = useTranslation();
 
   const toggleLanguage = () => {
-    const currentLang = i18n.language || 'vi';
-    i18n.changeLanguage(currentLang.startsWith('vi') ? 'en' : 'vi');
+    const currentLang = i18n.language || "vi";
+    i18n.changeLanguage(currentLang.startsWith("vi") ? "en" : "vi");
   };
 
   const user = useMemo(() => {
@@ -41,10 +41,8 @@ export default function MainNavbar() {
     window.location.reload();
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const value = keyword.trim();
-    navigate(value ? `/cars?keyword=${encodeURIComponent(value)}` : "/cars");
+  const handleGoToShowrooms = () => {
+    navigate("/showrooms");
     setMobileOpen(false);
   };
 
@@ -53,61 +51,68 @@ export default function MainNavbar() {
       <div className="lux-navbar-inner">
         <div className="lux-navbar-left">
           <Link to="/" className="lux-brand">
-            {t('web_title')}
+            {t("web_title")}
           </Link>
 
           <nav className="lux-nav-text">
             <Link to="/cars" className="lux-nav-link">
-              {t('nav_cars')}
+              {t("nav_cars")}
             </Link>
+
             <Link
               to={user ? "/my-deposits" : "/login"}
               className="lux-nav-link"
             >
-              {t('nav_orders')}
+              {t("nav_orders")}
             </Link>
+
             <Link
               to={user ? "/consultations" : "/login"}
               className="lux-nav-link"
             >
-              {t('nav_consult')}
+              {t("nav_consult")}
             </Link>
           </nav>
         </div>
 
+        <div className="lux-navbar-center">
+          <Link to="/" className="lux-logo-link">
+            <img src={logo} alt="Logo" className="lux-logo-img" />
+          </Link>
+        </div>
+
         <div className="lux-navbar-right">
-          <form className="lux-search-form" onSubmit={handleSearch}>
-            <button type="submit" className="lux-icon-btn" title={t('title_search')}>
-              <Search size={18} />
-            </button>
-            <input
-              type="text"
-              placeholder={t('search_placeholder')}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-          </form>
+          <button
+            type="button"
+            className="lux-icon-btn"
+            title="Vị trí showroom"
+            onClick={handleGoToShowrooms}
+          >
+            <MapPin size={18} />
+          </button>
 
           <Link
             to={user ? "/favorites" : "/login"}
             className="lux-icon-btn"
-            title={t('title_favorites')}
+            title={t("title_favorites")}
           >
             <Heart size={18} />
           </Link>
 
-          <Link to="/compare" className="nav-icon-btn" title="So sánh xe">
-            <Scale size={20} />
+          <Link to="/compare" className="lux-icon-btn" title="So sánh xe">
+            <Scale size={18} />
           </Link>
 
           <button
             type="button"
             className="lux-icon-btn lux-lang-btn"
-            title={t('title_language')}
+            title={t("title_language")}
             onClick={toggleLanguage}
           >
             <Globe size={18} />
-            <span className="lang-code">{(i18n.language || 'vi').startsWith('vi') ? 'VI' : 'EN'}</span>
+            <span className="lang-code">
+              {(i18n.language || "vi").startsWith("vi") ? "VI" : "EN"}
+            </span>
           </button>
 
           {user && <NotificationBell dark />}
@@ -115,7 +120,7 @@ export default function MainNavbar() {
           {!user ? (
             <Link to="/login" className="lux-user-link">
               <User size={18} />
-              <span>{t('btn_login')}</span>
+              <span>{t("btn_login")}</span>
             </Link>
           ) : (
             <>
@@ -130,14 +135,14 @@ export default function MainNavbar() {
                 title={user.fullName || user.name}
               >
                 <User size={18} />
-                <span>{user.fullName || user.name || t('user_default')}</span>
+                <span>{user.fullName || user.name || t("user_default")}</span>
               </button>
 
               <button
                 type="button"
                 className="lux-icon-btn lux-logout-btn"
                 onClick={handleLogout}
-                title={t('btn_logout')}
+                title={t("btn_logout")}
               >
                 <LogOut size={18} />
               </button>
@@ -147,7 +152,7 @@ export default function MainNavbar() {
           <button
             type="button"
             className="lux-icon-btn lux-menu-btn"
-            title={t('title_menu')}
+            title={t("title_menu")}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <Menu size={18} />
@@ -157,33 +162,45 @@ export default function MainNavbar() {
 
       {mobileOpen && (
         <div className="lux-mobile-menu">
-          <Link to="/cars" onClick={() => setMobileOpen(false)}>
-            {t('nav_cars')}
+          <Link to="/" onClick={() => setMobileOpen(false)}>
+            {t("web_title")}
           </Link>
 
-          <Link to="/showrooms" onClick={() => setMobileOpen(false)}>
+          <Link to="/cars" onClick={() => setMobileOpen(false)}>
+            {t("nav_cars")}
+          </Link>
+
+          <button
+            type="button"
+            className="lux-mobile-action"
+            onClick={handleGoToShowrooms}
+          >
             Showrooms
+          </button>
+
+          <Link to="/compare" onClick={() => setMobileOpen(false)}>
+            So sánh xe
           </Link>
 
           <Link
             to={user ? "/my-deposits" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            {t('nav_orders')}
+            {t("nav_orders")}
           </Link>
 
           <Link
             to={user ? "/consultations" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            {t('nav_consult')}
+            {t("nav_consult")}
           </Link>
 
           <Link
             to={user ? "/favorites" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            {t('nav_favorites')}
+            {t("nav_favorites")}
           </Link>
         </div>
       )}
