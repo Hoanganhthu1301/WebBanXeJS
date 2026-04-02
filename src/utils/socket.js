@@ -5,7 +5,7 @@ const initSocket = (server) => {
 
   ioInstance = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: "https://webbanxe.store",
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       credentials: true,
     },
