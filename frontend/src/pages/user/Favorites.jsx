@@ -33,7 +33,7 @@ export default function Favorites() {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/api/favorites", {
+      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/favorites", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -55,7 +55,7 @@ export default function Favorites() {
     try {
       const requests = carsData.map((car) =>
         axios
-          .get(`http://localhost:5000/api/promotions/car/${car._id}`)
+          .get(`https://webbanxe-backend-86dx.onrender.com/api/promotions/car/${car._id}`)
           .then((res) => ({
             carId: car._id,
             promotions: res.data.promotions || [],
@@ -92,7 +92,7 @@ export default function Favorites() {
   const handleRemove = async (carId) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:5000/api/favorites/${carId}`, {
+      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/favorites/${carId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

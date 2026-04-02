@@ -69,7 +69,7 @@ export default function AdminCars() {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/brands");
+      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/brands");
       setBrands(res.data.brands || []);
     } catch (error) {
       console.log("Không lấy được danh sách hãng", error);
@@ -78,7 +78,7 @@ export default function AdminCars() {
 
   const fetchCars = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/cars/admin/all");
+      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/cars/admin/all");
       setCars(res.data.cars || []);
     } catch (error) {
       setMessage("Không lấy được danh sách xe");
@@ -87,7 +87,7 @@ export default function AdminCars() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/categories");
+      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/categories");
       setCategories(res.data.categories || []);
     } catch (error) {
       console.log("Không lấy được danh sách danh mục", error);
@@ -173,10 +173,10 @@ export default function AdminCars() {
       console.log("PAYLOAD GUI LEN:", payload);
 
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/cars/${editingId}`, payload);
+        await axios.put(`https://webbanxe-backend-86dx.onrender.com/api/cars/${editingId}`, payload);
         setMessage("Cập nhật xe thành công");
       } else {
-        await axios.post("http://localhost:5000/api/cars", payload);
+        await axios.post("https://webbanxe-backend-86dx.onrender.com/api/cars", payload);
         setMessage("Thêm xe thành công");
       }
 
@@ -249,7 +249,7 @@ export default function AdminCars() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/cars/${id}`);
+      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`);
       setMessage("Xóa xe thành công");
       fetchCars();
     } catch (error) {

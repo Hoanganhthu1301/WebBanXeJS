@@ -30,9 +30,9 @@ export default function ContactConsultations() {
 
       // Gom 3 loại yêu cầu từ 3 API khác nhau của Thư
       const results = await Promise.allSettled([
-        axios.get("http://localhost:5000/api/contacts"),
-        axios.get("http://localhost:5000/api/quotations"),
-        axios.get("http://localhost:5000/api/appointments"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/contacts"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/quotations"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/appointments"),
       ]);
 
       const contactRes = results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };

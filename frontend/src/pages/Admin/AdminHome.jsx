@@ -37,9 +37,9 @@ export default function AdminDashboard() {
       };
 
       const [carsRes, usersRes, depositsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/cars", config),
-        axios.get("http://localhost:5000/api/admin/users", config),
-        axios.get("http://localhost:5000/api/deposits", config),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/cars", config),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/admin/users", config),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/deposits", config),
       ]);
 
       const cars =

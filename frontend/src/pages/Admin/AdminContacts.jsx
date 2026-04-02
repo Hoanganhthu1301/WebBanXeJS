@@ -39,9 +39,9 @@ export default function AdminContacts() {
   const fetchRequests = async () => {
     try {
       const results = await Promise.allSettled([
-        axios.get("http://localhost:5000/api/contacts"),
-        axios.get("http://localhost:5000/api/quotations"),
-        axios.get("http://localhost:5000/api/appointments"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/contacts"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/quotations"),
+        axios.get("https://webbanxe-backend-86dx.onrender.com/api/appointments"),
       ]);
 
       const contactRes = results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
@@ -108,11 +108,11 @@ export default function AdminContacts() {
 
     try {
       if (item.requestType === "consultation") {
-        await axios.delete(`http://localhost:5000/api/contacts/${item._id}`);
+        await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/contacts/${item._id}`);
       } else if (item.requestType === "quotation") {
-        await axios.delete(`http://localhost:5000/api/quotations/${item._id}`);
+        await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/quotations/${item._id}`);
       } else {
-        await axios.delete(`http://localhost:5000/api/appointments/${item._id}`);
+        await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/appointments/${item._id}`);
       }
 
       setMessage("Xóa yêu cầu thành công");
@@ -148,17 +148,17 @@ export default function AdminContacts() {
       setSendingReply(true);
 
       if (selectedRequest.requestType === "consultation") {
-        await axios.put(`http://localhost:5000/api/contacts/${selectedRequest._id}`, {
+        await axios.put(`https://webbanxe-backend-86dx.onrender.com/api/contacts/${selectedRequest._id}`, {
           status: replyStatus,
           adminReply: replyContent,
         });
       } else if (selectedRequest.requestType === "quotation") {
-        await axios.put(`http://localhost:5000/api/quotations/${selectedRequest._id}`, {
+        await axios.put(`https://webbanxe-backend-86dx.onrender.com/api/quotations/${selectedRequest._id}`, {
           status: replyStatus,
           adminReply: replyContent,
         });
       } else {
-        await axios.put(`http://localhost:5000/api/appointments/${selectedRequest._id}`, {
+        await axios.put(`https://webbanxe-backend-86dx.onrender.com/api/appointments/${selectedRequest._id}`, {
           status: replyStatus,
           adminReply: replyContent,
         });

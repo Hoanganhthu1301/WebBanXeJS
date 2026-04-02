@@ -48,7 +48,7 @@ export default function ChatbotWidget() {
       const userLocation = await getLocationIfAvailable();
       const carId = getCurrentCarId();
 
-      const res = await axios.post("http://localhost:5000/api/chatbot", {
+      const res = await axios.post("https://webbanxe-backend-86dx.onrender.com/api/chatbot", {
         message: userText,
         carId,
         userLocation,

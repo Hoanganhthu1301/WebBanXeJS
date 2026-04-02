@@ -18,7 +18,7 @@ import MainNavbar from "../../components/MainNavbar";
 import "../../styles/user/UserDepositDetail.css";
 import { useTranslation } from 'react-i18next';
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://webbanxe-backend-86dx.onrender.com/api";
 
 export default function UserDepositDetail() {
   const navigate = useNavigate();
@@ -154,7 +154,7 @@ export default function UserDepositDetail() {
   const getInvoiceImageSrc = () => {
     if (!deposit?.invoiceImage) return "";
     if (deposit.invoiceImage.startsWith("http")) return deposit.invoiceImage;
-    return `http://localhost:5000/${deposit.invoiceImage.replace(/^\/+/, "")}`;
+    return `https://webbanxe-backend-86dx.onrender.com/${deposit.invoiceImage.replace(/^\/+/, "")}`;
   };
 
   if (loading) {

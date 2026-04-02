@@ -32,7 +32,7 @@ export default function NotificationBell({ dark = true }) {
       if (!token) return;
 
       const res = await axios.get(
-        "http://localhost:5000/api/notifications",
+        "https://webbanxe-backend-86dx.onrender.com/api/notifications",
         authHeaders
       );
 
@@ -86,7 +86,7 @@ export default function NotificationBell({ dark = true }) {
     try {
       if (!item.isRead) {
         await axios.put(
-          `http://localhost:5000/api/notifications/${item._id}/read`,
+          `https://webbanxe-backend-86dx.onrender.com/api/notifications/${item._id}/read`,
           {},
           authHeaders
         );
@@ -113,7 +113,7 @@ export default function NotificationBell({ dark = true }) {
   const handleMarkAllAsRead = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/api/notifications/read-all",
+        "https://webbanxe-backend-86dx.onrender.com/api/notifications/read-all",
         {},
         authHeaders
       );

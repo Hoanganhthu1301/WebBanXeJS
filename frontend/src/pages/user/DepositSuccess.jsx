@@ -16,7 +16,7 @@ export default function DepositSuccess() {
 
       try {
         await fetch(
-          `http://localhost:5000/api/deposits/order/${orderCode}/confirm`,
+          `https://webbanxe-backend-86dx.onrender.com/api/deposits/order/${orderCode}/confirm`,
           {
             method: "PUT",
             headers: {

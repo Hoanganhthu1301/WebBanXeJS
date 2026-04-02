@@ -27,7 +27,7 @@ export default function AdminBrands() {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/brands");
+      const res = await axios.get("https://webbanxe-backend-86dx.onrender.com/api/brands");
       setBrands(res.data.brands || []);
     } catch {
       setMessage("Không lấy được danh sách hãng");
@@ -51,10 +51,10 @@ export default function AdminBrands() {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/brands/${editingId}`, formData);
+        await axios.put(`https://webbanxe-backend-86dx.onrender.com/api/brands/${editingId}`, formData);
         setMessage("Cập nhật hãng thành công");
       } else {
-        await axios.post("http://localhost:5000/api/brands", formData);
+        await axios.post("https://webbanxe-backend-86dx.onrender.com/api/brands", formData);
         setMessage("Thêm hãng thành công");
       }
 
@@ -82,7 +82,7 @@ export default function AdminBrands() {
     if (!ok) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/brands/${id}`);
+      await axios.delete(`https://webbanxe-backend-86dx.onrender.com/api/brands/${id}`);
       setMessage("Xóa hãng thành công");
       fetchBrands();
     } catch (error) {

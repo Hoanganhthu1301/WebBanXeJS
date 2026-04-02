@@ -94,7 +94,7 @@ export default function DepositPage() {
 
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
+      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`);
       setCar(res.data.car);
     } catch {
       setMessage("Không lấy được thông tin xe");
@@ -104,7 +104,7 @@ export default function DepositPage() {
   const fetchPromotionsByCar = async (carId) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/promotions/car/${carId}`
+        `https://webbanxe-backend-86dx.onrender.com/api/promotions/car/${carId}`
       );
       setPromotions(res.data.promotions || []);
     } catch (error) {
@@ -303,7 +303,7 @@ export default function DepositPage() {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "http://localhost:5000/api/deposits/payos",
+        "https://webbanxe-backend-86dx.onrender.com/api/deposits/payos",
         payload,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},

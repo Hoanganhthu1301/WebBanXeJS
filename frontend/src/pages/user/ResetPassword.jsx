@@ -32,7 +32,7 @@ export default function ResetPassword() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/reset-password",
+        "https://webbanxe-backend-86dx.onrender.com/api/auth/reset-password",
         {
           token,
           newPassword,

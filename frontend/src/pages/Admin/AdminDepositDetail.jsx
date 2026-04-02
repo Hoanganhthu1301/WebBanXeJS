@@ -25,7 +25,7 @@ export default function AdminDepositDetail() {
     try {
       setLoading(true);
 
-      const res = await axios.get(`http://localhost:5000/api/deposits/${id}`, {
+      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/deposits/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -55,7 +55,7 @@ export default function AdminDepositDetail() {
       formData.append("invoiceNote", invoiceNote);
 
       await axios.put(
-        `http://localhost:5000/api/deposits/${id}/upload-invoice`,
+        `https://webbanxe-backend-86dx.onrender.com/api/deposits/${id}/upload-invoice`,
         formData,
         {
           headers: {
@@ -194,7 +194,7 @@ export default function AdminDepositDetail() {
       return deposit.invoiceImage;
     }
 
-    return `http://localhost:5000${deposit.invoiceImage}`;
+    return `https://webbanxe-backend-86dx.onrender.com${deposit.invoiceImage}`;
   };
 
   if (loading) {

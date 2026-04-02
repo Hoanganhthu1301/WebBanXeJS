@@ -30,7 +30,7 @@ export default function ComparePage() {
       }
 
       const responses = await Promise.all(
-        ids.map((id) => axios.get(`http://localhost:5000/api/cars/${id}`))
+        ids.map((id) => axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`))
       );
 
       const carList = responses.map((res) => res.data.car).filter(Boolean);

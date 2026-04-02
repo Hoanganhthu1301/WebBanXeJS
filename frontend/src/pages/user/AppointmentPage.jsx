@@ -40,7 +40,7 @@ export default function AppointmentPage() {
 
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/cars/${id}`);
+      const res = await axios.get(`https://webbanxe-backend-86dx.onrender.com/api/cars/${id}`);
       setCar(res.data.car);
     } catch (error) {
       setMessage("Không lấy được thông tin xe");
@@ -79,7 +79,7 @@ export default function AppointmentPage() {
         carId: car._id,
       };
 
-      const res = await axios.post("http://localhost:5000/api/appointments", payload);
+      const res = await axios.post("https://webbanxe-backend-86dx.onrender.com/api/appointments", payload);
       setMessage(res.data.message || "Đặt lịch thành công");
       setFormData({
         ...initialForm,
