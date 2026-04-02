@@ -53,18 +53,24 @@ export default function MainNavbar() {
             <Link to="/cars" className="lux-nav-link">
               Các mẫu xe
             </Link>
+
+            <Link to="/showrooms" className="lux-nav-link">
+              Showrooms
+            </Link>
+
             <Link
               to={user ? "/my-deposits" : "/login"}
               className="lux-nav-link"
             >
               Đơn hàng
             </Link>
+
             <Link
-  to={user ? "/consultations" : "/login"}
-  className="lux-nav-link"
->
-  Tư vấn
-</Link>
+              to={user ? "/consultations" : "/login"}
+              className="lux-nav-link"
+            >
+              Tư vấn
+            </Link>
           </nav>
         </div>
 
@@ -147,18 +153,25 @@ export default function MainNavbar() {
           <Link to="/cars" onClick={() => setMobileOpen(false)}>
             Các mẫu xe
           </Link>
+
+          <Link to="/showrooms" onClick={() => setMobileOpen(false)}>
+            Showrooms
+          </Link>
+
           <Link
             to={user ? "/my-deposits" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
             Đơn hàng
           </Link>
+
           <Link
-  to={user ? "/consultations" : "/login"}
-  onClick={() => setMobileOpen(false)}
->
-  Tư vấn
-</Link>
+            to={user ? "/consultations" : "/login"}
+            onClick={() => setMobileOpen(false)}
+          >
+            Tư vấn
+          </Link>
+
           <Link
             to={user ? "/favorites" : "/login"}
             onClick={() => setMobileOpen(false)}

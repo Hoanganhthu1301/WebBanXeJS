@@ -1,0 +1,215 @@
+.showrooms-page {
+  min-height: 100vh;
+  background: #0b0d12;
+  color: #fff;
+}
+
+.showrooms-hero {
+  position: relative;
+  min-height: 52vh;
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(7, 10, 16, 0.88), rgba(7, 10, 16, 0.55)),
+    url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80")
+      center/cover no-repeat;
+}
+
+.showrooms-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8, 11, 17, 0.2), rgba(8, 11, 17, 0.7));
+}
+
+.showrooms-hero__content {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 80px 0 48px;
+}
+
+.showrooms-eyebrow {
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8fb7ff;
+}
+
+.showrooms-hero__content h1 {
+  margin: 0 0 16px;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 1.05;
+}
+
+.showrooms-hero__content p {
+  max-width: 680px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.showrooms-hero__actions {
+  margin-top: 28px;
+}
+
+.showrooms-primary-btn {
+  padding: 13px 22px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1f6bff, #3f8cff);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.showrooms-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(43, 110, 255, 0.28);
+}
+
+.showrooms-section {
+  padding: 40px 0 64px;
+}
+
+.showrooms-container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.showrooms-message,
+.showrooms-nearest-card,
+.showrooms-map-card,
+.showrooms-list-card {
+  background: rgba(18, 22, 31, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.26);
+}
+
+.showrooms-message {
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  color: #ffb2b2;
+}
+
+.showrooms-nearest-card {
+  margin-bottom: 24px;
+  padding: 22px;
+  border-radius: 22px;
+}
+
+.showrooms-nearest-label {
+  margin-bottom: 10px;
+  color: #8fb7ff;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.showrooms-nearest-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+}
+
+.showrooms-nearest-card p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.showrooms-nearest-card span {
+  color: #dfe8ff;
+  font-weight: 700;
+}
+
+.showrooms-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 0.95fr;
+  gap: 24px;
+}
+
+.showrooms-map-card,
+.showrooms-list-card {
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.showrooms-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.showrooms-list-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.showrooms-list-header span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.showrooms-list {
+  display: grid;
+  gap: 14px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.showrooms-item {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.showrooms-item h3 {
+  margin: 0 0 10px;
+  font-size: 1.06rem;
+}
+
+.showrooms-item p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.6;
+}
+
+.showrooms-item a {
+  display: inline-block;
+  margin-top: 4px;
+  color: #8fb7ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.showrooms-item a:hover {
+  text-decoration: underline;
+}
+
+.showrooms-empty {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 992px) {
+  .showrooms-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .showrooms-hero__content {
+    padding-top: 96px;
+  }
+
+  .showrooms-map-card,
+  .showrooms-list-card,
+  .showrooms-nearest-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+}

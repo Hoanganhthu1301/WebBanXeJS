@@ -25,5 +25,7 @@ router.use("/notifications", notificationRoutes);
 router.use("/reports", reportRoutes);
 router.use("/promotions", promotionRoutes);
 router.use("/payos", payosRoutes);
+router.use("/showrooms", require("./showroom.routes"));
+router.use("/chatbot", require("./chatbot.routes"));
 
 module.exports = router;

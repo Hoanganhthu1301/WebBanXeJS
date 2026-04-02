@@ -1,0 +1,150 @@
+.admin-showrooms-page {
+  padding: 24px;
+  background: #f6f8fb;
+  min-height: 100vh;
+}
+
+.admin-showrooms-header {
+  margin-bottom: 20px;
+}
+
+.admin-showrooms-header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: #111827;
+}
+
+.admin-showrooms-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.admin-showrooms-message {
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #e8f0ff;
+  color: #1d4ed8;
+}
+
+.admin-showrooms-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+}
+
+.admin-showrooms-form,
+.admin-showrooms-list {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  padding: 20px;
+}
+
+.admin-showrooms-form h2,
+.admin-showrooms-list h2 {
+  margin: 0 0 16px;
+  color: #111827;
+}
+
+.admin-showrooms-form input,
+.admin-showrooms-form select,
+.admin-showrooms-form textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #dbe1ea;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.admin-showrooms-form input:focus,
+.admin-showrooms-form select:focus,
+.admin-showrooms-form textarea:focus {
+  border-color: #3b82f6;
+}
+
+.admin-showrooms-form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-showrooms-form-actions button,
+.admin-showroom-card__actions button {
+  border: none;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-showrooms-form-actions button,
+.admin-showroom-card__actions button:not(.danger) {
+  background: #2563eb;
+  color: #fff;
+}
+
+.admin-showrooms-form-actions .secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+.admin-showrooms-cards {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-showroom-card {
+  border: 1px solid #e5eaf1;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.admin-showroom-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-showroom-card__top h3 {
+  margin: 0;
+  color: #111827;
+}
+
+.admin-showroom-card__top span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.admin-showroom-card p {
+  margin: 0 0 8px;
+  color: #4b5563;
+}
+
+.admin-showroom-card__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-showroom-card__actions .danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.empty {
+  color: #6b7280;
+}
+
+@media (max-width: 992px) {
+  .admin-showrooms-layout {
+    grid-template-columns: 1fr;
+  }
+}

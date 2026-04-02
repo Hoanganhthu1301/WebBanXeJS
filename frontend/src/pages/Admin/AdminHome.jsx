@@ -117,6 +117,7 @@ export default function AdminDashboard() {
           <Link to="/admin/deposits">Đơn hàng</Link>
           <Link to="/admin/categories">Danh mục</Link>
           <Link to="/admin/brands">Hãng xe</Link>
+          <Link to="/admin/showrooms">Showroom</Link>
           <Link to="/admin/contacts">Yêu cầu tư vấn</Link>
           <Link to="/admin/revenue">Báo cáo doanh thu</Link>
           <Link to="/admin/promotions">Khuyến mãi</Link>
