@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
+import { useTranslation } from 'react-i18next';
 import "../../styles/user/ContactConsultations.css";
 
 export default function ContactConsultations() {
+  const { t } = useTranslation();
+  
   const user = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("user")) || null;
@@ -25,66 +28,43 @@ export default function ContactConsultations() {
       setLoading(true);
       setMessage("");
 
+      // Gom 3 loại yêu cầu từ 3 API khác nhau của Thư
       const results = await Promise.allSettled([
         axios.get("http://localhost:5000/api/contacts"),
         axios.get("http://localhost:5000/api/quotations"),
         axios.get("http://localhost:5000/api/appointments"),
       ]);
 
-      const contactRes =
-        results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
-
-      const quotationRes =
-        results[1].status === "fulfilled"
-          ? results[1].value.data
-          : { quotations: [] };
-
-      const appointmentRes =
-        results[2].status === "fulfilled"
-          ? results[2].value.data
-          : { appointments: [] };
+      const contactRes = results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
+      const quotationRes = results[1].status === "fulfilled" ? results[1].value.data : { quotations: [] };
+      const appointmentRes = results[2].status === "fulfilled" ? results[2].value.data : { appointments: [] };
 
       let contacts = (contactRes.contacts || []).map((item) => ({
         ...item,
         requestType: "consultation",
-        requestTypeLabel: "Tư vấn",
+        requestTypeLabel: t('type_consultation'),
       }));
 
       let quotations = (quotationRes.quotations || []).map((item) => ({
         ...item,
         requestType: "quotation",
-        requestTypeLabel: "Báo giá",
+        requestTypeLabel: t('type_quotation'),
       }));
 
       let appointments = (appointmentRes.appointments || []).map((item) => ({
         ...item,
         requestType: item.type === "test_drive" ? "test_drive" : "view",
-        requestTypeLabel: item.type === "test_drive" ? "Lái thử" : "Xem xe",
+        requestTypeLabel: item.type === "test_drive" ? t('type_test_drive') : t('type_view_car'),
       }));
 
       let merged = [...contacts, ...quotations, ...appointments];
-
-      // if (user) {
-      //   merged = merged.filter((item) => {
-      //     const sameEmail =
-      //       user.email &&
-      //       item.email &&
-      //       user.email.toLowerCase() === item.email.toLowerCase();
-
-      //     const samePhone =
-      //       user.phone &&
-      //       item.phone &&
-      //       user.phone.trim() === item.phone.trim();
-
-      //     return sameEmail || samePhone;
-      //   });
-      // }
-
+      
+      // Sắp xếp theo thời gian mới nhất
       merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setRequests(merged);
     } catch (error) {
-      setMessage("Không tải được danh sách yêu cầu");
+      setMessage(t('error_fetch_requests'));
     } finally {
       setLoading(false);
     }
@@ -99,82 +79,58 @@ export default function ContactConsultations() {
   };
 
   const getStatusLabel = (item) => {
+    const status = item.status;
     if (item.requestType === "consultation") {
-      if (item.status === "processing") return "Đang xử lý";
-      if (item.status === "contacted") return "Đã liên hệ";
-      return "Mới";
+      if (status === "processing") return t('status_processing');
+      if (status === "contacted") return t('status_contacted');
+      return t('status_new');
     }
-
     if (item.requestType === "quotation") {
-      if (item.status === "quoted") return "Đã báo giá";
-      if (item.status === "done") return "Hoàn tất";
-      return "Mới";
+      if (status === "quoted") return t('status_quoted');
+      if (status === "done") return t('status_done');
+      return t('status_new');
     }
-
-    if (item.status === "confirmed") return "Đã xác nhận";
-    if (item.status === "done") return "Hoàn tất";
-    if (item.status === "cancelled") return "Đã hủy";
-    return "Chờ xác nhận";
+    if (status === "confirmed") return t('status_confirmed');
+    if (status === "done") return t('status_done');
+    if (status === "cancelled") return t('status_cancelled');
+    return t('status_pending_confirm');
   };
 
   const getStatusClass = (item) => {
     const status = item.status;
-
-    if (status === "done" || status === "contacted" || status === "quoted") {
-      return "done";
-    }
-
-    if (status === "processing" || status === "confirmed") {
-      return "processing";
-    }
-
-    if (status === "cancelled") {
-      return "cancelled";
-    }
-
+    if (status === "done" || status === "contacted" || status === "quoted") return "done";
+    if (status === "processing" || status === "confirmed") return "processing";
+    if (status === "cancelled") return "cancelled";
     return "new";
   };
 
   return (
     <>
       <MainNavbar />
-
       <div className="contact-consultations-page">
         <div className="contact-consultations-container">
           <div className="contact-consultations-header">
-            <p className="contact-consultations-subtitle">MY REQUESTS</p>
-            <h1>Yêu cầu của tôi</h1>
-            <p className="contact-consultations-desc">
-              Danh sách các yêu cầu bạn đã gửi và phản hồi từ showroom.
-            </p>
+            <p className="contact-consultations-subtitle">{t('my_requests_subtitle')}</p>
+            <h1>{t('my_requests_title')}</h1>
+            <p className="contact-consultations-desc">{t('my_requests_desc')}</p>
           </div>
 
           {loading ? (
-            <div className="contact-consultations-state">Đang tải dữ liệu...</div>
+            <div className="contact-consultations-state">{t('loading')}</div>
           ) : message ? (
             <div className="contact-consultations-state error">{message}</div>
           ) : requests.length === 0 ? (
             <div className="contact-consultations-empty">
-              <h3>Chưa có yêu cầu nào</h3>
-              <p>Hãy vào trang chi tiết xe để gửi yêu cầu tư vấn, báo giá hoặc đặt lịch.</p>
+              <h3>{t('requests_empty_title')}</h3>
+              <p>{t('requests_empty_desc')}</p>
             </div>
           ) : (
             <div className="contact-consultations-grid">
               {requests.map((item) => (
                 <div className="consultation-card" key={`${item.requestType}-${item._id}`}>
                   <div className="consultation-card-image-wrap">
-                    <img
-                      src={getThumb(item)}
-                      alt={item.carName}
-                      className="consultation-card-image"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://via.placeholder.com/320x200?text=No+Image";
-                      }}
-                    />
-                    <span
-                      className={`consultation-status ${getStatusClass(item)}`}
-                    >
+                    <img src={getThumb(item)} alt={item.carName} className="consultation-card-image" />
+                    <span className={`consultation-status ${getStatusClass(item)}`}>
                       {getStatusLabel(item)}
                     </span>
                   </div>
@@ -183,53 +139,36 @@ export default function ContactConsultations() {
                     <div style={{ marginBottom: 8, color: "#60a5fa", fontWeight: 700 }}>
                       {item.requestTypeLabel}
                     </div>
-
-                    <h3>{item.carName || "Xe quan tâm"}</h3>
+                    <h3>{item.carName || t('car_unknown')}</h3>
 
                     <div className="consultation-meta">
-                      <div>
-                        <strong>SĐT:</strong> {item.phone || "—"}
-                      </div>
-                      <div>
-                        <strong>Email:</strong> {item.email || "—"}
-                      </div>
-
+                      <div><strong>{t('field_phone')}:</strong> {item.phone || "—"}</div>
+                      <div><strong>{t('field_email')}:</strong> {item.email || "—"}</div>
                       {item.province && (
-                        <div>
-                          <strong>Khu vực:</strong> {item.province}
-                        </div>
+                        <div><strong>{t('field_area')}:</strong> {item.province}</div>
                       )}
 
                       {(item.requestType === "view" || item.requestType === "test_drive") && (
                         <>
-                          <div>
-                            <strong>Ngày hẹn:</strong> {item.appointmentDate || "—"}
-                          </div>
-                          <div>
-                            <strong>Giờ hẹn:</strong> {item.appointmentTime || "—"}
-                          </div>
-                          <div>
-                            <strong>Địa điểm:</strong> {item.location || "—"}
-                          </div>
+                          <div><strong>{t('field_date')}:</strong> {item.appointmentDate || "—"}</div>
+                          <div><strong>{t('field_time')}:</strong> {item.appointmentTime || "—"}</div>
+                          <div><strong>{t('field_location')}:</strong> {item.location || "—"}</div>
                         </>
                       )}
                     </div>
 
                     <div className="consultation-extra">
-                      <strong>Nội dung yêu cầu:</strong>
-                      <p>{item.additionalInfo || "Không có"}</p>
+                      <strong>{t('field_content')}:</strong>
+                      <p>{item.additionalInfo || t('no_content')}</p>
                     </div>
 
                     <div className="consultation-extra">
-                      <strong>Phản hồi từ showroom:</strong>
-                      <p>{item.adminReply || "Chưa có phản hồi từ admin."}</p>
+                      <strong>{t('field_admin_reply')}:</strong>
+                      <p>{item.adminReply || t('no_admin_reply')}</p>
                     </div>
 
                     <div className="consultation-footer">
-                      Gửi lúc:{" "}
-                      {item.createdAt
-                        ? new Date(item.createdAt).toLocaleString("vi-VN")
-                        : "—"}
+                      {t('sent_at')}: {item.createdAt ? new Date(item.createdAt).toLocaleString() : "—"}
                     </div>
                   </div>
                 </div>

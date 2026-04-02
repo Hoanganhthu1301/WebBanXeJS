@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import socket from "../socket";
 import "./NotificationBell.css";
+import { useTranslation } from 'react-i18next';
 
 export default function NotificationBell({ dark = true }) {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function NotificationBell({ dark = true }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const token = localStorage.getItem("token");
+
+  const { t } = useTranslation();
 
   const authHeaders = useMemo(
     () => ({
@@ -137,7 +140,7 @@ export default function NotificationBell({ dark = true }) {
         type="button"
         className="notification-bell-btn"
         onClick={handleOpen}
-        title="Thông báo"
+        title={t('notification_title')}
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -150,7 +153,7 @@ export default function NotificationBell({ dark = true }) {
       {open && (
         <div className="notification-dropdown">
           <div className="notification-dropdown-header notification-header-row">
-            <strong>Thông báo</strong>
+            <strong>{t('notification_title')}</strong>
 
             {notifications.length > 0 && unreadCount > 0 && (
               <button
@@ -158,14 +161,14 @@ export default function NotificationBell({ dark = true }) {
                 className="notification-read-all-btn"
                 onClick={handleMarkAllAsRead}
               >
-                Đọc tất cả
+                {t('notification_read_all')}
               </button>
             )}
           </div>
 
           <div className="notification-dropdown-list">
             {notifications.length === 0 ? (
-              <div className="notification-empty">Chưa có thông báo</div>
+              <div className="notification-empty">{t('notification_empty')}</div>
             ) : (
               notifications.map((item) => (
                 <button
@@ -177,7 +180,7 @@ export default function NotificationBell({ dark = true }) {
                   onClick={() => handleClickNotification(item)}
                 >
                   <div className="notification-item-title">
-                    {item.title || "Thông báo"}
+                    {item.title || t('notification_default_title')}
                   </div>
                   <div className="notification-item-message">
                     {item.message}

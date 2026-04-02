@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import App from './App.jsx';
 import './App.css';
+import './i18n/i18n'; 
 import "leaflet/dist/leaflet.css";
 
 ReactDOM.createRoot(document.getElementById('root')).render(

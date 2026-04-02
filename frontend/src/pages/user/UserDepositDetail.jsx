@@ -16,12 +16,14 @@ import {
 } from "lucide-react";
 import MainNavbar from "../../components/MainNavbar";
 import "../../styles/user/UserDepositDetail.css";
+import { useTranslation } from 'react-i18next';
 
 const API_URL = "http://localhost:5000/api";
 
 export default function UserDepositDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { t } = useTranslation();
 
   const [deposit, setDeposit] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,29 +44,20 @@ export default function UserDepositDetail() {
       navigate("/login");
       return;
     }
-
     fetchDepositDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchDepositDetail = async () => {
     try {
       setLoading(true);
       setMessage("");
-
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API_URL}/deposits/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       setDeposit(res.data?.deposit || null);
     } catch (error) {
-      console.error("fetchDepositDetail error:", error);
-      setMessage(
-        error?.response?.data?.message || "Không lấy được chi tiết đơn đặt cọc"
-      );
+      setMessage(error?.response?.data?.message || t('msg_fetch_deposit_detail_error'));
     } finally {
       setLoading(false);
     }
@@ -86,122 +79,81 @@ export default function UserDepositDetail() {
     if (Number(deposit?.finalEstimatedPrice || 0) > 0) {
       return Number(deposit.finalEstimatedPrice);
     }
-
-    return Math.max(
-      Number(deposit?.totalEstimatedPrice || 0) -
-        Number(deposit?.discountAmount || 0),
-      0
-    );
+    return Math.max(Number(deposit?.totalEstimatedPrice || 0) - Number(deposit?.discountAmount || 0), 0);
   };
 
   const formatDateTime = (value) => {
-    if (!value) return "Chưa có";
+    if (!value) return t('not_available');
     try {
       return new Date(value).toLocaleString("vi-VN");
     } catch {
-      return "Chưa có";
+      return t('not_available');
     }
   };
 
   const getStatusLabel = (status) => {
-    switch (status) {
-      case "pending_payment":
-        return "Chờ thanh toán cọc";
-      case "paid":
-        return "Đã thanh toán cọc";
-      case "confirmed":
-        return "Đã xác nhận cọc";
-      case "waiting_full_payment":
-        return "Chờ thanh toán phần còn lại";
-      case "ready_to_deliver":
-        return "Sẵn sàng giao xe";
-      case "completed":
-        return "Hoàn tất";
-      case "cancelled":
-        return "Đã hủy";
-      case "refunded":
-        return "Đã hoàn cọc";
-      default:
-        return status || "Không xác định";
-    }
+    const map = {
+      pending_payment: 'deposit_status_pending_payment',
+      paid: 'deposit_status_paid',
+      confirmed: 'deposit_status_confirmed',
+      waiting_full_payment: 'deposit_status_waiting_full_payment',
+      ready_to_deliver: 'deposit_status_ready_to_deliver',
+      completed: 'deposit_status_completed',
+      cancelled: 'deposit_status_cancelled',
+      refunded: 'deposit_status_refunded',
+    };
+    return status ? t(map[status] || status) : t('not_identified');
   };
 
   const getPaymentStatusLabel = (status) => {
-    switch (status) {
-      case "unpaid":
-        return "Chưa thanh toán";
-      case "paid":
-        return "Đã thanh toán";
-      case "cancelled":
-        return "Đã hủy thanh toán";
-      case "failed":
-        return "Thanh toán thất bại";
-      default:
-        return status || "Không xác định";
-    }
+    const map = {
+      unpaid: 'payment_status_unpaid',
+      paid: 'payment_status_paid',
+      cancelled: 'payment_status_cancelled',
+      failed: 'payment_status_failed',
+    };
+    return status ? t(map[status] || status) : t('not_identified');
   };
 
   const getDeliveryMethodLabel = (method) => {
-    switch (method) {
-      case "showroom":
-        return "Nhận tại showroom";
-      case "home_delivery":
-        return "Giao tận nơi";
-      default:
-        return "Chưa có";
-    }
+    const map = {
+      showroom: 'delivery_method_showroom',
+      home_delivery: 'delivery_method_home',
+    };
+    return method ? t(map[method] || method) : t('not_available');
   };
 
   const getRefundStatusLabel = (status) => {
-    switch (status) {
-      case "none":
-        return "Không có";
-      case "pending_refund":
-        return "Chờ hoàn cọc";
-      case "refunded":
-        return "Đã hoàn cọc";
-      case "forfeited":
-        return "Mất cọc";
-      default:
-        return status || "Không xác định";
-    }
+    const map = {
+      none: 'refund_status_none',
+      pending_refund: 'refund_status_pending',
+      refunded: 'refund_status_refunded',
+      forfeited: 'refund_status_forfeited',
+    };
+    return status ? t(map[status] || status) : t('not_identified');
   };
 
   const getCarStatusLabel = (status) => {
-    switch (status) {
-      case "available":
-        return "Đang bán";
-      case "reserved":
-        return "Đã giữ xe";
-      case "sold":
-        return "Đã bán";
-      case "hidden":
-        return "Đang ẩn";
-      default:
-        return status || "Chưa có";
-    }
+    const map = {
+      available: 'car_status_available',
+      reserved: 'car_status_reserved',
+      sold: 'car_status_sold',
+      hidden: 'car_status_hidden',
+    };
+    return status ? t(map[status] || status) : t('not_available');
   };
 
   const getBadgeClass = (status) => {
     if (["cancelled"].includes(status)) return "user-status-badge danger";
-    if (["confirmed", "completed"].includes(status))
-      return "user-status-badge success";
-    if (["pending_payment", "waiting_full_payment"].includes(status)) {
-      return "user-status-badge warning";
-    }
-    if (["paid", "ready_to_deliver", "refunded"].includes(status)) {
-      return "user-status-badge info";
-    }
+    if (["confirmed", "completed"].includes(status)) return "user-status-badge success";
+    if (["pending_payment", "waiting_full_payment"].includes(status)) return "user-status-badge warning";
+    if (["paid", "ready_to_deliver", "refunded"].includes(status)) return "user-status-badge info";
     return "user-status-badge";
   };
 
   const getInvoiceImageSrc = () => {
     if (!deposit?.invoiceImage) return "";
-
-    if (deposit.invoiceImage.startsWith("http")) {
-      return deposit.invoiceImage;
-    }
-
+    if (deposit.invoiceImage.startsWith("http")) return deposit.invoiceImage;
     return `http://localhost:5000/${deposit.invoiceImage.replace(/^\/+/, "")}`;
   };
 
@@ -210,7 +162,7 @@ export default function UserDepositDetail() {
       <div className="user-deposit-detail-page">
         <MainNavbar />
         <div className="user-deposit-detail-container">
-          <div className="user-loading-box">Đang tải chi tiết đơn đặt cọc...</div>
+          <div className="user-loading-box">{t('loading_deposit_detail')}</div>
         </div>
       </div>
     );
@@ -222,13 +174,9 @@ export default function UserDepositDetail() {
         <MainNavbar />
         <div className="user-deposit-detail-container">
           <div className="user-error-box">
-            <p>{message || "Không tìm thấy đơn đặt cọc"}</p>
-            <button
-              className="user-back-btn"
-              onClick={() => navigate("/my-deposits")}
-            >
-              <ArrowLeft size={18} />
-              <span>Quay lại</span>
+            <p>{message || t('msg_deposit_not_found')}</p>
+            <button className="user-back-btn" onClick={() => navigate("/my-deposits")}>
+              <ArrowLeft size={18} /><span>{t('back')}</span>
             </button>
           </div>
         </div>
@@ -240,199 +188,76 @@ export default function UserDepositDetail() {
   const customer = deposit.userId || {};
   const invoiceUploadedBy = deposit.invoiceUploadedBy || {};
 
-  const carImage =
-    car.image ||
-    car.images?.[0] ||
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format&fit=crop";
-
-  const carName = car.name || deposit.carName || "Chưa có tên xe";
-  const brandName = car.brand || "Chưa có";
+  const carImage = car.image || car.images?.[0] || "https://images.unsplash.com/photo-1503376780353-7e6692767b70";
+  const carName = car.name || deposit.carName || t('unknown_car');
   const invoiceImage = getInvoiceImageSrc();
 
-  const fullName =
-    deposit.fullName ||
-    customer.fullName ||
-    customer.name ||
-    user?.fullName ||
-    "Chưa có";
-
-  const phone = deposit.phone || customer.phone || "Chưa có";
-  const email = deposit.email || customer.email || "Chưa có";
-
-  const assignedStaff =
-    deposit.assignedStaffName ||
-    invoiceUploadedBy.fullName ||
-    invoiceUploadedBy.name ||
-    "Chưa phân công";
+  const fullName = deposit.fullName || customer.fullName || customer.name || user?.fullName || t('none');
+  const phone = deposit.phone || customer.phone || t('none');
+  const email = deposit.email || customer.email || t('none');
+  const assignedStaff = deposit.assignedStaffName || invoiceUploadedBy.fullName || t('staff_not_assigned');
 
   return (
     <div className="user-deposit-detail-page">
       <MainNavbar />
-
       <div className="user-deposit-detail-container">
-        <button
-          className="user-back-btn"
-          onClick={() => navigate("/my-deposits")}
-        >
-          <ArrowLeft size={18} />
-          <span>Quay lại</span>
+        <button className="user-back-btn" onClick={() => navigate("/my-deposits")}>
+          <ArrowLeft size={18} /><span>{t('back')}</span>
         </button>
 
         <div className="user-detail-header">
           <div>
-            <h1>Chi tiết đơn đặt cọc</h1>
-            <p>
-              Xem thông tin đơn hàng, khách hàng, xe, thanh toán, hóa đơn và
-              trạng thái xử lý theo giao diện gọn gàng, dễ theo dõi.
-            </p>
+            <h1>{t('deposit_detail_title')}</h1>
+            <p>{t('deposit_detail_desc')}</p>
           </div>
-
-          <div className={getBadgeClass(deposit.status)}>
-            {getStatusLabel(deposit.status)}
-          </div>
+          <div className={getBadgeClass(deposit.status)}>{getStatusLabel(deposit.status)}</div>
         </div>
 
         <div className="user-detail-grid top">
           <section className="user-detail-card">
-            <h2>Thông tin đơn</h2>
-
+            <h2>{t('section_order_info')}</h2>
             <div className="user-info-list">
+              <div className="user-info-row"><span>{t('label_order_id')}</span><strong>{deposit._id}</strong></div>
+              <div className="user-info-row"><span>{t('label_payment_code')}</span><strong>{deposit.orderCode || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_order_status')}</span><strong>{getStatusLabel(deposit.status)}</strong></div>
+              <div className="user-info-row"><span>{t('label_payment')}</span><strong>{getPaymentStatusLabel(deposit.paymentStatus)}</strong></div>
               <div className="user-info-row">
-                <span>Mã đơn</span>
-                <strong>{deposit._id}</strong>
+                <span>{t('label_deposit_method')}</span>
+                <strong>{deposit.paymentMethod === "payos" ? "PayOS" : deposit.paymentMethod === "manual" ? t('payment_method_manual') : t('none')}</strong>
               </div>
-
-              <div className="user-info-row">
-                <span>Mã thanh toán</span>
-                <strong>{deposit.orderCode || "Chưa có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Trạng thái đơn</span>
-                <strong>{getStatusLabel(deposit.status)}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Thanh toán</span>
-                <strong>{getPaymentStatusLabel(deposit.paymentStatus)}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Phương thức cọc</span>
-                <strong>
-                  {deposit.paymentMethod === "payos"
-                    ? "PayOS"
-                    : deposit.paymentMethod === "manual"
-                    ? "Thủ công"
-                    : "Chưa có"}
-                </strong>
-              </div>
-
               {hasVoucher() && (
                 <>
-                  <div className="user-info-row">
-                    <span>Voucher áp dụng</span>
-                    <strong>{deposit.promotionTitle || "Ưu đãi áp dụng"}</strong>
-                  </div>
-
-                  <div className="user-info-row">
-                    <span>Giá trị giảm</span>
-                    <strong style={{ color: "#dc2626" }}>
-                      -{formatCurrency(deposit.discountAmount)}
-                    </strong>
-                  </div>
+                  <div className="user-info-row"><span>{t('label_voucher')}</span><strong>{deposit.promotionTitle || t('promo_applied')}</strong></div>
+                  <div className="user-info-row"><span>{t('label_discount_value')}</span><strong style={{ color: "#dc2626" }}>-{formatCurrency(deposit.discountAmount)}</strong></div>
                 </>
               )}
-
-              <div className="user-info-row">
-                <span>Ngày tạo</span>
-                <strong>{formatDateTime(deposit.createdAt)}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Đã thanh toán cọc lúc</span>
-                <strong>{formatDateTime(deposit.paidAt)}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Ngày nhận xe</span>
-                <strong>{deposit.pickupDate || "Chưa chọn"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Khung giờ</span>
-                <strong>{deposit.pickupTimeSlot || "Chưa chọn"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Hình thức nhận</span>
-                <strong>{getDeliveryMethodLabel(deposit.deliveryMethod)}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Showroom</span>
-                <strong>{deposit.showroom || "Không có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Địa chỉ giao</span>
-                <strong>{deposit.deliveryAddress || "Không có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Ngân hàng hoàn tiền</span>
-                <strong>{deposit.refundBankBin || "Chưa có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Số tài khoản hoàn</span>
-                <strong>{deposit.refundBankAccountNumber || "Chưa có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Tên chủ tài khoản</span>
-                <strong>{deposit.refundBankAccountName || "Chưa có"}</strong>
-              </div>
-
-              <div className="user-info-row">
-                <span>Ghi chú</span>
-                <strong>{deposit.note || "Không có"}</strong>
-              </div>
+              <div className="user-info-row"><span>{t('label_created_at')}</span><strong>{formatDateTime(deposit.createdAt)}</strong></div>
+              <div className="user-info-row"><span>{t('label_paid_at')}</span><strong>{formatDateTime(deposit.paidAt)}</strong></div>
+              <div className="user-info-row"><span>{t('label_pickup_date')}</span><strong>{deposit.pickupDate || t('not_chosen')}</strong></div>
+              <div className="user-info-row"><span>{t('label_time_slot')}</span><strong>{deposit.pickupTimeSlot || t('not_chosen')}</strong></div>
+              <div className="user-info-row"><span>{t('label_delivery_method')}</span><strong>{getDeliveryMethodLabel(deposit.deliveryMethod)}</strong></div>
+              <div className="user-info-row"><span>{t('label_showroom')}</span><strong>{deposit.showroom || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_delivery_address')}</span><strong>{deposit.deliveryAddress || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_refund_bank')}</span><strong>{deposit.refundBankBin || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_refund_account')}</span><strong>{deposit.refundBankAccountNumber || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_refund_account_name')}</span><strong>{deposit.refundBankAccountName || t('none')}</strong></div>
+              <div className="user-info-row"><span>{t('label_note')}</span><strong>{deposit.note || t('none')}</strong></div>
             </div>
           </section>
 
           <section className="user-detail-card">
             <img src={carImage} alt={carName} className="user-car-image" />
-
             <div className="user-car-content">
-              <p className="user-mini-label">Xe đã đặt cọc</p>
+              <p className="user-mini-label">{t('label_car_deposited')}</p>
               <h2>{carName}</h2>
-
               <div className="user-car-meta">
-                <p>
-                  <strong>Hãng xe:</strong> {brandName}
-                </p>
-                <p>
-                  <strong>Giá xe niêm yết:</strong>{" "}
-                  {formatCurrency(car.price || deposit.carPrice)}
-                </p>
-                <p>
-                  <strong>Trạng thái xe:</strong> {getCarStatusLabel(car.status)}
-                </p>
-                <p>
-                  <strong>Tỷ lệ cọc:</strong> {deposit.depositPercent || 5}%
-                </p>
-                <p>
-                  <strong>Số tiền cọc:</strong>{" "}
-                  {formatCurrency(deposit.depositAmount)}
-                </p>
+                <p><strong>{t('label_car_brand')}:</strong> {car.brand || t('none')}</p>
+                <p><strong>{t('label_car_price_listed')}:</strong> {formatCurrency(car.price || deposit.carPrice)}</p>
+                <p><strong>{t('label_car_status')}:</strong> {getCarStatusLabel(car.status)}</p>
+                <p><strong>{t('label_deposit_percent')}:</strong> {deposit.depositPercent || 5}%</p>
+                <p><strong>{t('label_deposit_amount')}:</strong> {formatCurrency(deposit.depositAmount)}</p>
                 {hasVoucher() && (
-                  <p>
-                    <strong>Voucher:</strong>{" "}
-                    <span style={{ color: "#0f766e", fontWeight: 700 }}>
-                      {deposit.promotionTitle || "Ưu đãi áp dụng"}
-                    </span>
-                  </p>
+                  <p><strong>{t('label_voucher')}:</strong> <span style={{ color: "#0f766e", fontWeight: 700 }}>{deposit.promotionTitle || t('promo_applied')}</span></p>
                 )}
               </div>
             </div>
@@ -441,289 +266,95 @@ export default function UserDepositDetail() {
 
         <div className="user-detail-grid bottom">
           <section className="user-detail-card">
-            <h2>Tóm tắt tài chính</h2>
-
+            <h2>{t('section_finance_summary')}</h2>
             <div className="user-finance-grid">
               <div className="user-finance-item">
-                <div className="user-finance-icon">
-                  <Car size={18} />
-                </div>
-                <div>
-                  <span>{hasVoucher() ? "Giá gốc" : "Giá xe"}</span>
-                  <strong
-                    style={
-                      hasVoucher()
-                        ? { textDecoration: "line-through", opacity: 0.6 }
-                        : {}
-                    }
-                  >
-                    {formatCurrency(deposit.carPrice)}
-                  </strong>
-                </div>
+                <div className="user-finance-icon"><Car size={18} /></div>
+                <div><span>{hasVoucher() ? t('label_original_price') : t('label_car_price')}</span><strong style={hasVoucher() ? { textDecoration: "line-through", opacity: 0.6 } : {}}>{formatCurrency(deposit.carPrice)}</strong></div>
               </div>
-
               {hasVoucher() && (
-                <div className="user-finance-item">
-                  <div className="user-finance-icon">
-                    <Tag size={18} />
-                  </div>
-                  <div>
-                    <span>Voucher</span>
-                    <strong style={{ color: "#0f766e" }}>
-                      {deposit.promotionTitle || "Ưu đãi áp dụng"}
-                    </strong>
-                  </div>
-                </div>
+                <>
+                  <div className="user-finance-item"><div className="user-finance-icon"><Tag size={18} /></div><div><span>{t('label_voucher')}</span><strong style={{ color: "#0f766e" }}>{deposit.promotionTitle}</strong></div></div>
+                  <div className="user-finance-item"><div className="user-finance-icon"><CircleDollarSign size={18} /></div><div><span>{t('label_discount_amount')}</span><strong style={{ color: "#dc2626" }}>-{formatCurrency(deposit.discountAmount)}</strong></div></div>
+                  <div className="user-finance-item"><div className="user-finance-icon"><Receipt size={18} /></div><div><span>{t('label_price_after_discount')}</span><strong style={{ color: "#ca8a04" }}>{formatCurrency(finalPrice())}</strong></div></div>
+                </>
               )}
-
-              {hasVoucher() && (
-                <div className="user-finance-item">
-                  <div className="user-finance-icon">
-                    <CircleDollarSign size={18} />
-                  </div>
-                  <div>
-                    <span>Giảm giá</span>
-                    <strong style={{ color: "#dc2626" }}>
-                      -{formatCurrency(deposit.discountAmount)}
-                    </strong>
-                  </div>
-                </div>
-              )}
-
-              {hasVoucher() && (
-                <div className="user-finance-item">
-                  <div className="user-finance-icon">
-                    <Receipt size={18} />
-                  </div>
-                  <div>
-                    <span>Giá sau ưu đãi</span>
-                    <strong style={{ color: "#ca8a04" }}>
-                      {formatCurrency(finalPrice())}
-                    </strong>
-                  </div>
-                </div>
-              )}
-
-              <div className="user-finance-item">
-                <div className="user-finance-icon">
-                  <CircleDollarSign size={18} />
-                </div>
-                <div>
-                  <span>Đã cọc</span>
-                  <strong>{formatCurrency(deposit.depositAmount)}</strong>
-                </div>
-              </div>
-
-              <div className="user-finance-item">
-                <div className="user-finance-icon">
-                  <CreditCard size={18} />
-                </div>
-                <div>
-                  <span>Còn phải thanh toán</span>
-                  <strong>{formatCurrency(deposit.remainingAmount)}</strong>
-                </div>
-              </div>
-
-              <div className="user-finance-item">
-                <div className="user-finance-icon">
-                  <Receipt size={18} />
-                </div>
-                <div>
-                  <span>Hoàn cọc</span>
-                  <strong>{getRefundStatusLabel(deposit.refundStatus)}</strong>
-                </div>
-              </div>
+              <div className="user-finance-item"><div className="user-finance-icon"><CircleDollarSign size={18} /></div><div><span>{t('label_deposited')}</span><strong>{formatCurrency(deposit.depositAmount)}</strong></div></div>
+              <div className="user-finance-item"><div className="user-finance-icon"><CreditCard size={18} /></div><div><span>{t('label_remaining_payment')}</span><strong>{formatCurrency(deposit.remainingAmount)}</strong></div></div>
+              <div className="user-finance-item"><div className="user-finance-icon"><Receipt size={18} /></div><div><span>{t('label_refund')}</span><strong>{getRefundStatusLabel(deposit.refundStatus)}</strong></div></div>
             </div>
           </section>
 
           <section className="user-detail-card">
-            <h2>Thông tin khách hàng</h2>
-
+            <h2>{t('section_customer_info')}</h2>
             <div className="user-customer-box">
-              <div className="user-customer-row">
-                <User size={18} />
-                <span>{fullName}</span>
-              </div>
-
-              <div className="user-customer-row">
-                <Phone size={18} />
-                <span>{phone}</span>
-              </div>
-
-              <div className="user-customer-row">
-                <FileText size={18} />
-                <span>{email}</span>
-              </div>
-
-              <div className="user-customer-row">
-                <ShieldCheck size={18} />
-                <span>Nhân viên phụ trách: {assignedStaff}</span>
-              </div>
+              <div className="user-customer-row"><User size={18} /><span>{fullName}</span></div>
+              <div className="user-customer-row"><Phone size={18} /><span>{phone}</span></div>
+              <div className="user-customer-row"><FileText size={18} /><span>{email}</span></div>
+              <div className="user-customer-row"><ShieldCheck size={18} /><span>{t('label_assigned_staff')}: {assignedStaff}</span></div>
             </div>
           </section>
         </div>
 
         <section className="user-detail-card">
-          <h2>Chi tiết hóa đơn</h2>
-
+          <h2>{t('section_bill_detail')}</h2>
           <div className="user-bill-grid">
-            <div className="user-bill-row">
-              <span>Giá xe</span>
-              <strong>{formatCurrency(deposit.carPrice)}</strong>
-            </div>
-
-            <div className="user-bill-row">
-              <span>VAT</span>
-              <strong>{formatCurrency(deposit.vatAmount)}</strong>
-            </div>
-
-            <div className="user-bill-row">
-              <span>Phí trước bạ</span>
-              <strong>{formatCurrency(deposit.registrationFee)}</strong>
-            </div>
-
-            <div className="user-bill-row">
-              <span>Phí biển số</span>
-              <strong>{formatCurrency(deposit.licensePlateFee)}</strong>
-            </div>
-
-            <div className="user-bill-row">
-              <span>Bảo hiểm</span>
-              <strong>{formatCurrency(deposit.insuranceFee)}</strong>
-            </div>
-
+            <div className="user-bill-row"><span>{t('label_car_price')}</span><strong>{formatCurrency(deposit.carPrice)}</strong></div>
+            <div className="user-bill-row"><span>{t('label_vat')}</span><strong>{formatCurrency(deposit.vatAmount)}</strong></div>
+            <div className="user-bill-row"><span>{t('label_registration_fee')}</span><strong>{formatCurrency(deposit.registrationFee)}</strong></div>
+            <div className="user-bill-row"><span>{t('label_license_fee')}</span><strong>{formatCurrency(deposit.licensePlateFee)}</strong></div>
+            <div className="user-bill-row"><span>{t('label_insurance_fee')}</span><strong>{formatCurrency(deposit.insuranceFee)}</strong></div>
             <div className="user-bill-row highlight">
-              <span>{hasVoucher() ? "Tổng chi phí gốc" : "Tổng chi phí dự kiến"}</span>
-              <strong
-                style={
-                  hasVoucher()
-                    ? { textDecoration: "line-through", opacity: 0.6 }
-                    : {}
-                }
-              >
-                {formatCurrency(deposit.totalEstimatedPrice)}
-              </strong>
+              <span>{hasVoucher() ? t('label_total_original_cost') : t('label_total_estimated_cost')}</span>
+              <strong style={hasVoucher() ? { textDecoration: "line-through", opacity: 0.6 } : {}}>{formatCurrency(deposit.totalEstimatedPrice)}</strong>
             </div>
-
             {hasVoucher() && (
               <>
-                <div className="user-bill-row">
-                  <span>Voucher</span>
-                  <strong style={{ color: "#0f766e" }}>
-                    {deposit.promotionTitle || "Ưu đãi"}
-                  </strong>
-                </div>
-
-                <div className="user-bill-row">
-                  <span>Giảm giá</span>
-                  <strong style={{ color: "#dc2626" }}>
-                    -{formatCurrency(deposit.discountAmount)}
-                  </strong>
-                </div>
-
-                <div className="user-bill-row highlight">
-                  <span>Tổng sau ưu đãi</span>
-                  <strong style={{ color: "#ca8a04" }}>
-                    {formatCurrency(finalPrice())}
-                  </strong>
-                </div>
+                <div className="user-bill-row"><span>{t('label_voucher')}</span><strong style={{ color: "#0f766e" }}>{deposit.promotionTitle}</strong></div>
+                <div className="user-bill-row"><span>{t('label_discount_amount')}</span><strong style={{ color: "#dc2626" }}>-{formatCurrency(deposit.discountAmount)}</strong></div>
+                <div className="user-bill-row highlight"><span>{t('label_price_after_discount')}</span><strong style={{ color: "#ca8a04" }}>{formatCurrency(finalPrice())}</strong></div>
               </>
             )}
-
-            <div className="user-bill-row">
-              <span>Tiền cọc</span>
-              <strong>{formatCurrency(deposit.depositAmount)}</strong>
-            </div>
-
-            <div className="user-bill-row remain">
-              <span>Còn phải thanh toán</span>
-              <strong>{formatCurrency(deposit.remainingAmount)}</strong>
-            </div>
+            <div className="user-bill-row"><span>{t('label_deposit_amount')}</span><strong>{formatCurrency(deposit.depositAmount)}</strong></div>
+            <div className="user-bill-row remain"><span>{t('label_remaining_payment')}</span><strong>{formatCurrency(deposit.remainingAmount)}</strong></div>
           </div>
         </section>
 
         <div className="user-payment-section">
           <section className="user-detail-card user-proof-panel">
-            <h2>Hóa đơn / minh chứng thanh toán</h2>
-
+            <h2>{t('section_invoice')}</h2>
             {invoiceImage ? (
               <div className="user-proof-box">
                 <div className="user-invoice-image-wrap">
-                  <img
-                    src={invoiceImage}
-                    alt="Hóa đơn thanh toán"
-                    className="user-invoice-image"
-                    onClick={() => setPreview(invoiceImage)}
-                    style={{ cursor: "zoom-in" }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  <img src={invoiceImage} alt="Invoice" className="user-invoice-image" onClick={() => setPreview(invoiceImage)} style={{ cursor: "zoom-in" }} />
                 </div>
-
                 <div className="user-invoice-meta">
-                  <div>
-                    <strong>Ghi chú:</strong> {deposit.invoiceNote || "Không có"}
-                  </div>
-                  <div>
-                    <strong>Người upload:</strong>{" "}
-                    {invoiceUploadedBy.fullName ||
-                      invoiceUploadedBy.name ||
-                      "Chưa có"}
-                  </div>
-                  <div>
-                    <strong>Thời gian upload:</strong>{" "}
-                    {formatDateTime(deposit.invoiceUploadedAt)}
-                  </div>
+                  <div><strong>{t('label_note')}:</strong> {deposit.invoiceNote || t('none')}</div>
+                  <div><strong>{t('label_uploaded_by')}:</strong> {invoiceUploadedBy.fullName || invoiceUploadedBy.name || t('none')}</div>
+                  <div><strong>{t('label_uploaded_at')}:</strong> {formatDateTime(deposit.invoiceUploadedAt)}</div>
                 </div>
               </div>
             ) : (
               <div className="user-invoice-empty">
-                <ImageIcon size={18} />
-                <span>Chưa có hóa đơn hoặc minh chứng được cập nhật</span>
+                <ImageIcon size={18} /><span>{t('msg_no_invoice')}</span>
               </div>
             )}
           </section>
 
           <section className="user-detail-card user-refund-panel">
-            <h2>Thông tin hoàn cọc</h2>
-
+            <h2>{t('section_refund_info')}</h2>
             <div className="user-refund-list">
-              <div className="user-refund-row">
-                <span>Trạng thái hoàn cọc</span>
-                <strong>{getRefundStatusLabel(deposit.refundStatus)}</strong>
-              </div>
-
-              <div className="user-refund-row">
-                <span>Lý do</span>
-                <strong>{deposit.refundReason || "Không có"}</strong>
-              </div>
-
-              <div className="user-refund-row">
-                <span>Số tiền hoàn</span>
-                <strong>{formatCurrency(deposit.refundAmount)}</strong>
-              </div>
-
-              <div className="user-refund-row">
-                <span>Thời gian hoàn</span>
-                <strong>{formatDateTime(deposit.refundAt)}</strong>
-              </div>
-
-              <div className="user-refund-row">
-                <span>Mã giao dịch hoàn</span>
-                <strong>{deposit.refundReferenceId || "Chưa có"}</strong>
-              </div>
+              <div className="user-refund-row"><span>{t('label_refund_status')}</span><strong>{getRefundStatusLabel(deposit.refundStatus)}</strong></div>
+              <div className="user-refund-row"><span>{t('label_refund_reason')}</span><strong>{deposit.refundReason || t('none')}</strong></div>
+              <div className="user-refund-row"><span>{t('label_refund_amount')}</span><strong>{formatCurrency(deposit.refundAmount)}</strong></div>
+              <div className="user-refund-row"><span>{t('label_refund_at')}</span><strong>{formatDateTime(deposit.refundAt)}</strong></div>
+              <div className="user-refund-row"><span>{t('label_refund_ref_id')}</span><strong>{deposit.refundReferenceId || t('none')}</strong></div>
             </div>
           </section>
         </div>
 
         {message && <div className="user-error-box">{message}</div>}
-
-        {preview && (
-          <div className="image-preview" onClick={() => setPreview(null)}>
-            <img src={preview} alt="preview" />
-          </div>
-        )}
+        {preview && <div className="image-preview" onClick={() => setPreview(null)}><img src={preview} alt="preview" /></div>}
       </div>
     </div>
   );

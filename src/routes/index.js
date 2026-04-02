@@ -13,6 +13,7 @@ router.get("/test", (req, res) => {
   });
 });
 
+// Các route cơ bản
 router.use("/auth", authRoutes);
 router.use("/cars", require("./car.routes"));
 router.use("/categories", require("./category.routes"));
@@ -25,6 +26,8 @@ router.use("/notifications", notificationRoutes);
 router.use("/reports", reportRoutes);
 router.use("/promotions", promotionRoutes);
 router.use("/payos", payosRoutes);
+
+// GỘP: Thêm các route tính năng mới của Thư
 router.use("/showrooms", require("./showroom.routes"));
 router.use("/chatbot", require("./chatbot.routes"));
 

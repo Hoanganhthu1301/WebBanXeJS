@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-
 import {
   Search,
   Globe,
@@ -10,6 +9,7 @@ import {
   Heart,
   Scale,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
 
@@ -18,6 +18,13 @@ export default function MainNavbar() {
   const location = useLocation();
   const [keyword, setKeyword] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const currentLang = i18n.language || 'vi';
+    i18n.changeLanguage(currentLang.startsWith('vi') ? 'en' : 'vi');
+  };
 
   const user = useMemo(() => {
     try {
@@ -46,42 +53,36 @@ export default function MainNavbar() {
       <div className="lux-navbar-inner">
         <div className="lux-navbar-left">
           <Link to="/" className="lux-brand">
-            WEB BÁN XE
+            {t('web_title')}
           </Link>
 
           <nav className="lux-nav-text">
             <Link to="/cars" className="lux-nav-link">
-              Các mẫu xe
+              {t('nav_cars')}
             </Link>
-
-            <Link to="/showrooms" className="lux-nav-link">
-              Showrooms
-            </Link>
-
             <Link
               to={user ? "/my-deposits" : "/login"}
               className="lux-nav-link"
             >
-              Đơn hàng
+              {t('nav_orders')}
             </Link>
-
             <Link
               to={user ? "/consultations" : "/login"}
               className="lux-nav-link"
             >
-              Tư vấn
+              {t('nav_consult')}
             </Link>
           </nav>
         </div>
 
         <div className="lux-navbar-right">
           <form className="lux-search-form" onSubmit={handleSearch}>
-            <button type="submit" className="lux-icon-btn" title="Tìm kiếm">
+            <button type="submit" className="lux-icon-btn" title={t('title_search')}>
               <Search size={18} />
             </button>
             <input
               type="text"
-              placeholder="Tìm xe..."
+              placeholder={t('search_placeholder')}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -90,7 +91,7 @@ export default function MainNavbar() {
           <Link
             to={user ? "/favorites" : "/login"}
             className="lux-icon-btn"
-            title="Yêu thích"
+            title={t('title_favorites')}
           >
             <Heart size={18} />
           </Link>
@@ -99,8 +100,14 @@ export default function MainNavbar() {
             <Scale size={20} />
           </Link>
 
-          <button type="button" className="lux-icon-btn" title="Ngôn ngữ">
+          <button
+            type="button"
+            className="lux-icon-btn lux-lang-btn"
+            title={t('title_language')}
+            onClick={toggleLanguage}
+          >
             <Globe size={18} />
+            <span className="lang-code">{(i18n.language || 'vi').startsWith('vi') ? 'VI' : 'EN'}</span>
           </button>
 
           {user && <NotificationBell dark />}
@@ -108,7 +115,7 @@ export default function MainNavbar() {
           {!user ? (
             <Link to="/login" className="lux-user-link">
               <User size={18} />
-              <span>Đăng nhập</span>
+              <span>{t('btn_login')}</span>
             </Link>
           ) : (
             <>
@@ -123,14 +130,14 @@ export default function MainNavbar() {
                 title={user.fullName || user.name}
               >
                 <User size={18} />
-                <span>{user.fullName || user.name || "Người dùng"}</span>
+                <span>{user.fullName || user.name || t('user_default')}</span>
               </button>
 
               <button
                 type="button"
                 className="lux-icon-btn lux-logout-btn"
                 onClick={handleLogout}
-                title="Đăng xuất"
+                title={t('btn_logout')}
               >
                 <LogOut size={18} />
               </button>
@@ -140,7 +147,7 @@ export default function MainNavbar() {
           <button
             type="button"
             className="lux-icon-btn lux-menu-btn"
-            title="Menu"
+            title={t('title_menu')}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <Menu size={18} />
@@ -151,7 +158,7 @@ export default function MainNavbar() {
       {mobileOpen && (
         <div className="lux-mobile-menu">
           <Link to="/cars" onClick={() => setMobileOpen(false)}>
-            Các mẫu xe
+            {t('nav_cars')}
           </Link>
 
           <Link to="/showrooms" onClick={() => setMobileOpen(false)}>
@@ -162,21 +169,21 @@ export default function MainNavbar() {
             to={user ? "/my-deposits" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            Đơn hàng
+            {t('nav_orders')}
           </Link>
 
           <Link
             to={user ? "/consultations" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            Tư vấn
+            {t('nav_consult')}
           </Link>
 
           <Link
             to={user ? "/favorites" : "/login"}
             onClick={() => setMobileOpen(false)}
           >
-            Yêu thích
+            {t('nav_favorites')}
           </Link>
         </div>
       )}

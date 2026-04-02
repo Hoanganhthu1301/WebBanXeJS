@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
+import { useTranslation } from 'react-i18next';
 
 export default function DepositSuccess() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
 
   const orderCode = params.get("orderCode");
@@ -47,9 +49,9 @@ export default function DepositSuccess() {
           }}
         >
           <div style={{ fontSize: "56px", marginBottom: "12px" }}>✅</div>
-          <h1 style={{ marginBottom: "12px", color: "#2e7d32" }}>Thanh toán thành công</h1>
+          <h1 style={{ marginBottom: "12px", color: "#2e7d32" }}>{t('deposit_success_title')}</h1>
           <p style={{ color: "#555", marginBottom: "24px", lineHeight: 1.6 }}>
-            Giao dịch đặt cọc đã được ghi nhận. Chúng tôi sẽ liên hệ với bạn sớm.
+            {t('deposit_success_desc')}
           </p>
 
           <div
@@ -61,8 +63,8 @@ export default function DepositSuccess() {
               marginBottom: "24px",
             }}
           >
-            <p><strong>Mã đơn:</strong> {orderCode || "Không có"}</p>
-            <p><strong>Mã xe:</strong> {carId || "Không có"}</p>
+            <p><strong>{t('label_order_id')}:</strong> {orderCode || t('not_available')}</p>
+            <p><strong>{t('label_car_id')}:</strong> {carId || t('not_available')}</p>
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
@@ -77,7 +79,7 @@ export default function DepositSuccess() {
                 fontWeight: "600",
               }}
             >
-              Xem lại xe
+              {t('btn_view_car')}
             </Link>
 
             <Link
@@ -91,7 +93,7 @@ export default function DepositSuccess() {
                 fontWeight: "600",
               }}
             >
-              Xem đơn của tôi
+              {t('btn_view_my_deposits')}
             </Link>
           </div>
         </div>

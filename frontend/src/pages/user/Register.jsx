@@ -5,9 +5,11 @@ import { User, Mail, Phone, Lock, ArrowRight } from "lucide-react";
 import "../../styles/user/Auth.css";
 import bgVideo from "../../assets/login-bg.mp4";
 import logoWhite from "../../assets/logo-white.png";
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -31,7 +33,7 @@ export default function Register() {
     setMessage("");
 
     if (formData.password !== formData.confirmPassword) {
-      setMessage("Mật khẩu nhập lại không khớp");
+      setMessage(t('err_password_mismatch'));
       return;
     }
 
@@ -48,13 +50,13 @@ export default function Register() {
         payload
       );
 
-      setMessage(res.data.message || "Đăng ký thành công");
+      setMessage(res.data.message || t('msg_register_success'));
 
       setTimeout(() => {
         navigate("/login");
       }, 1200);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Đăng ký thất bại");
+      setMessage(error.response?.data?.message || t('msg_register_failed'));
     }
   };
 
@@ -69,15 +71,14 @@ export default function Register() {
       <div className="lux-login-layout">
         <div className="lux-login-left">
           <img src={logoWhite} alt="logo" className="lux-login-logo" />
-
-          <h1>Đăng ký</h1>
-          <p>Tạo tài khoản để bắt đầu trải nghiệm hệ thống mua bán xe cao cấp</p>
+          <h1>{t('register_title')}</h1>
+          <p>{t('register_desc')}</p>
         </div>
 
         <div className="lux-login-card">
           <div className="lux-login-card-head">
-            <h2>Tạo tài khoản mới</h2>
-            <p>Điền đầy đủ thông tin để bắt đầu sử dụng hệ thống</p>
+            <h2>{t('register_card_title')}</h2>
+            <p>{t('register_card_desc')}</p>
           </div>
 
           <form className="lux-login-form" onSubmit={handleRegister}>
@@ -86,7 +87,7 @@ export default function Register() {
               <input
                 type="text"
                 name="fullName"
-                placeholder="Nhập họ và tên"
+                placeholder={t('ph_fullname')}
                 value={formData.fullName}
                 onChange={handleChange}
               />
@@ -97,7 +98,7 @@ export default function Register() {
               <input
                 type="email"
                 name="email"
-                placeholder="Nhập email"
+                placeholder={t('ph_email')}
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -108,7 +109,7 @@ export default function Register() {
               <input
                 type="text"
                 name="phone"
-                placeholder="Nhập số điện thoại"
+                placeholder={t('ph_phone')}
                 value={formData.phone}
                 onChange={handleChange}
               />
@@ -119,7 +120,7 @@ export default function Register() {
               <input
                 type="password"
                 name="password"
-                placeholder="Nhập mật khẩu"
+                placeholder={t('ph_password')}
                 value={formData.password}
                 onChange={handleChange}
               />
@@ -130,14 +131,14 @@ export default function Register() {
               <input
                 type="password"
                 name="confirmPassword"
-                placeholder="Nhập lại mật khẩu"
+                placeholder={t('ph_confirm_password')}
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
             </div>
 
             <button type="submit" className="lux-login-submit">
-              <span>Đăng ký</span>
+              <span>{t('btn_register')}</span>
               <ArrowRight size={18} />
             </button>
           </form>
@@ -145,7 +146,7 @@ export default function Register() {
           {message && <p className="lux-login-message">{message}</p>}
 
           <div className="lux-login-footer">
-            Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+            {t('have_account')} <Link to="/login">{t('btn_login')}</Link>
           </div>
         </div>
       </div>

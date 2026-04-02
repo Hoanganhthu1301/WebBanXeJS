@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
+import { useTranslation } from 'react-i18next';
 import "../../styles/user/MyDepositsPage.css";
 
 export default function MyDepositsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,6 @@ export default function MyDepositsPage() {
       navigate("/login");
       return;
     }
-
     fetchMyDeposits();
   }, []);
 
@@ -40,7 +41,7 @@ export default function MyDepositsPage() {
       setMessage("");
     } catch (error) {
       setMessage(
-        error.response?.data?.message || "Không lấy được danh sách đơn đặt cọc"
+        error.response?.data?.message || t('msg_fetch_deposits_error')
       );
     } finally {
       setLoading(false);
@@ -48,12 +49,11 @@ export default function MyDepositsPage() {
   };
 
   const handleUserCancel = async (id) => {
-    const confirmCancel = window.confirm("Bạn chắc chắn muốn hủy đơn này?");
+    const confirmCancel = window.confirm(t('confirm_cancel_order'));
     if (!confirmCancel) return;
 
     try {
       const token = localStorage.getItem("token");
-
       const res = await axios.put(
         `http://localhost:5000/api/deposits/${id}/user-cancel`,
         {},
@@ -64,10 +64,10 @@ export default function MyDepositsPage() {
         }
       );
 
-      alert(res.data?.message || "Hủy đơn thành công");
+      alert(res.data?.message || t('msg_cancel_success'));
       fetchMyDeposits();
     } catch (error) {
-      alert(error.response?.data?.message || "Không hủy được đơn");
+      alert(error.response?.data?.message || t('msg_cancel_failed'));
     }
   };
 
@@ -76,17 +76,17 @@ export default function MyDepositsPage() {
   };
 
   const formatDate = (value) => {
-    if (!value) return "Không rõ";
-    return new Date(value).toLocaleString("vi-VN");
+    if (!value) return t('unknown');
+    return new Date(value).toLocaleString();
   };
 
   const getStatusText = (deposit) => {
-    if (deposit.status === "completed") return "Đã mua";
-    if (deposit.status === "cancelled") return "Đã hủy";
-    if (deposit.status === "refunded") return "Đã hoàn cọc";
-    if (deposit.paymentStatus === "paid") return "Đã thanh toán cọc";
-    if (deposit.paymentStatus === "cancelled") return "Đã hủy thanh toán";
-    return "Chờ thanh toán";
+    if (deposit.status === "completed") return t('deposit_status_completed');
+    if (deposit.status === "cancelled") return t('deposit_status_cancelled');
+    if (deposit.status === "refunded") return t('deposit_status_refunded');
+    if (deposit.paymentStatus === "paid") return t('payment_status_paid');
+    if (deposit.paymentStatus === "cancelled") return t('payment_status_cancelled');
+    return t('deposit_status_pending_payment');
   };
 
   const getStatusClass = (deposit) => {
@@ -98,10 +98,10 @@ export default function MyDepositsPage() {
   };
 
   const getRefundText = (deposit) => {
-    if (deposit.refundStatus === "refunded") return "Đã hoàn";
-    if (deposit.refundStatus === "forfeited") return "Mất cọc";
-    if (deposit.refundStatus === "pending_refund") return "Chờ hoàn";
-    return "Chưa có";
+    if (deposit.refundStatus === "refunded") return t('refund_status_refunded');
+    if (deposit.refundStatus === "forfeited") return t('refund_status_forfeited');
+    if (deposit.refundStatus === "pending_refund") return t('refund_status_pending');
+    return t('not_chosen');
   };
 
   const hasVoucherApplied = (deposit) => {
@@ -120,7 +120,6 @@ export default function MyDepositsPage() {
     if (Number(deposit.finalEstimatedPrice || 0) > 0) {
       return Number(deposit.finalEstimatedPrice || 0);
     }
-
     const original = Number(deposit.carPrice || 0);
     const discount = Number(deposit.discountAmount || 0);
     return Math.max(original - discount, 0);
@@ -142,8 +141,8 @@ export default function MyDepositsPage() {
 
       <div className="my-orders-container">
         <div className="my-orders-header">
-          <h1>Đơn hàng của tôi</h1>
-          <p>Theo dõi các đơn đã đặt cọc và các xe đã mua</p>
+          <h1>{t('my_orders_title')}</h1>
+          <p>{t('my_orders_desc')}</p>
         </div>
 
         <div className="my-orders-tabs">
@@ -151,25 +150,25 @@ export default function MyDepositsPage() {
             className={activeTab === "deposit" ? "active" : ""}
             onClick={() => setActiveTab("deposit")}
           >
-            Đơn đã đặt cọc ({depositOrders.length})
+            {t('tab_deposits')} ({depositOrders.length})
           </button>
 
           <button
             className={activeTab === "purchased" ? "active" : ""}
             onClick={() => setActiveTab("purchased")}
           >
-            Đơn đã mua ({purchasedOrders.length})
+            {t('tab_purchased')} ({purchasedOrders.length})
           </button>
         </div>
 
-        {loading && <p className="my-orders-message">Đang tải dữ liệu...</p>}
+        {loading && <p className="my-orders-message">{t('loading')}</p>}
         {message && <p className="my-orders-message error">{message}</p>}
 
         {!loading && !message && currentList.length === 0 && (
           <div className="empty-orders">
             {activeTab === "deposit"
-              ? "Bạn chưa có đơn đặt cọc nào."
-              : "Bạn chưa có đơn mua nào."}
+              ? t('empty_deposits')
+              : t('empty_purchased')}
           </div>
         )}
 
@@ -184,53 +183,49 @@ export default function MyDepositsPage() {
                 <div className="order-row-bottom">
                   <div className="order-row-info">
                     <div>
-                      <label>Ngày tạo</label>
+                      <label>{t('label_created_at')}</label>
                       <p>{formatDate(item.createdAt)}</p>
                     </div>
 
                     <div>
-                      <label>Giá gốc</label>
+                      <label>{t('label_original_price')}</label>
                       <p>{formatMoney(getOriginalPrice(item))}</p>
                     </div>
 
-                    {hasVoucherApplied(item) && (
+                    {hasVoucherApplied(item) ? (
                       <>
                         <div>
-                          <label>Voucher</label>
-                          <p>{item.promotionTitle || "Ưu đãi đã áp dụng"}</p>
+                          <label>{t('label_voucher')}</label>
+                          <p>{item.promotionTitle || t('promo_default_title')}</p>
                         </div>
-
                         <div>
-                          <label>Giảm giá</label>
+                          <label>{t('label_discount_amount')}</label>
                           <p>-{formatMoney(item.discountAmount)}</p>
                         </div>
-
                         <div>
-                          <label>Giá đã giảm</label>
+                          <label>{t('label_price_after_discount')}</label>
                           <p>{formatMoney(getDiscountedPrice(item))}</p>
                         </div>
                       </>
-                    )}
-
-                    {!hasVoucherApplied(item) && (
+                    ) : (
                       <div>
-                        <label>Giá xe</label>
+                        <label>{t('label_car_price') || "Giá xe"}</label>
                         <p>{formatMoney(item.carPrice)}</p>
                       </div>
                     )}
 
                     <div>
-                      <label>Đã cọc</label>
+                      <label>{t('label_deposit_amount')}</label>
                       <p>{formatMoney(item.depositAmount)}</p>
                     </div>
 
                     <div>
-                      <label>Còn lại</label>
+                      <label>{t('label_remaining_amount')}</label>
                       <p>{formatMoney(item.remainingAmount)}</p>
                     </div>
 
                     <div>
-                      <label>Hoàn cọc</label>
+                      <label>{t('label_refund_status')}</label>
                       <p>{getRefundText(item)}</p>
                     </div>
                   </div>
@@ -241,10 +236,8 @@ export default function MyDepositsPage() {
                     </span>
 
                     <div className="order-row-actions">
-                      <button
-                        onClick={() => navigate(`/my-deposits/${item._id}`)}
-                      >
-                        Xem chi tiết
+                      <button onClick={() => navigate(`/my-deposits/${item._id}`)}>
+                        {t('btn_view_detail')}
                       </button>
 
                       {item.status !== "completed" &&
@@ -254,7 +247,7 @@ export default function MyDepositsPage() {
                             className="cancel-btn"
                             onClick={() => handleUserCancel(item._id)}
                           >
-                            Hủy đơn
+                            {t('btn_cancel_order')}
                           </button>
                         )}
                     </div>

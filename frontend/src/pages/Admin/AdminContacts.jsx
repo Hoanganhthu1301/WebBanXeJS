@@ -33,7 +33,6 @@ export default function AdminContacts() {
       navigate("/login");
       return;
     }
-
     fetchRequests();
   }, []);
 
@@ -45,20 +44,9 @@ export default function AdminContacts() {
         axios.get("http://localhost:5000/api/appointments"),
       ]);
 
-      const contactRes =
-        results[0].status === "fulfilled"
-          ? results[0].value.data
-          : { contacts: [] };
-
-      const quotationRes =
-        results[1].status === "fulfilled"
-          ? results[1].value.data
-          : { quotations: [] };
-
-      const appointmentRes =
-        results[2].status === "fulfilled"
-          ? results[2].value.data
-          : { appointments: [] };
+      const contactRes = results[0].status === "fulfilled" ? results[0].value.data : { contacts: [] };
+      const quotationRes = results[1].status === "fulfilled" ? results[1].value.data : { quotations: [] };
+      const appointmentRes = results[2].status === "fulfilled" ? results[2].value.data : { appointments: [] };
 
       const contacts = (contactRes.contacts || []).map((item) => ({
         ...item,
@@ -160,29 +148,20 @@ export default function AdminContacts() {
       setSendingReply(true);
 
       if (selectedRequest.requestType === "consultation") {
-        await axios.put(
-          `http://localhost:5000/api/contacts/${selectedRequest._id}`,
-          {
-            status: replyStatus,
-            adminReply: replyContent,
-          }
-        );
+        await axios.put(`http://localhost:5000/api/contacts/${selectedRequest._id}`, {
+          status: replyStatus,
+          adminReply: replyContent,
+        });
       } else if (selectedRequest.requestType === "quotation") {
-        await axios.put(
-          `http://localhost:5000/api/quotations/${selectedRequest._id}`,
-          {
-            status: replyStatus,
-            adminReply: replyContent,
-          }
-        );
+        await axios.put(`http://localhost:5000/api/quotations/${selectedRequest._id}`, {
+          status: replyStatus,
+          adminReply: replyContent,
+        });
       } else {
-        await axios.put(
-          `http://localhost:5000/api/appointments/${selectedRequest._id}`,
-          {
-            status: replyStatus,
-            adminReply: replyContent,
-          }
-        );
+        await axios.put(`http://localhost:5000/api/appointments/${selectedRequest._id}`, {
+          status: replyStatus,
+          adminReply: replyContent,
+        });
       }
 
       alert("Gửi phản hồi thành công");
@@ -212,7 +191,6 @@ export default function AdminContacts() {
         { value: "contacted", label: "Đã liên hệ" },
       ];
     }
-
     if (item.requestType === "quotation") {
       return [
         { value: "new", label: "Mới" },
@@ -220,7 +198,6 @@ export default function AdminContacts() {
         { value: "done", label: "Hoàn tất" },
       ];
     }
-
     return [
       { value: "pending", label: "Chờ xác nhận" },
       { value: "confirmed", label: "Đã xác nhận" },
@@ -239,36 +216,16 @@ export default function AdminContacts() {
 
   const getStatusBadgeStyle = (item) => {
     const status = item.status;
-
     if (status === "contacted" || status === "quoted" || status === "done") {
-      return {
-        background: "#dcfce7",
-        color: "#166534",
-        border: "1px solid #bbf7d0",
-      };
+      return { background: "#dcfce7", color: "#166534", border: "1px solid #bbf7d0" };
     }
-
     if (status === "processing" || status === "confirmed") {
-      return {
-        background: "#dbeafe",
-        color: "#1d4ed8",
-        border: "1px solid #bfdbfe",
-      };
+      return { background: "#dbeafe", color: "#1d4ed8", border: "1px solid #bfdbfe" };
     }
-
     if (status === "cancelled") {
-      return {
-        background: "#fee2e2",
-        color: "#b91c1c",
-        border: "1px solid #fecaca",
-      };
+      return { background: "#fee2e2", color: "#b91c1c", border: "1px solid #fecaca" };
     }
-
-    return {
-      background: "#fef3c7",
-      color: "#92400e",
-      border: "1px solid #fde68a",
-    };
+    return { background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" };
   };
 
   if (!user || user.role !== "admin") return null;
@@ -280,14 +237,7 @@ export default function AdminContacts() {
         <p>Phân loại theo tư vấn, báo giá, xem xe và lái thử</p>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          marginBottom: "20px",
-        }}
-      >
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "20px" }}>
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -337,79 +287,49 @@ export default function AdminContacts() {
                         alt={item.carName}
                         className="contact-thumb"
                         onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/100x70?text=No+Image";
+                          e.target.src = "https://via.placeholder.com/100x70?text=No+Image";
                         }}
                       />
                     </td>
-
-                    <td>
-                      <strong>{item.requestTypeLabel}</strong>
-                    </td>
-
+                    <td><strong>{item.requestTypeLabel}</strong></td>
                     <td>
                       <strong>
                         {[item.lastName, item.firstName].filter(Boolean).join(" ")}
                       </strong>
                     </td>
-
                     <td>
-                      <div>
-                        <strong>SĐT:</strong> {item.phone || "—"}
-                      </div>
-                      <div>
-                        <strong>Email:</strong> {item.email || "—"}
-                      </div>
-
+                      <div><strong>SĐT:</strong> {item.phone || "—"}</div>
+                      <div><strong>Email:</strong> {item.email || "—"}</div>
                       {item.preferredContact && (
                         <div>
                           <strong>Ưu tiên:</strong>{" "}
-                          {item.preferredContact === "email"
-                            ? "Email"
-                            : "Gọi điện"}
+                          {item.preferredContact === "email" ? "Email" : "Gọi điện"}
                         </div>
                       )}
                     </td>
-
                     <td>
-                      <div>
-                        <strong>{item.carName}</strong>
-                      </div>
+                      <div><strong>{item.carName}</strong></div>
                       <div>{item.carId?.brand || "—"}</div>
                       <div>{item.carId?.category || "—"}</div>
                     </td>
-
                     <td>{item.additionalInfo || "—"}</td>
-
                     <td>
                       {item.requestType === "quotation" && (
-                        <div>
-                          <strong>Khu vực:</strong> {item.province || "—"}
-                        </div>
+                        <div><strong>Khu vực:</strong> {item.province || "—"}</div>
                       )}
-
-                      {(item.requestType === "view" ||
-                        item.requestType === "test_drive") && (
+                      {(item.requestType === "view" || item.requestType === "test_drive") && (
                         <>
-                          <div>
-                            <strong>Ngày:</strong> {item.appointmentDate || "—"}
-                          </div>
-                          <div>
-                            <strong>Giờ:</strong> {item.appointmentTime || "—"}
-                          </div>
-                          <div>
-                            <strong>Địa điểm:</strong> {item.location || "—"}
-                          </div>
+                          <div><strong>Ngày:</strong> {item.appointmentDate || "—"}</div>
+                          <div><strong>Giờ:</strong> {item.appointmentTime || "—"}</div>
+                          <div><strong>Địa điểm:</strong> {item.location || "—"}</div>
                         </>
                       )}
                     </td>
-
                     <td>
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleString("vi-VN")
                         : "—"}
                     </td>
-
                     <td>
                       <span
                         style={{
@@ -427,76 +347,43 @@ export default function AdminContacts() {
                         {getStatusLabel(item)}
                       </span>
                     </td>
-
                     <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                        }}
-                      >
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         <button
                           type="button"
                           onClick={() => handleOpenDetailModal(item)}
                           style={{
-                            border: "none",
-                            borderRadius: "12px",
-                            padding: "10px 14px",
-                            background: "#111827",
-                            color: "#fff",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
+                            border: "none", borderRadius: "12px", padding: "10px 14px",
+                            background: "#111827", color: "#fff", fontWeight: 700,
+                            cursor: "pointer", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: "8px",
                           }}
                         >
-                          <span>👁</span>
-                          <span>Chi tiết</span>
+                          <span>👁</span><span>Chi tiết</span>
                         </button>
-
                         <button
                           type="button"
                           onClick={() => handleOpenReplyModal(item)}
                           style={{
-                            border: "none",
-                            borderRadius: "12px",
-                            padding: "10px 14px",
-                            background: "#2563eb",
-                            color: "#fff",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
+                            border: "none", borderRadius: "12px", padding: "10px 14px",
+                            background: "#2563eb", color: "#fff", fontWeight: 700,
+                            cursor: "pointer", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: "8px",
                           }}
                         >
-                          <span>✉</span>
-                          <span>Phản hồi</span>
+                          <span>✉</span><span>Phản hồi</span>
                         </button>
-
                         <button
                           type="button"
                           onClick={() => handleDelete(item)}
                           style={{
-                            border: "1px solid #fecaca",
-                            borderRadius: "12px",
-                            padding: "10px 14px",
-                            background: "#fef2f2",
-                            color: "#dc2626",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
+                            border: "1px solid #fecaca", borderRadius: "12px", padding: "10px 14px",
+                            background: "#fef2f2", color: "#dc2626", fontWeight: 700,
+                            cursor: "pointer", display: "flex", alignItems: "center",
+                            justifyContent: "center", gap: "8px",
                           }}
                         >
-                          <span>🗑</span>
-                          <span>Xóa</span>
+                          <span>🗑</span><span>Xóa</span>
                         </button>
                       </div>
                     </td>
@@ -517,213 +404,72 @@ export default function AdminContacts() {
       {detailModalOpen && detailRequest && (
         <div
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9998,
-            padding: "20px",
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 9998, padding: "20px",
           }}
           onClick={handleCloseDetailModal}
         >
           <div
             style={{
-              width: "100%",
-              maxWidth: "760px",
-              background: "#fff",
-              borderRadius: "20px",
-              padding: "24px",
+              width: "100%", maxWidth: "760px", background: "#fff",
+              borderRadius: "20px", padding: "24px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "18px",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <div>
                 <h2 style={{ margin: 0 }}>Chi tiết yêu cầu</h2>
                 <p style={{ margin: "6px 0 0", color: "#6b7280" }}>
                   {detailRequest.requestTypeLabel} • {detailRequest.carName}
                 </p>
               </div>
-
               <button
                 type="button"
                 onClick={handleCloseDetailModal}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "28px",
-                  cursor: "pointer",
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
+                style={{ border: "none", background: "transparent", fontSize: "28px", cursor: "pointer", lineHeight: 1 }}
+              >×</button>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "220px 1fr",
-                gap: "20px",
-                alignItems: "start",
-              }}
-            >
-              <div>
-                <img
-                  src={getThumb(detailRequest)}
-                  alt={detailRequest.carName}
-                  style={{
-                    width: "100%",
-                    height: "160px",
-                    objectFit: "cover",
-                    borderRadius: "14px",
-                    border: "1px solid #e5e7eb",
-                  }}
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/300x200?text=No+Image";
-                  }}
-                />
-              </div>
-
+            <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "20px", alignItems: "start" }}>
+              <img
+                src={getThumb(detailRequest)}
+                alt={detailRequest.carName}
+                style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "14px", border: "1px solid #e5e7eb" }}
+                onError={(e) => { e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
+              />
               <div style={{ display: "grid", gap: "10px" }}>
+                <div><strong>Loại:</strong> {detailRequest.requestTypeLabel}</div>
+                <div><strong>Khách hàng:</strong> {[detailRequest.lastName, detailRequest.firstName].filter(Boolean).join(" ")}</div>
+                <div><strong>SĐT:</strong> {detailRequest.phone || "—"}</div>
+                <div><strong>Email:</strong> {detailRequest.email || "—"}</div>
+                <div><strong>Xe:</strong> {detailRequest.carName || "—"}</div>
+                <div><strong>Trạng thái:</strong> {getStatusLabel(detailRequest)}</div>
+                <div><strong>Ngày gửi:</strong> {detailRequest.createdAt ? new Date(detailRequest.createdAt).toLocaleString("vi-VN") : "—"}</div>
                 <div>
-                  <strong>Loại yêu cầu:</strong> {detailRequest.requestTypeLabel}
-                </div>
-                <div>
-                  <strong>Khách hàng:</strong>{" "}
-                  {[detailRequest.lastName, detailRequest.firstName]
-                    .filter(Boolean)
-                    .join(" ")}
-                </div>
-                <div>
-                  <strong>SĐT:</strong> {detailRequest.phone || "—"}
-                </div>
-                <div>
-                  <strong>Email:</strong> {detailRequest.email || "—"}
-                </div>
-                <div>
-                  <strong>Xe quan tâm:</strong> {detailRequest.carName || "—"}
-                </div>
-                <div>
-                  <strong>Hãng xe:</strong> {detailRequest.carId?.brand || "—"}
-                </div>
-                <div>
-                  <strong>Danh mục:</strong> {detailRequest.carId?.category || "—"}
-                </div>
-                <div>
-                  <strong>Trạng thái:</strong> {getStatusLabel(detailRequest)}
-                </div>
-                <div>
-                  <strong>Ngày gửi:</strong>{" "}
-                  {detailRequest.createdAt
-                    ? new Date(detailRequest.createdAt).toLocaleString("vi-VN")
-                    : "—"}
-                </div>
-
-                {detailRequest.requestType === "quotation" && (
-                  <div>
-                    <strong>Khu vực:</strong> {detailRequest.province || "—"}
-                  </div>
-                )}
-
-                {(detailRequest.requestType === "view" ||
-                  detailRequest.requestType === "test_drive") && (
-                  <>
-                    <div>
-                      <strong>Ngày hẹn:</strong>{" "}
-                      {detailRequest.appointmentDate || "—"}
-                    </div>
-                    <div>
-                      <strong>Giờ hẹn:</strong>{" "}
-                      {detailRequest.appointmentTime || "—"}
-                    </div>
-                    <div>
-                      <strong>Địa điểm:</strong> {detailRequest.location || "—"}
-                    </div>
-                  </>
-                )}
-
-                <div>
-                  <strong>Nội dung yêu cầu:</strong>
-                  <div
-                    style={{
-                      marginTop: "6px",
-                      padding: "12px",
-                      background: "#f8fafc",
-                      borderRadius: "12px",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
+                  <strong>Nội dung:</strong>
+                  <div style={{ marginTop: "6px", padding: "12px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
                     {detailRequest.additionalInfo || "Không có nội dung"}
                   </div>
                 </div>
-
                 <div>
                   <strong>Phản hồi hiện tại:</strong>
-                  <div
-                    style={{
-                      marginTop: "6px",
-                      padding: "12px",
-                      background: "#f8fafc",
-                      borderRadius: "12px",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
+                  <div style={{ marginTop: "6px", padding: "12px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
                     {detailRequest.adminReply || "Chưa có phản hồi"}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "12px",
-                marginTop: "20px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={handleCloseDetailModal}
-                style={{
-                  border: "1px solid #d1d5db",
-                  background: "#fff",
-                  borderRadius: "10px",
-                  padding: "10px 16px",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
-              >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "20px" }}>
+              <button type="button" onClick={handleCloseDetailModal}
+                style={{ border: "1px solid #d1d5db", background: "#fff", borderRadius: "10px", padding: "10px 16px", cursor: "pointer", fontWeight: 600 }}>
                 Đóng
               </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  handleCloseDetailModal();
-                  handleOpenReplyModal(detailRequest);
-                }}
-                style={{
-                  border: "none",
-                  background: "#2563eb",
-                  color: "#fff",
-                  borderRadius: "10px",
-                  padding: "10px 18px",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
-              >
+              <button type="button"
+                onClick={() => { handleCloseDetailModal(); handleOpenReplyModal(detailRequest); }}
+                style={{ border: "none", background: "#2563eb", color: "#fff", borderRadius: "10px", padding: "10px 18px", cursor: "pointer", fontWeight: 700 }}>
                 Phản hồi ngay
               </button>
             </div>
@@ -734,167 +480,71 @@ export default function AdminContacts() {
       {replyModalOpen && selectedRequest && (
         <div
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            padding: "20px",
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 9999, padding: "20px",
           }}
           onClick={handleCloseReplyModal}
         >
           <div
             style={{
-              width: "100%",
-              maxWidth: "720px",
-              background: "#fff",
-              borderRadius: "20px",
-              padding: "24px",
+              width: "100%", maxWidth: "720px", background: "#fff",
+              borderRadius: "20px", padding: "24px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "18px",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <div>
                 <h2 style={{ margin: 0 }}>Phản hồi yêu cầu</h2>
                 <p style={{ margin: "6px 0 0", color: "#6b7280" }}>
                   {selectedRequest.requestTypeLabel} • {selectedRequest.carName}
                 </p>
               </div>
-
-              <button
-                type="button"
-                onClick={handleCloseReplyModal}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "28px",
-                  cursor: "pointer",
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
+              <button type="button" onClick={handleCloseReplyModal}
+                style={{ border: "none", background: "transparent", fontSize: "28px", cursor: "pointer", lineHeight: 1 }}>×</button>
             </div>
 
             <div style={{ display: "grid", gap: "14px" }}>
-              <div
-                style={{
-                  padding: "14px",
-                  background: "#f8fafc",
-                  borderRadius: "12px",
-                  border: "1px solid #e5e7eb",
-                }}
-              >
-                <div>
-                  <strong>Khách hàng:</strong>{" "}
-                  {[selectedRequest.lastName, selectedRequest.firstName]
-                    .filter(Boolean)
-                    .join(" ")}
-                </div>
-                <div>
-                  <strong>Email:</strong> {selectedRequest.email || "—"}
-                </div>
-                <div>
-                  <strong>SĐT:</strong> {selectedRequest.phone || "—"}
-                </div>
-                <div>
-                  <strong>Nội dung:</strong> {selectedRequest.additionalInfo || "—"}
-                </div>
+              <div style={{ padding: "14px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
+                <div><strong>Khách hàng:</strong> {[selectedRequest.lastName, selectedRequest.firstName].filter(Boolean).join(" ")}</div>
+                <div><strong>Email:</strong> {selectedRequest.email || "—"}</div>
+                <div><strong>SĐT:</strong> {selectedRequest.phone || "—"}</div>
+                <div><strong>Nội dung:</strong> {selectedRequest.additionalInfo || "—"}</div>
               </div>
 
               <div>
-                <label
-                  style={{ display: "block", marginBottom: 8, fontWeight: 600 }}
-                >
-                  Trạng thái
-                </label>
-                <select
-                  value={replyStatus}
-                  onChange={(e) => setReplyStatus(e.target.value)}
-                  style={{
-                    width: "100%",
-                    height: "46px",
-                    borderRadius: "12px",
-                    border: "1px solid #d1d5db",
-                    padding: "0 12px",
-                  }}
-                >
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>Trạng thái</label>
+                <select value={replyStatus} onChange={(e) => setReplyStatus(e.target.value)}
+                  style={{ width: "100%", height: "46px", borderRadius: "12px", border: "1px solid #d1d5db", padding: "0 12px" }}>
                   {getStatusOptions(selectedRequest).map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label
-                  style={{ display: "block", marginBottom: 8, fontWeight: 600 }}
-                >
-                  Nội dung phản hồi gửi tới khách hàng
-                </label>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>Nội dung phản hồi gửi tới khách hàng</label>
                 <textarea
                   rows="6"
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
                   placeholder="Nhập nội dung phản hồi để gửi email cho khách hàng..."
-                  style={{
-                    width: "100%",
-                    borderRadius: "12px",
-                    border: "1px solid #d1d5db",
-                    padding: "12px",
-                    resize: "vertical",
-                  }}
+                  style={{ width: "100%", borderRadius: "12px", border: "1px solid #d1d5db", padding: "12px", resize: "vertical" }}
                 />
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                  marginTop: "8px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={handleCloseReplyModal}
-                  style={{
-                    border: "1px solid #d1d5db",
-                    background: "#fff",
-                    borderRadius: "10px",
-                    padding: "10px 16px",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "8px" }}>
+                <button type="button" onClick={handleCloseReplyModal}
+                  style={{ border: "1px solid #d1d5db", background: "#fff", borderRadius: "10px", padding: "10px 16px", cursor: "pointer", fontWeight: 600 }}>
                   Hủy
                 </button>
-
-                <button
-                  type="button"
-                  onClick={handleSendReply}
-                  disabled={sendingReply}
+                <button type="button" onClick={handleSendReply} disabled={sendingReply}
                   style={{
-                    border: "none",
-                    background: sendingReply ? "#93c5fd" : "#2563eb",
-                    color: "#fff",
-                    borderRadius: "10px",
-                    padding: "10px 18px",
-                    cursor: sendingReply ? "not-allowed" : "pointer",
-                    fontWeight: 700,
-                  }}
-                >
+                    border: "none", background: sendingReply ? "#93c5fd" : "#2563eb",
+                    color: "#fff", borderRadius: "10px", padding: "10px 18px",
+                    cursor: sendingReply ? "not-allowed" : "pointer", fontWeight: 700,
+                  }}>
                   {sendingReply ? "Đang gửi..." : "Gửi phản hồi"}
                 </button>
               </div>

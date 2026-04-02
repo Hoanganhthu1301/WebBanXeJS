@@ -10,6 +10,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Hàm gửi mail dùng chung (Helper)
 const sendMail = async ({ to, subject, html }) => {
   const mailOptions = {
     from: process.env.MAIL_FROM || `"Web Bán Xe" <${process.env.MAIL_USER}>`,
@@ -21,21 +22,25 @@ const sendMail = async ({ to, subject, html }) => {
   return transporter.sendMail(mailOptions);
 };
 
+// Hàm gửi mail đặt lại mật khẩu (Dùng cho tính năng của Quân)
 const sendResetPasswordEmail = async (to, resetLink) => {
   return sendMail({
     to,
     subject: "Yêu cầu đặt lại mật khẩu",
     html: `
-      <h2>Đặt lại mật khẩu</h2>
-      <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình.</p>
-      <p>Nhấn vào link bên dưới để đặt lại mật khẩu:</p>
-      <a href="${resetLink}" target="_blank">${resetLink}</a>
-      <p>Link này sẽ hết hạn sau 15 phút.</p>
-      <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+        <h2>Đặt lại mật khẩu</h2>
+        <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình.</p>
+        <p>Nhấn vào link bên dưới để đặt lại mật khẩu:</p>
+        <a href="${resetLink}" target="_blank" style="color: #1976d2; font-weight: bold;">${resetLink}</a>
+        <p>Link này sẽ hết hạn sau 15 phút.</p>
+        <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+      </div>
     `,
   });
 };
 
+// Hàm gửi mail phản hồi yêu cầu (Dùng cho tính năng của Thư)
 const sendRequestReplyEmail = async ({
   to,
   customerName,
@@ -68,15 +73,16 @@ const sendRequestReplyEmail = async ({
     subject: `${requestTypeMap[requestType] || "Phản hồi yêu cầu"} - ${carName || "Web Bán Xe"}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
-        <h2>Phản hồi từ WEB BÁN XE</h2>
+        <h2 style="color: #1976d2;">Phản hồi từ WEB BÁN XE</h2>
 
         <p>Xin chào <strong>${customerName || "Quý khách"}</strong>,</p>
 
         <p>Chúng tôi đã tiếp nhận và xử lý yêu cầu của bạn.</p>
 
-        <ul>
+        <ul style="list-style: none; padding: 0;">
           <li><strong>Loại yêu cầu:</strong> ${requestTypeMap[requestType] || "Yêu cầu"}</li>
           <li><strong>Xe quan tâm:</strong> ${carName || "—"}</li>
+          <li><strong>Trạng thái:</strong> ${statusMap[status] || status}</li>
         </ul>
 
         ${
@@ -86,11 +92,13 @@ const sendRequestReplyEmail = async ({
         }
 
         <p><strong>Nội dung phản hồi từ showroom:</strong></p>
-        <div style="background: #f5f5f5; padding: 12px; border-radius: 8px;">
-          ${adminReply || "Chưa có nội dung phản hồi."}
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #1976d2;">
+          ${adminReply || "Chuyên viên của chúng tôi sẽ sớm liên hệ với bạn."}
         </div>
 
         <p style="margin-top: 20px;">Cảm ơn bạn đã quan tâm đến sản phẩm của chúng tôi.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #888;">Đây là email tự động, vui lòng không phản hồi trực tiếp vào email này.</p>
       </div>
     `,
   });
