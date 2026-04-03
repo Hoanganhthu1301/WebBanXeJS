@@ -156,6 +156,29 @@
   text-overflow: ellipsis;
 }
 
+.lux-user-avatar,
+.lux-user-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lux-user-avatar {
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.lux-user-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2a2a2a, #111111);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
 .lux-logout-btn {
   color: #fca5a5;
 }
@@ -296,5 +319,4 @@
     font-size: 15px;
     font-weight: 500;
   }
-  
 }

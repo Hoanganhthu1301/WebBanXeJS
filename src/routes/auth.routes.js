@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const uploadAvatar = require("../middlewares/avatarUpload.middleware");
 
 const {
   register,
@@ -8,6 +9,7 @@ const {
   changePassword,
   forgotPassword,
   resetPassword,
+  updateProfile,
   googleLogin
 } = require('../controllers/auth.controller');
 
@@ -21,5 +23,12 @@ router.put('/change-password', verifyToken, changePassword);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/google-login', googleLogin);
+
+router.put(
+  '/profile',
+  verifyToken,
+  uploadAvatar.single('avatar'),
+  updateProfile
+);
 
 module.exports = router;

@@ -34,7 +34,7 @@ import ComparePage from "./pages/user/ComparePage";
 import ShowroomsPage from "./pages/user/ShowroomsPage";
 import AdminShowrooms from "./pages/Admin/AdminShowrooms";
 import ChatbotWidget from "./components/ChatbotWidget";
-
+import UserProfile from "./pages/user/UserProfile";
 
 function App() {
   useEffect(() => {
@@ -110,6 +110,7 @@ function App() {
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/showrooms" element={<ShowroomsPage />} />
         <Route path="/admin/showrooms" element={<AdminShowrooms />} />
+        <Route path="/profile" element={<UserProfile />} />
         
       </Routes>
       <ChatbotWidget />

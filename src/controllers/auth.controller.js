@@ -90,6 +90,7 @@ const login = async (req, res) => {
         message: 'Email hoặc mật khẩu không đúng'
       });
     }
+
     if (user.isDeleted) {
       return res.status(400).json({
         message: 'Tài khoản không tồn tại'
@@ -442,6 +443,55 @@ const googleLogin = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { fullName, phone, address } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+
+    if (req.file) {
+      user.avatar = `/uploads/avatars/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Cập nhật hồ sơ thành công',
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        avatar: user.avatar,
+        role: user.role,
+        provider: user.provider
+      }
+    });
+  } catch (error) {
+    console.error('updateProfile error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi cập nhật hồ sơ',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -449,5 +499,6 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
-  googleLogin
+  googleLogin,
+  updateProfile
 };

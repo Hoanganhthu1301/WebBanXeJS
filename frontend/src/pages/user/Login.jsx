@@ -7,6 +7,8 @@ import "../../styles/user/Auth.css";
 import bgVideo from "../../assets/login-bg.mp4";
 import logoWhite from "../../assets/logo-white.png";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function Login() {
   const navigate = useNavigate();
 
@@ -29,10 +31,7 @@ export default function Login() {
     setMessage("");
 
     try {
-      const res = await axios.post(
-        "https://webbanxe-backend-stx9.onrender.com/api/auth/login",
-        formData
-      );
+      const res = await axios.post(`${API_URL}/api/auth/login`, formData);
 
       const data = res.data;
 
@@ -53,12 +52,9 @@ export default function Login() {
     try {
       setMessage("");
 
-      const res = await axios.post(
-        "https://webbanxe-backend-stx9.onrender.com/api/auth/google-login",
-        {
-          credential: credentialResponse.credential,
-        }
-      );
+      const res = await axios.post(`${API_URL}/api/auth/google-login`, {
+        credential: credentialResponse.credential,
+      });
 
       const data = res.data;
 

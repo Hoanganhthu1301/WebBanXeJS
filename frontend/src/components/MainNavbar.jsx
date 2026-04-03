@@ -14,6 +14,8 @@ import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
 import logo from "../assets/logo-white.png";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function MainNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,6 +47,11 @@ export default function MainNavbar() {
     navigate("/showrooms");
     setMobileOpen(false);
   };
+
+  const avatarSrc =
+    user?.avatar && user.avatar.trim() !== ""
+      ? `${API_URL}${user.avatar}`
+      : "";
 
   return (
     <header className="lux-navbar">
@@ -124,19 +131,25 @@ export default function MainNavbar() {
             </Link>
           ) : (
             <>
-              <button
-                type="button"
+              <Link
+                to={user.role === "admin" ? "/admin/deposits" : "/profile"}
                 className="lux-user-link"
-                onClick={() =>
-                  navigate(
-                    user.role === "admin" ? "/admin/deposits" : "/my-deposits"
-                  )
-                }
                 title={user.fullName || user.name}
               >
-                <User size={18} />
+                {avatarSrc ? (
+                  <img
+                    src={avatarSrc}
+                    alt="avatar"
+                    className="lux-user-avatar"
+                  />
+                ) : (
+                  <div className="lux-user-avatar-placeholder">
+                    <User size={16} />
+                  </div>
+                )}
+
                 <span>{user.fullName || user.name || t("user_default")}</span>
-              </button>
+              </Link>
 
               <button
                 type="button"
@@ -202,6 +215,12 @@ export default function MainNavbar() {
           >
             {t("nav_favorites")}
           </Link>
+
+          {user && (
+            <Link to="/profile" onClick={() => setMobileOpen(false)}>
+              Hồ sơ cá nhân
+            </Link>
+          )}
         </div>
       )}
     </header>
