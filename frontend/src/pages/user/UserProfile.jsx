@@ -3,10 +3,13 @@ import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
 import "../../styles/user/UserProfile.css";
 import bgVideo from "../../assets/profile-bg.mp4";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function UserProfile() {
+  const { t } = useTranslation();
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,7 +50,7 @@ export default function UserProfile() {
       setAvatarPreview(userData.avatar ? `${API_URL}${userData.avatar}` : "");
     } catch (error) {
       console.error("Lỗi lấy profile:", error);
-      alert(error.response?.data?.message || "Không thể lấy thông tin cá nhân");
+      alert(error.response?.data?.message || t("profile_fetch_fail"));
     } finally {
       setLoading(false);
     }
@@ -110,10 +113,10 @@ export default function UserProfile() {
         setAvatarPreview(`${API_URL}${updatedUser.avatar}`);
       }
 
-      alert("Cập nhật hồ sơ thành công");
+      alert(t("profile_update_success"));
     } catch (error) {
       console.error("Lỗi cập nhật profile:", error);
-      alert(error.response?.data?.message || "Cập nhật hồ sơ thất bại");
+      alert(error.response?.data?.message || t("profile_update_fail"));
     } finally {
       setSaving(false);
     }
@@ -140,7 +143,7 @@ export default function UserProfile() {
         }
       );
 
-      alert(res.data.message || "Đổi mật khẩu thành công");
+      alert(res.data.message || t("profile_password_success"));
 
       setPasswordForm({
         currentPassword: "",
@@ -148,25 +151,20 @@ export default function UserProfile() {
       });
     } catch (error) {
       console.error("Lỗi đổi mật khẩu:", error);
-      alert(error.response?.data?.message || "Đổi mật khẩu thất bại");
+      alert(error.response?.data?.message || t("profile_password_fail"));
     }
   };
 
   const renderVideoBg = () => (
     <div className="profile-video-bg">
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        onLoadedData={() => console.log("VIDEO PROFILE LOAD OK")}
-        onError={() => console.log("VIDEO PROFILE LOAD FAIL")}
-      >
+      <video autoPlay muted loop playsInline>
         <source src={bgVideo} type="video/mp4" />
       </video>
       <div className="profile-video-overlay" />
     </div>
   );
+
+  const userInitial = form.fullName?.charAt(0)?.toUpperCase() || "U";
 
   if (loading) {
     return (
@@ -174,8 +172,10 @@ export default function UserProfile() {
         <MainNavbar />
         <div className="user-profile-page">
           {renderVideoBg()}
-          <div className="user-profile-container">
-            <p className="user-profile-loading">Đang tải thông tin cá nhân...</p>
+          <div className="user-profile-shell">
+            <div className="user-profile-loading-card">
+              <p className="user-profile-loading">{t("profile_loading")}</p>
+            </div>
           </div>
         </div>
       </>
@@ -188,134 +188,180 @@ export default function UserProfile() {
       <div className="user-profile-page">
         {renderVideoBg()}
 
-        <div className="user-profile-container">
-          <div className="user-profile-header">
-            <p className="user-profile-subtitle">TÀI KHOẢN CỦA BẠN</p>
-            <h1>Hồ sơ cá nhân</h1>
-            <p className="user-profile-desc">
-              Cập nhật hồ sơ, ảnh đại diện và quản lý bảo mật tài khoản trong không gian cá nhân cao cấp của bạn.
-            </p>
-          </div>
-
-          <div className="user-profile-grid">
-            <div className="user-profile-card">
-              <h2>Thông tin cá nhân</h2>
-
-              <form onSubmit={handleUpdateProfile} className="user-profile-form">
-                <div className="avatar-upload-box">
-                  <div className="avatar-preview">
-                    {avatarPreview ? (
-                      <img src={avatarPreview} alt="Avatar" />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {form.fullName?.charAt(0)?.toUpperCase() || "U"}
-                      </div>
-                    )}
-                  </div>
-
-                  <label className="avatar-upload-btn">
-                    Chọn ảnh
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      hidden
-                    />
-                  </label>
-                </div>
-
-                <div className="form-group">
-                  <label>Họ và tên</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={form.fullName}
-                    onChange={handleChange}
-                    placeholder="Nhập họ và tên"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Email</label>
-                  <input type="email" value={user?.email || ""} disabled />
-                </div>
-
-                <div className="form-group">
-                  <label>Số điện thoại</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    placeholder="Nhập số điện thoại"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Địa chỉ</label>
-                  <textarea
-                    name="address"
-                    value={form.address}
-                    onChange={handleChange}
-                    placeholder="Nhập địa chỉ của bạn"
-                    rows="4"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="profile-save-btn"
-                  disabled={saving}
-                >
-                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
-                </button>
-              </form>
+        <section className="user-profile-hero">
+          <div className="user-profile-shell">
+            <div className="user-profile-header">
+              <p className="user-profile-subtitle">{t("profile_subtitle")}</p>
+              <h1>{t("profile_title")}</h1>
+              <p className="user-profile-desc">{t("profile_desc")}</p>
             </div>
 
-            <div className="user-profile-card">
-              <h2>Trung tâm bảo mật</h2>
-
-              {user?.provider === "google" ? (
-                <div className="profile-security-note">
-                  Tài khoản này đang đăng nhập bằng Google, nên không dùng đổi mật khẩu cục bộ.
+            <div className="user-profile-topbar">
+              <div className="user-profile-identity">
+                <div className="user-profile-avatar-large">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar" />
+                  ) : (
+                    <span>{userInitial}</span>
+                  )}
                 </div>
-              ) : (
-                <form onSubmit={handleChangePassword} className="user-profile-form">
-                  <div className="form-group">
-                    <label>Mật khẩu hiện tại</label>
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={passwordForm.currentPassword}
-                      onChange={handlePasswordChange}
-                      placeholder="Nhập mật khẩu hiện tại"
-                    />
+
+                <div className="user-profile-identity-text">
+                  <h2>{form.fullName || t("user_default")}</h2>
+                  <p>{user?.email || t("not_available")}</p>
+                  <div className="user-profile-badges">
+                    <span>{user?.role || "user"}</span>
+                    <span>{user?.provider || "local"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="user-profile-grid">
+              <div className="user-profile-card">
+                <div className="user-profile-card-head">
+                  <p>{t("profile_info_badge")}</p>
+                  <h3>{t("profile_personal_info")}</h3>
+                </div>
+
+                <form onSubmit={handleUpdateProfile} className="user-profile-form">
+                  <div className="avatar-upload-box">
+                    <div className="avatar-preview">
+                      {avatarPreview ? (
+                        <img src={avatarPreview} alt="Avatar" />
+                      ) : (
+                        <div className="avatar-placeholder">{userInitial}</div>
+                      )}
+                    </div>
+
+                    <div className="avatar-upload-content">
+                      <h4>{t("profile_avatar_title")}</h4>
+                      <p>{t("profile_avatar_desc")}</p>
+                      <label className="profile-outline-btn">
+                        {t("profile_choose_image")}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarChange}
+                          hidden
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="user-profile-form-grid">
+                    <div className="form-group">
+                      <label>{t("profile_full_name")}</label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={form.fullName}
+                        onChange={handleChange}
+                        placeholder={t("profile_ph_full_name")}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>{t("label_email")}</label>
+                      <input type="email" value={user?.email || ""} disabled />
+                    </div>
+
+                    <div className="form-group">
+                      <label>{t("profile_phone")}</label>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder={t("profile_ph_phone")}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>{t("profile_login_provider")}</label>
+                      <input value={user?.provider || "local"} disabled />
+                    </div>
                   </div>
 
                   <div className="form-group">
-                    <label>Mật khẩu mới</label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={passwordForm.newPassword}
-                      onChange={handlePasswordChange}
-                      placeholder="Nhập mật khẩu mới"
+                    <label>{t("profile_address")}</label>
+                    <textarea
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      placeholder={t("profile_ph_address")}
+                      rows="4"
                     />
                   </div>
 
-                  <button type="submit" className="profile-save-btn">
-                    Đổi mật khẩu
+                  <button
+                    type="submit"
+                    className="profile-primary-btn"
+                    disabled={saving}
+                  >
+                    {saving ? t("profile_saving") : t("profile_save_changes")}
                   </button>
                 </form>
-              )}
+              </div>
 
-              <div className="profile-meta-box">
-                <p><strong>Vai trò:</strong> {user?.role || "user"}</p>
-                <p><strong>Đăng nhập bằng:</strong> {user?.provider || "local"}</p>
+              <div className="user-profile-card">
+                <div className="user-profile-card-head">
+                  <p>{t("profile_security_badge")}</p>
+                  <h3>{t("profile_security_center")}</h3>
+                </div>
+
+                {user?.provider === "google" ? (
+                  <div className="profile-security-note">
+                    {t("profile_google_note")}
+                  </div>
+                ) : (
+                  <form onSubmit={handleChangePassword} className="user-profile-form">
+                    <div className="form-group">
+                      <label>{t("profile_current_password")}</label>
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={passwordForm.currentPassword}
+                        onChange={handlePasswordChange}
+                        placeholder={t("profile_ph_current_password")}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>{t("profile_new_password")}</label>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={passwordForm.newPassword}
+                        onChange={handlePasswordChange}
+                        placeholder={t("profile_ph_new_password")}
+                      />
+                    </div>
+
+                    <button type="submit" className="profile-primary-btn">
+                      {t("profile_change_password")}
+                    </button>
+                  </form>
+                )}
+
+                <div className="profile-meta-box">
+                  <div className="profile-meta-item">
+                    <span>{t("profile_role")}</span>
+                    <strong>{user?.role || "user"}</strong>
+                  </div>
+                  <div className="profile-meta-item">
+                    <span>{t("profile_login_provider")}</span>
+                    <strong>{user?.provider || "local"}</strong>
+                  </div>
+                  <div className="profile-meta-item">
+                    <span>{t("label_email")}</span>
+                    <strong>{user?.email || t("not_available")}</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </>
   );

@@ -52,6 +52,17 @@ const carSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    ratingAverage: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    ratingCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
     year: {
       type: Number,

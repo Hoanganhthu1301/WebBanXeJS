@@ -98,7 +98,49 @@ body {
 .mb-hero-actions {
   display: flex;
   gap: 14px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+  max-width: 760px;
+}
+
+.mb-hero-actions .mb-btn {
+  flex: 1;
+  min-width: 0;
+  height: 58px;
+  padding: 0 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.25s ease;
+  white-space: nowrap;
+
+  background: rgba(255, 255, 255, 0.02);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+}
+
+.mb-hero-actions .mb-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+@media (max-width: 700px) {
+  .mb-hero-actions {
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  .mb-hero-actions .mb-btn {
+    width: 100%;
+    flex: unset;
+  }
 }
 
 .mb-btn {

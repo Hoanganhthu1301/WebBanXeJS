@@ -50,8 +50,8 @@ export default function CarDetail() {
   const fetchCar = async () => {
     try {
       const [carRes, promoRes] = await Promise.all([
-        axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`),
-        axios.get(`https://webbanxe-backend-stx9.onrender.com/api/promotions/car/${id}`),
+        axios.get(`https://http://localhost:5000/api/cars/${id}`),
+        axios.get(`https://http://localhost:5000/api/promotions/car/${id}`),
       ]);
 
       setCar(carRes.data.car || null);
@@ -65,7 +65,7 @@ export default function CarDetail() {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/reviews/car/${id}`);
+      const res = await axios.get(`https://http://localhost:5000/api/reviews/car/${id}`);
       setReviews(res.data.reviews || []);
       setAvgRating(res.data.avgRating || 0);
       setReviewCount(res.data.total || 0);
@@ -150,7 +150,7 @@ export default function CarDetail() {
         comment: reviewForm.comment?.trim() || "",
       };
 
-      const res = await axios.post("https://webbanxe-backend-stx9.onrender.com/api/reviews", payload);
+      const res = await axios.post("https://http://localhost:5000/api/reviews", payload);
       setReviewMessage(t('review_success_msg'));
       setReviewForm({ rating: 5, comment: "" });
       fetchReviews();
@@ -229,7 +229,15 @@ export default function CarDetail() {
           ) : (
             <p className="mb-price">{t('price_from')} {formatPrice(car.price)}</p>
           )}
+            {car.overviewTitle && (
+              <h2 className="mb-overview-title">
+                {car.overviewTitle}
+              </h2>
+            )}
 
+            <p className="mb-overview-text">
+              {car.overviewText || car.description || t('no_description')}
+            </p>
           <div className="mb-hero-actions">
             <button className="mb-btn mb-btn-light" onClick={handleConsultationClick}>{t('btn_request_consult')}</button>
             <button className="mb-btn mb-btn-dark" onClick={handleDepositClick}>{t('btn_deposit')}</button>
