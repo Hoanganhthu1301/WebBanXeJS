@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { addToCompare } from "../../utils/compare";
 import axios from "axios";
 import {
   Heart,
@@ -91,6 +92,15 @@ export default function Home() {
       setFavoriteIds([]);
     }
   };
+
+  const handleCompare = (carId) => {
+  const result = addToCompare(carId);
+  alert(result.message);
+
+  if (result.ok) {
+    navigate("/compare");
+  }
+};
 
   const handleToggleFavorite = async (e, carId) => {
     e.preventDefault();
@@ -186,8 +196,46 @@ export default function Home() {
                         <p><span>{t('label_year')}</span><strong>{car.year || t('updating')}</strong></p>
                       </div>
                       <p className="car-price">{Number(car.price || 0).toLocaleString("vi-VN")}đ</p>
-                      <Link to={`/cars/${car._id}`} className="detail-link">{t('view_details')}</Link>
-                    </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "12px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Link
+                      to={`/cars/${car._id}`}
+                      className="detail-link"
+                      style={{
+                        marginTop: 0,
+                        width: "100%",
+                        textAlign: "center",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {t('view_details')}
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCompare(car._id)}
+                      style={{
+                        height: "52px",
+                        border: "1px solid rgba(255,255,255,0.14)",
+                        borderRadius: "12px",
+                        background: "rgba(255,255,255,0.04)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t("btn_compare")}
+                    </button>
+                  </div>      
+              </div>
                   </div>
                 ))
               ) : (

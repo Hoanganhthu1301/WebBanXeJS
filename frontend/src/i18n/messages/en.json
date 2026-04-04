@@ -299,6 +299,9 @@
     "default_feature_3_title": "Chassis",
     "default_feature_3_text": "Balanced between comfort and driving feel.",
     "default_feature_4_title": "Interior comfort",
-    "default_feature_4_text": "Designed for long-term comfort and luxury."
+    "default_feature_4_text": "Designed for long-term comfort and luxury.",
+    "section_best_seller": "BEST SELLER",
+"section_featured_cars": "Featured Cars",
+"view_details": "View details"
   }
 }
