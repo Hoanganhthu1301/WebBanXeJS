@@ -7,7 +7,7 @@ import "../../styles/user/Auth.css";
 import bgVideo from "../../assets/login-bg.mp4";
 import logoWhite from "../../assets/logo-white.png";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
 
 export default function Login() {
   const navigate = useNavigate();

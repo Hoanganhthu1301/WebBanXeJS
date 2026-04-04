@@ -5,7 +5,7 @@ import "../../styles/user/UserProfile.css";
 import bgVideo from "../../assets/profile-bg.mp4";
 import { useTranslation } from "react-i18next";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
 
 export default function UserProfile() {
   const { t } = useTranslation();

@@ -14,7 +14,7 @@ import NotificationBell from "./NotificationBell";
 import "./MainNavbar.css";
 import logo from "../assets/logo-white.png";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
 
 export default function MainNavbar() {
   const navigate = useNavigate();
