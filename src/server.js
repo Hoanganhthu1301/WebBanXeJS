@@ -7,6 +7,8 @@ const { initSocket } = require("./utils/socket");
 
 const PORT = process.env.PORT || 5000;
 
+console.log("JWT?", !!process.env.JWT_SECRET);
+console.log("GEMINI?", !!process.env.GEMINI_API_KEY);
 const startServer = async () => {
   try {
     await connectDB();

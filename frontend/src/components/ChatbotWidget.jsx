@@ -3,6 +3,8 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import "../styles/user/ChatbotWidget.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function ChatbotWidget() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -37,7 +39,7 @@ export default function ChatbotWidget() {
     });
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const userText = input.trim();
     setMessages((prev) => [...prev, { role: "user", text: userText }]);
@@ -48,7 +50,7 @@ export default function ChatbotWidget() {
       const userLocation = await getLocationIfAvailable();
       const carId = getCurrentCarId();
 
-      const res = await axios.post("https://webbanxe-backend-stx9.onrender.com/api/chatbot", {
+      const res = await axios.post(`${API_URL}/api/chatbot`, {
         message: userText,
         carId,
         userLocation,
@@ -61,16 +63,19 @@ export default function ChatbotWidget() {
           text: res.data.answer || "Tôi chưa có câu trả lời phù hợp.",
         },
       ]);
-} catch (error) {
-  console.error("Lỗi chatbot:", error);
-  setMessages((prev) => [
-    ...prev,
-    {
-      role: "bot",
-      text: "Xin lỗi, chatbot đang bận. Vui lòng thử lại sau.",
-    },
-  ]);
-}}
+    } catch (error) {
+      console.error("Lỗi chatbot:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "bot",
+          text: "Xin lỗi, chatbot đang bận. Vui lòng thử lại sau.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="chatbot-widget">

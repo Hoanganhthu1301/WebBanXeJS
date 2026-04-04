@@ -90,11 +90,13 @@ ${message}
       answer,
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "Lỗi chatbot",
-      error: error.message,
-    });
-  }
+  console.error("CHATBOT ERROR:", error);
+
+  return res.status(500).json({
+    message: "Lỗi chatbot",
+    error: error.message,
+  });
+}
 };
 
 module.exports = {
