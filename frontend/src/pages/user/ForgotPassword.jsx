@@ -6,23 +6,39 @@ import "../../styles/user/Auth.css";
 import bgVideo from "../../assets/login-bg.mp4";
 import logoWhite from "../../assets/logo-white.png";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     setMessage("");
 
+    if (!email.trim()) {
+      setMessage("Vui lòng nhập email");
+      return;
+    }
+
     try {
-      const res = await axios.post(
-        "https://webbanxe-backend-stx9.onrender.com/api/auth/forgot-password",
-        { email }
-      );
+      setLoading(true);
+
+      const res = await axios.post(`${API_URL}/api/auth/forgot-password`, {
+        email: email.trim(),
+      });
 
       setMessage(res.data.message || "Đã gửi email đặt lại mật khẩu");
     } catch (error) {
-      setMessage(error.response?.data?.message || "Gửi email thất bại");
+      console.error("Forgot password error:", error);
+      console.error("Forgot password response:", error.response?.data);
+
+      setMessage(
+        error.response?.data?.message || "Gửi email thất bại"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,7 +53,6 @@ export default function ForgotPassword() {
       <div className="lux-login-layout">
         <div className="lux-login-left">
           <img src={logoWhite} alt="logo" className="lux-login-logo" />
-
           <h1>Quên mật khẩu</h1>
           <p>Nhập email để nhận hướng dẫn đặt lại mật khẩu</p>
         </div>
@@ -57,11 +72,16 @@ export default function ForgotPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
+                required
               />
             </div>
 
-            <button type="submit" className="lux-login-submit">
-              <span>Gửi yêu cầu</span>
+            <button
+              type="submit"
+              className="lux-login-submit"
+              disabled={loading}
+            >
+              <span>{loading ? "Đang gửi..." : "Gửi yêu cầu"}</span>
               <ArrowRight size={18} />
             </button>
           </form>

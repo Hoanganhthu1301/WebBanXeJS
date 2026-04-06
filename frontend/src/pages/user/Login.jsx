@@ -48,28 +48,31 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      setMessage("");
+const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    setMessage("");
 
-      const res = await axios.post(`${API_URL}/api/auth/google-login`, {
-        credential: credentialResponse.credential,
-      });
+    console.log("Google credentialResponse:", credentialResponse);
+    console.log("Google credential:", credentialResponse?.credential);
 
-      const data = res.data;
+    const res = await axios.post(`${API_URL}/api/auth/google-login`, {
+      credential: credentialResponse.credential,
+    });
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+    const data = res.data;
 
-      if (data.user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      setMessage(error.response?.data?.message || "Đăng nhập Google thất bại");
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    if (data.user.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/");
     }
-  };
+  } catch (error) {
+    setMessage(error.response?.data?.message || "Đăng nhập Google thất bại");
+  }
+};  
 
   const handleGoogleError = () => {
     setMessage("Đăng nhập Google thất bại");

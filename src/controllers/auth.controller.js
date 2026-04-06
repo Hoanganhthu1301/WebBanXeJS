@@ -250,16 +250,25 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${encodeURIComponent(
-      resetToken
-    )}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
-    await sendResetPasswordEmail(user.email, resetLink);
+    try {
+      await sendResetPasswordEmail(user.email, resetLink);
+    } catch (mailError) {
+      console.error("SEND MAIL ERROR:", mailError);
+
+      return res.status(500).json({
+        message: 'Lỗi server khi gửi yêu cầu quên mật khẩu',
+        error: mailError.message
+      });
+    }
 
     return res.status(200).json({
       message: 'Nếu email tồn tại, hệ thống đã gửi hướng dẫn đặt lại mật khẩu'
     });
   } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+
     return res.status(500).json({
       message: 'Lỗi server khi gửi yêu cầu quên mật khẩu',
       error: error.message

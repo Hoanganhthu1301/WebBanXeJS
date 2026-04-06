@@ -10,16 +10,23 @@ const reviewRoutes = require("./routes/review.routes");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://webbanxe.store",
+    "https://www.webbanxe.store"
+  ],
+  credentials: true
+}));
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cấu hình static folder để xem được ảnh upload
 app.use("/uploads", express.static("public/uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
-// Đăng ký các route mới của Thư
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -30,7 +37,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Route tổng hợp cũ
 app.use('/api', apiRoutes);
 
 module.exports = app;
