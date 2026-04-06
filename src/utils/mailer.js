@@ -3,15 +3,40 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: Number(process.env.MAIL_PORT) || 587,
-  secure: false,
+  secure: Number(process.env.MAIL_PORT) === 465,
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASS,
   },
+  family: 4,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+  tls: {
+    rejectUnauthorized: false,
+  },
+  logger: true,
+  debug: true,
 });
 
-// Hàm gửi mail dùng chung (Helper)
+// Hàm gửi mail dùng chung
 const sendMail = async ({ to, subject, html }) => {
+  console.log("=== MAIL DEBUG START ===");
+  console.log("MAIL_HOST:", process.env.MAIL_HOST);
+  console.log("MAIL_PORT:", process.env.MAIL_PORT);
+  console.log("MAIL_USER:", process.env.MAIL_USER);
+  console.log("MAIL_FROM:", process.env.MAIL_FROM);
+  console.log("MAIL_PASS length:", (process.env.MAIL_PASS || "").length);
+  console.log("Sending to:", to);
+
+  try {
+    await transporter.verify();
+    console.log("SMTP verify: OK");
+  } catch (verifyError) {
+    console.error("SMTP verify error:", verifyError);
+    throw verifyError;
+  }
+
   const mailOptions = {
     from: process.env.MAIL_FROM || `"Web Bán Xe" <${process.env.MAIL_USER}>`,
     to,
@@ -19,10 +44,19 @@ const sendMail = async ({ to, subject, html }) => {
     html,
   };
 
-  return transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Send mail success:", info.response);
+    console.log("=== MAIL DEBUG END ===");
+    return info;
+  } catch (sendError) {
+    console.error("Send mail error:", sendError);
+    console.log("=== MAIL DEBUG END ===");
+    throw sendError;
+  }
 };
 
-// Hàm gửi mail đặt lại mật khẩu (Dùng cho tính năng của Quân)
+// Hàm gửi mail đặt lại mật khẩu
 const sendResetPasswordEmail = async (to, resetLink) => {
   return sendMail({
     to,
@@ -40,7 +74,7 @@ const sendResetPasswordEmail = async (to, resetLink) => {
   });
 };
 
-// Hàm gửi mail phản hồi yêu cầu (Dùng cho tính năng của Thư)
+// Hàm gửi mail phản hồi yêu cầu
 const sendRequestReplyEmail = async ({
   to,
   customerName,
