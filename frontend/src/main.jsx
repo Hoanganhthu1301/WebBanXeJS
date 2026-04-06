@@ -5,6 +5,7 @@ import App from './App.jsx';
 import './App.css';
 import './i18n/i18n'; 
 import "leaflet/dist/leaflet.css";
+import "@google/model-viewer";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

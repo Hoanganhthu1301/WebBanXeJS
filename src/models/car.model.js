@@ -52,6 +52,7 @@ const carSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+
     ratingAverage: {
       type: Number,
       default: 0,
@@ -85,14 +86,23 @@ const carSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
     image: {
       type: String,
       default: "",
     },
+
     images: {
       type: [String],
       default: [],
     },
+
+    model3dUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     description: {
       type: String,
       default: "",
@@ -105,14 +115,17 @@ const carSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
     highlights: {
       type: [highlightSchema],
       default: [],
     },
+
     features: {
       type: [featureSchema],
       default: [],
     },
+
     status: {
       type: String,
       enum: ["available", "reserved", "sold", "hidden"],

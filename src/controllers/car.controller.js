@@ -146,6 +146,7 @@ const createCar = async (req, res) => {
       color,
       image,
       images,
+      model3dUrl, 
       description,
       overviewTitle,
       overviewText,
@@ -169,26 +170,27 @@ const createCar = async (req, res) => {
     const finalStatus = normalizeCarStatus(parsedQuantity, status || "available");
 
     const newCar = await Car.create({
-      name: String(name).trim(),
-      brand: String(brand).trim(),
-      category: String(category).trim(),
-      price: Number(price),
-      quantity: parsedQuantity,
-      soldCount: parsedSoldCount,
-      year: year ? Number(year) : new Date().getFullYear(),
-      fuel: fuel || "Xăng",
-      transmission: transmission || "Tự động",
-      mileage: mileage ? Number(mileage) : 0,
-      color: color || "",
-      image: image || "",
-      images: Array.isArray(images) ? images : [],
-      description: description || "",
-      overviewTitle: overviewTitle || "",
-      overviewText: overviewText || "",
-      highlights: Array.isArray(highlights) ? highlights : [],
-      features: Array.isArray(features) ? features : [],
-      status: finalStatus,
-    });
+  name: String(name).trim(),
+  brand: String(brand).trim(),
+  category: String(category).trim(),
+  price: Number(price),
+  quantity: parsedQuantity,
+  soldCount: parsedSoldCount,
+  year: year ? Number(year) : new Date().getFullYear(),
+  fuel: fuel || "Xăng",
+  transmission: transmission || "Tự động",
+  mileage: mileage ? Number(mileage) : 0,
+  color: color || "",
+  image: image || "",
+  images: Array.isArray(images) ? images : [],
+  model3dUrl: model3dUrl || "", // 🔥 QUAN TRỌNG
+  description: description || "",
+  overviewTitle: overviewTitle || "",
+  overviewText: overviewText || "",
+  highlights: Array.isArray(highlights) ? highlights : [],
+  features: Array.isArray(features) ? features : [],
+  status: finalStatus,
+});
 
     return res.status(201).json({
       message: "Thêm xe thành công",
@@ -214,26 +216,27 @@ const updateCar = async (req, res) => {
     }
 
     const {
-      name,
-      brand,
-      category,
-      price,
-      quantity,
-      soldCount,
-      year,
-      fuel,
-      transmission,
-      mileage,
-      color,
-      image,
-      images,
-      description,
-      overviewTitle,
-      overviewText,
-      highlights,
-      features,
-      status,
-    } = req.body;
+  name,
+  brand,
+  category,
+  price,
+  quantity,
+  soldCount,
+  year,
+  fuel,
+  transmission,
+  mileage,
+  color,
+  image,
+  images,
+  model3dUrl, // 🔥 thêm
+  description,
+  overviewTitle,
+  overviewText,
+  highlights,
+  features,
+  status,
+} = req.body;
 
     const parsedQuantity =
       quantity !== undefined && quantity !== null
@@ -251,33 +254,36 @@ const updateCar = async (req, res) => {
     );
 
     const updatedCar = await Car.findByIdAndUpdate(
-      req.params.id,
-      {
-        name: name !== undefined ? name : oldCar.name,
-        brand: brand !== undefined ? brand : oldCar.brand,
-        category: category !== undefined ? category : oldCar.category,
-        price: price !== undefined ? Number(price) : oldCar.price,
-        quantity: parsedQuantity,
-        soldCount: parsedSoldCount,
-        year: year !== undefined ? Number(year) : oldCar.year,
-        fuel: fuel !== undefined ? fuel : oldCar.fuel,
-        transmission:
-          transmission !== undefined ? transmission : oldCar.transmission,
-        mileage: mileage !== undefined ? Number(mileage) : oldCar.mileage,
-        color: color !== undefined ? color : oldCar.color,
-        image: image !== undefined ? image : oldCar.image,
-        images: Array.isArray(images) ? images : oldCar.images,
-        description: description !== undefined ? description : oldCar.description,
-        overviewTitle:
-          overviewTitle !== undefined ? overviewTitle : oldCar.overviewTitle,
-        overviewText:
-          overviewText !== undefined ? overviewText : oldCar.overviewText,
-        highlights: Array.isArray(highlights) ? highlights : oldCar.highlights,
-        features: Array.isArray(features) ? features : oldCar.features,
-        status: finalStatus,
-      },
-      { new: true, runValidators: true }
-    );
+  req.params.id,
+  {
+    name: name !== undefined ? name : oldCar.name,
+    brand: brand !== undefined ? brand : oldCar.brand,
+    category: category !== undefined ? category : oldCar.category,
+    price: price !== undefined ? Number(price) : oldCar.price,
+    quantity: parsedQuantity,
+    soldCount: parsedSoldCount,
+    year: year !== undefined ? Number(year) : oldCar.year,
+    fuel: fuel !== undefined ? fuel : oldCar.fuel,
+    transmission:
+      transmission !== undefined ? transmission : oldCar.transmission,
+    mileage: mileage !== undefined ? Number(mileage) : oldCar.mileage,
+    color: color !== undefined ? color : oldCar.color,
+    image: image !== undefined ? image : oldCar.image,
+    images: Array.isArray(images) ? images : oldCar.images,
+    model3dUrl:
+      model3dUrl !== undefined ? model3dUrl : oldCar.model3dUrl, // 🔥 QUAN TRỌNG
+    description:
+      description !== undefined ? description : oldCar.description,
+    overviewTitle:
+      overviewTitle !== undefined ? overviewTitle : oldCar.overviewTitle,
+    overviewText:
+      overviewText !== undefined ? overviewText : oldCar.overviewText,
+    highlights: Array.isArray(highlights) ? highlights : oldCar.highlights,
+    features: Array.isArray(features) ? features : oldCar.features,
+    status: finalStatus,
+  },
+  { new: true, runValidators: true }
+);
 
     return res.status(200).json({
       message: "Cập nhật xe thành công",

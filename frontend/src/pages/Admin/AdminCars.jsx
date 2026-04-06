@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/admin/AdminCars.css";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
+
 const createEmptyHighlight = () => ({
   title: "",
   text: "",
@@ -28,6 +31,7 @@ const initialForm = {
   color: "",
   image: "",
   imagesText: "",
+  model3dUrl: "",
   description: "",
   status: "available",
   overviewTitle: "",
@@ -69,7 +73,7 @@ export default function AdminCars() {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/brands");
+      const res = await axios.get(`${API_URL}/api/brands`);
       setBrands(res.data.brands || []);
     } catch (error) {
       console.log("Không lấy được danh sách hãng", error);
@@ -78,7 +82,7 @@ export default function AdminCars() {
 
   const fetchCars = async () => {
     try {
-      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/cars/admin/all");
+      const res = await axios.get(`${API_URL}/api/cars/admin/all`);
       setCars(res.data.cars || []);
     } catch (error) {
       setMessage("Không lấy được danh sách xe");
@@ -87,7 +91,7 @@ export default function AdminCars() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/categories");
+      const res = await axios.get(`${API_URL}/api/categories`);
       setCategories(res.data.categories || []);
     } catch (error) {
       console.log("Không lấy được danh sách danh mục", error);
@@ -162,6 +166,7 @@ export default function AdminCars() {
         color: formData.color,
         image: formData.image || parsedImages[0] || "",
         images: parsedImages,
+        model3dUrl: formData.model3dUrl?.trim() || "",
         description: formData.description,
         status: formData.status,
         overviewTitle: formData.overviewTitle,
@@ -173,10 +178,10 @@ export default function AdminCars() {
       console.log("PAYLOAD GUI LEN:", payload);
 
       if (editingId) {
-        await axios.put(`https://webbanxe-backend-stx9.onrender.com/api/cars/${editingId}`, payload);
+        await axios.put(`${API_URL}/api/cars/${editingId}`, payload);
         setMessage("Cập nhật xe thành công");
       } else {
-        await axios.post("https://webbanxe-backend-stx9.onrender.com/api/cars", payload);
+        await axios.post(`${API_URL}/api/cars`, payload);
         setMessage("Thêm xe thành công");
       }
 
@@ -209,6 +214,7 @@ export default function AdminCars() {
       color: car.color || "",
       image: car.image || "",
       imagesText: Array.isArray(car.images) ? car.images.join("\n") : "",
+      model3dUrl: car.model3dUrl || "",
       description: car.description || "",
       status: car.status || "available",
       overviewTitle: car.overviewTitle || "",
@@ -249,7 +255,7 @@ export default function AdminCars() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`);
+      await axios.delete(`${API_URL}/api/cars/${id}`);
       setMessage("Xóa xe thành công");
       fetchCars();
     } catch (error) {
@@ -379,6 +385,14 @@ export default function AdminCars() {
             name="image"
             placeholder="Ảnh chính"
             value={formData.image}
+            onChange={handleChange}
+          />
+
+          <input
+            type="text"
+            name="model3dUrl"
+            placeholder="Đường dẫn model 3D, ví dụ: /models/porsche-panamera.glb"
+            value={formData.model3dUrl}
             onChange={handleChange}
           />
 
@@ -513,6 +527,7 @@ export default function AdminCars() {
                 <th>Giá</th>
                 <th>Số lượng</th>
                 <th>Năm</th>
+                <th>3D</th>
                 <th>Trạng thái</th>
                 <th>Thao tác</th>
               </tr>
@@ -538,6 +553,7 @@ export default function AdminCars() {
                     <td>{Number(car.price).toLocaleString("vi-VN")}đ</td>
                     <td>{car.quantity ?? 1}</td>
                     <td>{car.year}</td>
+                    <td>{car.model3dUrl ? "Có" : "Chưa có"}</td>
                     <td>{renderStatus(car)}</td>
                     <td>
                       <button className="edit-btn" onClick={() => handleEdit(car)}>
@@ -554,7 +570,7 @@ export default function AdminCars() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: "center" }}>
+                  <td colSpan="10" style={{ textAlign: "center" }}>
                     Chưa có xe nào
                   </td>
                 </tr>
