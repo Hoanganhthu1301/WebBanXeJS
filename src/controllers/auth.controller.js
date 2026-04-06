@@ -250,6 +250,7 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
+<<<<<<< HEAD
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
     try {
@@ -274,6 +275,23 @@ const forgotPassword = async (req, res) => {
       error: error.message
     });
   }
+=======
+const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+sendResetPasswordEmail(user.email, resetLink).catch((err) => {
+  console.error("Forgot password mail error:", err.message);
+});
+
+return res.status(200).json({
+  message: "Nếu email tồn tại, hệ thống đã gửi hướng dẫn đặt lại mật khẩu",
+});
+} catch (error) {
+  console.error("forgotPassword error:", error);
+  return res.status(500).json({
+    message: "Lỗi server khi gửi yêu cầu quên mật khẩu",
+    error: error.message,
+  });
+}
+>>>>>>> 9c9163a (forgot password fix)
 };
 
 const resetPassword = async (req, res) => {
