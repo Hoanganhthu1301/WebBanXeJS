@@ -10,7 +10,7 @@ const sendMail = async ({ to, subject, html }) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.MAIL_FROM || "Web Bán Xe <onboarding@resend.dev>",
+      from: process.env.MAIL_FROM || "Web Bán Xe <noreply@webbanxe.store>",
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
