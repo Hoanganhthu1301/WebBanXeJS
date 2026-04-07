@@ -1,57 +1,32 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT) || 587,
-  secure: Number(process.env.MAIL_PORT) === 465,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-  family: 4,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    rejectUnauthorized: false,
-  },
-  logger: true,
-  debug: true,
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Hàm gửi mail dùng chung
 const sendMail = async ({ to, subject, html }) => {
-  console.log("=== MAIL DEBUG START ===");
-  console.log("MAIL_HOST:", process.env.MAIL_HOST);
-  console.log("MAIL_PORT:", process.env.MAIL_PORT);
-  console.log("MAIL_USER:", process.env.MAIL_USER);
+  console.log("=== RESEND MAIL DEBUG START ===");
   console.log("MAIL_FROM:", process.env.MAIL_FROM);
-  console.log("MAIL_PASS length:", (process.env.MAIL_PASS || "").length);
   console.log("Sending to:", to);
 
   try {
-    await transporter.verify();
-    console.log("SMTP verify: OK");
-  } catch (verifyError) {
-    console.error("SMTP verify error:", verifyError);
-    throw verifyError;
-  }
+    const { data, error } = await resend.emails.send({
+      from: process.env.MAIL_FROM || "Web Bán Xe <onboarding@resend.dev>",
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+    });
 
-  const mailOptions = {
-    from: process.env.MAIL_FROM || `"Web Bán Xe" <${process.env.MAIL_USER}>`,
-    to,
-    subject,
-    html,
-  };
+    if (error) {
+      console.error("Resend error:", error);
+      throw new Error(error.message || "Gửi mail thất bại");
+    }
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Send mail success:", info.response);
-    console.log("=== MAIL DEBUG END ===");
-    return info;
+    console.log("Send mail success:", data);
+    console.log("=== RESEND MAIL DEBUG END ===");
+    return data;
   } catch (sendError) {
     console.error("Send mail error:", sendError);
-    console.log("=== MAIL DEBUG END ===");
+    console.log("=== RESEND MAIL DEBUG END ===");
     throw sendError;
   }
 };
@@ -63,10 +38,14 @@ const sendResetPasswordEmail = async (to, resetLink) => {
     subject: "Yêu cầu đặt lại mật khẩu",
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
-        <h2>Đặt lại mật khẩu</h2>
+        <h2 style="color: #1976d2;">Đặt lại mật khẩu</h2>
         <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản của mình.</p>
         <p>Nhấn vào link bên dưới để đặt lại mật khẩu:</p>
-        <a href="${resetLink}" target="_blank" style="color: #1976d2; font-weight: bold;">${resetLink}</a>
+        <p>
+          <a href="${resetLink}" target="_blank" style="color: #1976d2; font-weight: bold;">
+            ${resetLink}
+          </a>
+        </p>
         <p>Link này sẽ hết hạn sau 15 phút.</p>
         <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
       </div>
