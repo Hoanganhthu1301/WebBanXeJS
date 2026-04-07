@@ -3,6 +3,8 @@ import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
 import ShowroomMap from "../../components/ShowroomMap";
 import "../../styles/user/ShowroomsPage.css";
+import PageLoader from "../../components/PageLoader";
+import { useTranslation } from "react-i18next";
 
 function getDistanceKm(lat1, lon1, lat2, lon2) {
   const toRad = (v) => (v * Math.PI) / 180;
@@ -20,6 +22,8 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 export default function ShowroomsPage() {
+  const { t } = useTranslation();
+
   const [showrooms, setShowrooms] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [message, setMessage] = useState("");
@@ -30,22 +34,24 @@ export default function ShowroomsPage() {
   }, []);
 
   const fetchShowrooms = async () => {
-  try {
-    setLoading(true);
-    const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/showrooms");
-    setShowrooms(res.data.showrooms || []);
-    setMessage("");
-  } catch (error) {
-    console.error("Lỗi lấy showroom:", error);
-    setMessage("Không tải được danh sách showroom");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        "https://webbanxe-backend-stx9.onrender.com/api/showrooms"
+      );
+      setShowrooms(res.data.showrooms || []);
+      setMessage("");
+    } catch (error) {
+      console.error("Lỗi lấy showroom:", error);
+      setMessage(t("showrooms_fetch_error"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
-      setMessage("Trình duyệt không hỗ trợ định vị");
+      setMessage(t("showrooms_geolocation_not_supported"));
       return;
     }
 
@@ -55,7 +61,7 @@ export default function ShowroomsPage() {
         setMessage("");
       },
       () => {
-        setMessage("Không lấy được vị trí hiện tại");
+        setMessage(t("showrooms_location_error"));
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -74,6 +80,8 @@ export default function ShowroomsPage() {
       .sort((a, b) => a.distanceKm - b.distanceKm)[0];
   }, [userLocation, showrooms]);
 
+  if (loading) return <PageLoader />;
+
   return (
     <div className="showrooms-page">
       <MainNavbar />
@@ -81,16 +89,16 @@ export default function ShowroomsPage() {
       <section className="showrooms-hero">
         <div className="showrooms-hero__overlay" />
         <div className="showrooms-hero__content">
-          <p className="showrooms-eyebrow">Our network</p>
-          <h1>Hệ thống showroom</h1>
-          <p>
-            Khám phá các showroom trên bản đồ, tìm chi nhánh gần bạn nhất và xem
-            thông tin liên hệ nhanh chóng.
-          </p>
+          <p className="showrooms-eyebrow">{t("showroom_network")}</p>
+          <h1>{t("showroom_system_title")}</h1>
+          <p>{t("showroom_system_desc")}</p>
 
           <div className="showrooms-hero__actions">
-            <button className="showrooms-primary-btn" onClick={handleDetectLocation}>
-              Tìm showroom gần tôi
+            <button
+              className="showrooms-primary-btn"
+              onClick={handleDetectLocation}
+            >
+              {t("btn_find_nearest_showroom")}
             </button>
           </div>
         </div>
@@ -102,7 +110,9 @@ export default function ShowroomsPage() {
 
           {nearestShowroom && (
             <div className="showrooms-nearest-card">
-              <p className="showrooms-nearest-label">Showroom gần bạn nhất</p>
+              <p className="showrooms-nearest-label">
+                {t("showrooms_nearest_label")}
+              </p>
               <h3>{nearestShowroom.name}</h3>
               <p>{nearestShowroom.address}</p>
               <span>{nearestShowroom.distanceKm.toFixed(1)} km</span>
@@ -116,28 +126,33 @@ export default function ShowroomsPage() {
 
             <div className="showrooms-list-card">
               <div className="showrooms-list-header">
-                <h2>Danh sách showroom</h2>
-                <span>{showrooms.length} chi nhánh</span>
+                <h2>{t("showroom_list_title")}</h2>
+                <span>
+                  {showrooms.length} {t("showroom_branch_count")}
+                </span>
               </div>
 
-              {loading ? (
-                <p className="showrooms-empty">Đang tải dữ liệu...</p>
-              ) : showrooms.length === 0 ? (
-                <p className="showrooms-empty">Chưa có showroom nào.</p>
+              {showrooms.length === 0 ? (
+                <p className="showrooms-empty">{t("showrooms_empty")}</p>
               ) : (
                 <div className="showrooms-list">
                   {showrooms.map((item) => (
                     <div className="showrooms-item" key={item._id}>
                       <h3>{item.name}</h3>
                       <p>{item.address}</p>
-                      <p>SĐT: {item.phone || "—"}</p>
-                      <p>Giờ mở cửa: {item.openHours || "—"}</p>
+                      <p>
+                        {t("showroom_phone")}: {item.phone || t("dash")}
+                      </p>
+                      <p>
+                        {t("showroom_open_hours")}:{" "}
+                        {item.openHours || t("dash")}
+                      </p>
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Chỉ đường
+                        {t("btn_get_directions")}
                       </a>
                     </div>
                   ))}

@@ -4,8 +4,10 @@ import MainNavbar from "../../components/MainNavbar";
 import "../../styles/user/UserProfile.css";
 import bgVideo from "../../assets/profile-bg.mp4";
 import { useTranslation } from "react-i18next";
+import PageLoader from "../../components/PageLoader";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -166,21 +168,7 @@ export default function UserProfile() {
 
   const userInitial = form.fullName?.charAt(0)?.toUpperCase() || "U";
 
-  if (loading) {
-    return (
-      <>
-        <MainNavbar />
-        <div className="user-profile-page">
-          {renderVideoBg()}
-          <div className="user-profile-shell">
-            <div className="user-profile-loading-card">
-              <p className="user-profile-loading">{t("profile_loading")}</p>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <>

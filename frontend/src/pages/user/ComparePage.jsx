@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
 import PageLoader from "../../components/PageLoader";
+import { useTranslation } from "react-i18next";
 import {
   getCompareCars,
   removeFromCompare,
@@ -9,6 +10,8 @@ import {
 } from "../../utils/compare";
 
 export default function ComparePage() {
+  const { t, i18n } = useTranslation();
+
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -26,19 +29,21 @@ export default function ComparePage() {
 
       if (!ids.length) {
         setCars([]);
-        setMessage("Chưa có xe nào trong danh sách so sánh");
+        setMessage(t("compare_empty"));
         return;
       }
 
       const responses = await Promise.all(
-        ids.map((id) => axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`))
+        ids.map((id) =>
+          axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`)
+        )
       );
 
       const carList = responses.map((res) => res.data.car).filter(Boolean);
       setCars(carList);
     } catch (error) {
       console.log("Lỗi compare:", error);
-      setMessage("Không tải được dữ liệu so sánh");
+      setMessage(t("compare_fetch_error"));
     } finally {
       setLoading(false);
     }
@@ -52,25 +57,25 @@ export default function ComparePage() {
   const handleClearAll = () => {
     clearCompareCars();
     setCars([]);
-    setMessage("Đã xóa toàn bộ danh sách so sánh");
+    setMessage(t("compare_clear_success"));
   };
 
   const comparisonRows = useMemo(
     () => [
-      { label: "Ảnh", key: "image", type: "image" },
-      { label: "Tên xe", key: "name" },
-      { label: "Hãng", key: "brand" },
-      { label: "Danh mục", key: "category" },
-      { label: "Giá", key: "price", type: "price" },
-      { label: "Năm sản xuất", key: "year" },
-      { label: "Nhiên liệu", key: "fuel" },
-      { label: "Hộp số", key: "transmission" },
-      { label: "Số km đã đi", key: "mileage" },
-      { label: "Màu sắc", key: "color" },
-      { label: "Trạng thái", key: "status" },
-      { label: "Mô tả", key: "description", type: "text" },
+      { label: t("compare_row_image"), key: "image", type: "image" },
+      { label: t("compare_row_name"), key: "name" },
+      { label: t("compare_row_brand"), key: "brand" },
+      { label: t("compare_row_category"), key: "category" },
+      { label: t("compare_row_price"), key: "price", type: "price" },
+      { label: t("compare_row_year"), key: "year" },
+      { label: t("compare_row_fuel"), key: "fuel" },
+      { label: t("compare_row_transmission"), key: "transmission" },
+      { label: t("compare_row_mileage"), key: "mileage" },
+      { label: t("compare_row_color"), key: "color" },
+      { label: t("compare_row_status"), key: "status" },
+      { label: t("compare_row_description"), key: "description", type: "text" },
     ],
-    []
+    [t]
   );
 
   const getCarImage = (car) => {
@@ -81,21 +86,28 @@ export default function ComparePage() {
   };
 
   const formatValue = (car, row) => {
-    if (!car) return "—";
+    if (!car) return t("dash");
 
     const value = car[row.key];
 
     if (row.type === "price") {
-      return value ? `${Number(value).toLocaleString("vi-VN")}đ` : "—";
+      const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+      return value ? `${Number(value).toLocaleString(locale)}đ` : t("dash");
     }
 
     if (row.key === "status") {
-      return value === "available" ? "Đang bán" : value || "—";
+      if (value === "available") return t("status_available");
+      if (value === "reserved") return t("status_reserved");
+      if (value === "sold") return t("status_sold");
+      if (value === "hidden") return t("status_hidden");
+      return value || t("dash");
     }
 
-    return value || "—";
+    return value || t("dash");
   };
+
   if (loading) return <PageLoader />;
+
   return (
     <>
       <MainNavbar />
@@ -117,7 +129,7 @@ export default function ComparePage() {
                 marginBottom: "10px",
               }}
             >
-              Compare Cars
+              {t("btn_compare")}
             </p>
 
             <h1
@@ -128,11 +140,11 @@ export default function ComparePage() {
                 lineHeight: 1.1,
               }}
             >
-              So sánh xe
+              {t("compare_title")}
             </h1>
 
             <p style={{ color: "#cbd5e1", marginTop: "12px" }}>
-              So sánh nhanh các thông số và thông tin quan trọng giữa các mẫu xe.
+              {t("compare_desc")}
             </p>
           </div>
 
@@ -146,7 +158,7 @@ export default function ComparePage() {
             }}
           >
             <div style={{ color: "#cbd5e1" }}>
-              Đang so sánh: <strong>{cars.length}</strong> xe
+              {t("compare_count", { count: cars.length })}
             </div>
 
             {cars.length > 0 && (
@@ -163,12 +175,12 @@ export default function ComparePage() {
                   fontWeight: 600,
                 }}
               >
-                Xóa tất cả
+                {t("compare_clear_all")}
               </button>
             )}
           </div>
 
-          { message && cars.length === 0 ? (
+          {message && cars.length === 0 ? (
             <div
               style={{
                 background: "rgba(255,255,255,0.04)",
@@ -210,7 +222,7 @@ export default function ComparePage() {
                         borderBottom: "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
-                      Tiêu chí
+                      {t("compare_criteria")}
                     </th>
 
                     {cars.map((car) => (
@@ -245,7 +257,7 @@ export default function ComparePage() {
                               fontWeight: 600,
                             }}
                           >
-                            Xóa
+                            {t("delete")}
                           </button>
                         </div>
                       </th>

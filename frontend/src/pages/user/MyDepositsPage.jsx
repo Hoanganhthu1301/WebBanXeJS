@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from 'react-i18next';
 import "../../styles/user/MyDepositsPage.css";
+import PageLoader from "../../components/PageLoader";
 
 export default function MyDepositsPage() {
   const navigate = useNavigate();
@@ -134,7 +135,7 @@ export default function MyDepositsPage() {
   }, [deposits]);
 
   const currentList = activeTab === "deposit" ? depositOrders : purchasedOrders;
-
+  if (loading) return <PageLoader />;
   return (
     <div className="my-orders-page">
       <MainNavbar />
@@ -161,7 +162,7 @@ export default function MyDepositsPage() {
           </button>
         </div>
 
-        {loading && <p className="my-orders-message">{t('loading')}</p>}
+   
         {message && <p className="my-orders-message error">{message}</p>}
 
         {!loading && !message && currentList.length === 0 && (

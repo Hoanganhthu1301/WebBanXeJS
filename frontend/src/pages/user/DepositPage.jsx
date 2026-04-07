@@ -3,10 +3,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/DepositPage.css";
 import MainNavbar from "../../components/MainNavbar";
-
-const formatPrice = (value) => {
-  return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
-};
+import { useTranslation } from "react-i18next";
+import PageLoader from "../../components/PageLoader";
 
 const getMinPickupDate = () => {
   const today = new Date();
@@ -48,6 +46,12 @@ const bankOptions = [
 
 export default function DepositPage() {
   const { id } = useParams();
+  const { t, i18n } = useTranslation();
+
+  const formatPrice = (value) => {
+    const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+    return `${Number(value || 0).toLocaleString(locale)}đ`;
+  };
 
   const currentUser = useMemo(() => {
     try {
@@ -94,10 +98,12 @@ export default function DepositPage() {
 
   const fetchCar = async () => {
     try {
-      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`);
+      const res = await axios.get(
+        `https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`
+      );
       setCar(res.data.car);
     } catch {
-      setMessage("Không lấy được thông tin xe");
+      setMessage(t("deposit_fetch_car_error"));
     }
   };
 
@@ -176,12 +182,12 @@ export default function DepositPage() {
   );
 
   const carStatusText = useMemo(() => {
-    if (!car?.status) return "Đang cập nhật";
-    if (car.status === "available") return "Đang bán";
-    if (car.status === "reserved") return "Đang giữ chỗ";
-    if (car.status === "sold") return "Đã bán";
-    return "Ẩn";
-  }, [car]);
+    if (!car?.status) return t("deposit_status_updating");
+    if (car.status === "available") return t("deposit_status_available");
+    if (car.status === "reserved") return t("deposit_status_reserved");
+    if (car.status === "sold") return t("deposit_status_sold");
+    return t("deposit_status_hidden");
+  }, [car, t]);
 
   const activeSlots = useMemo(() => {
     return formData.deliveryMethod === "home_delivery"
@@ -191,8 +197,8 @@ export default function DepositPage() {
 
   const selectedRefundBankName = useMemo(() => {
     const found = bankOptions.find((bank) => bank.bin === formData.refundBankBin);
-    return found ? found.name : "Chưa chọn";
-  }, [formData.refundBankBin]);
+    return found ? found.name : t("deposit_not_selected");
+  }, [formData.refundBankBin, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -221,47 +227,47 @@ export default function DepositPage() {
     e.preventDefault();
 
     if (!car?._id) {
-      setMessage("Không xác định được xe");
+      setMessage(t("deposit_invalid_car"));
       return;
     }
 
     if (!formData.fullName || !formData.phone) {
-      setMessage("Vui lòng nhập họ tên và số điện thoại");
+      setMessage(t("deposit_require_name_phone"));
       return;
     }
 
     if (!formData.refundBankBin) {
-      setMessage("Vui lòng chọn ngân hàng nhận hoàn");
+      setMessage(t("deposit_require_bank"));
       return;
     }
 
     if (!formData.refundBankAccountNumber.trim()) {
-      setMessage("Vui lòng nhập số tài khoản nhận hoàn");
+      setMessage(t("deposit_require_account_number"));
       return;
     }
 
     if (!formData.refundBankAccountName.trim()) {
-      setMessage("Vui lòng nhập tên chủ tài khoản nhận hoàn");
+      setMessage(t("deposit_require_account_name"));
       return;
     }
 
     if (!formData.pickupDate) {
-      setMessage("Vui lòng chọn ngày nhận xe");
+      setMessage(t("deposit_require_pickup_date"));
       return;
     }
 
     if (formData.pickupDate < minPickupDate) {
-      setMessage("Ngày nhận xe phải sau hôm nay ít nhất 7 ngày");
+      setMessage(t("deposit_pickup_date_invalid"));
       return;
     }
 
     if (!formData.pickupTimeSlot) {
-      setMessage("Vui lòng chọn khung giờ nhận xe");
+      setMessage(t("deposit_require_pickup_slot"));
       return;
     }
 
     if (formData.deliveryMethod === "showroom" && !formData.showroom.trim()) {
-      setMessage("Vui lòng nhập showroom nhận xe");
+      setMessage(t("deposit_require_showroom"));
       return;
     }
 
@@ -269,12 +275,14 @@ export default function DepositPage() {
       formData.deliveryMethod === "home_delivery" &&
       !formData.deliveryAddress.trim()
     ) {
-      setMessage("Vui lòng nhập địa chỉ giao tận nhà");
+      setMessage(t("deposit_require_address"));
       return;
     }
 
     if (Number(formData.depositAmount) < minimumDeposit) {
-      setMessage(`Tiền cọc tối thiểu là ${formatPrice(minimumDeposit)}`);
+      setMessage(
+        t("deposit_min_error", { amount: formatPrice(minimumDeposit) })
+      );
       return;
     }
 
@@ -315,10 +323,10 @@ export default function DepositPage() {
         return;
       }
 
-      setMessage("Không nhận được link thanh toán");
+      setMessage(t("deposit_no_checkout_url"));
     } catch (error) {
       setMessage(
-        error.response?.data?.message || "Không tạo được thanh toán đặt cọc"
+        error.response?.data?.message || t("deposit_create_payment_error")
       );
     } finally {
       setLoading(false);
@@ -326,8 +334,10 @@ export default function DepositPage() {
   };
 
   if (!car && !message) {
-    return <p style={{ padding: 30 }}>Đang tải dữ liệu...</p>;
+    return <p style={{ padding: 30 }}>{t("deposit_loading")}</p>;
   }
+
+  if (loading) return <PageLoader />;
 
   return (
     <div className="deposit-page">
@@ -335,43 +345,39 @@ export default function DepositPage() {
 
       <div className="deposit-container">
         <div className="deposit-left">
-          <h1>Đặt cọc giữ xe</h1>
-          <p className="deposit-desc">
-            Hoàn tất thông tin bên dưới để tạo link thanh toán cọc qua payOS,
-            giữ chỗ chiếc xe bạn đang quan tâm và đặt lịch nhận xe dự kiến.
-          </p>
+          <h1>{t("deposit_page_title")}</h1>
+          <p className="deposit-desc">{t("deposit_page_desc")}</p>
 
           <div className="deposit-note-box">
             <p>
-              <strong>Mức cọc tối thiểu:</strong> {formatPrice(minimumDeposit)}
+              <strong>{t("deposit_minimum")}</strong> {formatPrice(minimumDeposit)}
             </p>
             <p>
-              <strong>Tỷ lệ cọc:</strong> 5% giá trị xe
+              <strong>{t("deposit_rate")}</strong> {t("deposit_rate_value")}
             </p>
             <p>
-              <strong>Ngày nhận xe sớm nhất:</strong> {minPickupDate}
+              <strong>{t("deposit_earliest_pickup")}</strong> {minPickupDate}
             </p>
             <p>
-              <strong>Lưu ý:</strong> Nếu bạn chọn nhận tại showroom, khung giờ đã
-              có người đặt sẽ không thể chọn tiếp.
+              <strong>{t("deposit_note_label")}</strong> {t("deposit_note_text")}
             </p>
           </div>
 
           {car?.status === "reserved" && (
-            <p className="deposit-warning">Xe này hiện đang được giữ chỗ.</p>
+            <p className="deposit-warning">{t("deposit_car_reserved")}</p>
           )}
 
           {car?.status === "sold" && (
-            <p className="deposit-warning">Xe này đã bán.</p>
+            <p className="deposit-warning">{t("deposit_car_sold")}</p>
           )}
 
           <form className="deposit-form" onSubmit={handleSubmit}>
-            <h3 className="deposit-section-title">Thông tin khách hàng</h3>
+            <h3 className="deposit-section-title">{t("deposit_customer_info")}</h3>
 
             <input
               type="text"
               name="fullName"
-              placeholder="Họ và tên"
+              placeholder={t("deposit_placeholder_fullname")}
               value={formData.fullName}
               onChange={handleChange}
             />
@@ -380,7 +386,7 @@ export default function DepositPage() {
               <input
                 type="text"
                 name="phone"
-                placeholder="Số điện thoại"
+                placeholder={t("deposit_placeholder_phone")}
                 value={formData.phone}
                 onChange={handleChange}
               />
@@ -388,13 +394,13 @@ export default function DepositPage() {
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
+                placeholder={t("deposit_placeholder_email")}
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
 
-            <h3 className="deposit-section-title">Thông tin nhận hoàn tiền</h3>
+            <h3 className="deposit-section-title">{t("deposit_refund_info")}</h3>
 
             <div className="deposit-grid-2">
               <select
@@ -402,7 +408,7 @@ export default function DepositPage() {
                 value={formData.refundBankBin}
                 onChange={handleChange}
               >
-                <option value="">Chọn ngân hàng nhận hoàn</option>
+                <option value="">{t("deposit_placeholder_refund_bank")}</option>
                 {bankOptions.map((bank) => (
                   <option key={bank.bin} value={bank.bin}>
                     {bank.name}
@@ -413,7 +419,7 @@ export default function DepositPage() {
               <input
                 type="text"
                 name="refundBankAccountNumber"
-                placeholder="Số tài khoản nhận hoàn"
+                placeholder={t("deposit_placeholder_refund_account_number")}
                 value={formData.refundBankAccountNumber}
                 onChange={handleChange}
               />
@@ -422,45 +428,47 @@ export default function DepositPage() {
             <input
               type="text"
               name="refundBankAccountName"
-              placeholder="Tên chủ tài khoản"
+              placeholder={t("deposit_placeholder_refund_account_name")}
               value={formData.refundBankAccountName}
               onChange={handleChange}
             />
 
-            <h3 className="deposit-section-title">Thông tin đặt cọc</h3>
+            <h3 className="deposit-section-title">{t("deposit_order_info")}</h3>
 
             <input
               type="number"
               name="depositAmount"
               min={minimumDeposit}
-              placeholder="Số tiền đặt cọc"
+              placeholder={t("deposit_placeholder_amount")}
               value={formData.depositAmount}
               onChange={handleChange}
             />
 
             <div className="deposit-highlight-box">
               <p>
-                <strong>Số tiền cọc đang chọn:</strong>{" "}
+                <strong>{t("deposit_selected_amount")}</strong>{" "}
                 {formatPrice(depositInput || minimumDeposit)}
               </p>
               <p>
-                <strong>Số tiền còn lại sau khi cọc:</strong>{" "}
+                <strong>{t("deposit_remaining_after_deposit")}</strong>{" "}
                 {formatPrice(remainingAmountAfterVoucher)}
               </p>
             </div>
 
-            <h3 className="deposit-section-title">Voucher ưu đãi</h3>
+            <h3 className="deposit-section-title">{t("deposit_voucher_title")}</h3>
 
             <select
               value={selectedPromotionId}
               onChange={(e) => setSelectedPromotionId(e.target.value)}
             >
-              <option value="">Không chọn voucher</option>
+              <option value="">{t("deposit_placeholder_no_voucher")}</option>
               {promotions.map((promo) => (
                 <option key={promo._id} value={promo._id}>
                   {promo.title}{" "}
                   {promo.type === "amount"
-                    ? `- ${Number(promo.value || 0).toLocaleString("vi-VN")}đ`
+                    ? `- ${Number(promo.value || 0).toLocaleString(
+                        i18n.language === "en" ? "en-US" : "vi-VN"
+                      )}đ`
                     : `- ${promo.value || 0}%`}
                 </option>
               ))}
@@ -469,23 +477,25 @@ export default function DepositPage() {
             {selectedPromotion && (
               <div className="deposit-highlight-box">
                 <p>
-                  <strong>Voucher đã chọn:</strong> {selectedPromotion.title}
+                  <strong>{t("deposit_selected_voucher")}</strong>{" "}
+                  {selectedPromotion.title}
                 </p>
                 <p>
-                  <strong>Giảm giá:</strong> {formatPrice(discountAmount)}
+                  <strong>{t("deposit_discount")}</strong>{" "}
+                  {formatPrice(discountAmount)}
                 </p>
               </div>
             )}
 
-            <h3 className="deposit-section-title">Lịch nhận xe</h3>
+            <h3 className="deposit-section-title">{t("deposit_schedule_title")}</h3>
 
             <select
               name="deliveryMethod"
               value={formData.deliveryMethod}
               onChange={handleChange}
             >
-              <option value="showroom">Nhận tại showroom</option>
-              <option value="home_delivery">Giao tận nhà</option>
+              <option value="showroom">{t("deposit_delivery_showroom")}</option>
+              <option value="home_delivery">{t("deposit_delivery_home")}</option>
             </select>
 
             <div className="deposit-grid-2">
@@ -502,7 +512,7 @@ export default function DepositPage() {
                 value={formData.pickupTimeSlot}
                 onChange={handleChange}
               >
-                <option value="">Chọn khung giờ</option>
+                <option value="">{t("deposit_placeholder_pickup_slot")}</option>
                 {activeSlots.map((slot) => (
                   <option key={slot} value={slot}>
                     {slot}
@@ -515,7 +525,7 @@ export default function DepositPage() {
               <input
                 type="text"
                 name="showroom"
-                placeholder="Showroom nhận xe"
+                placeholder={t("deposit_placeholder_showroom")}
                 value={formData.showroom}
                 onChange={handleChange}
               />
@@ -523,7 +533,7 @@ export default function DepositPage() {
               <textarea
                 rows="3"
                 name="deliveryAddress"
-                placeholder="Địa chỉ giao tận nhà"
+                placeholder={t("deposit_placeholder_address")}
                 value={formData.deliveryAddress}
                 onChange={handleChange}
               ></textarea>
@@ -532,7 +542,7 @@ export default function DepositPage() {
             <textarea
               rows="5"
               name="note"
-              placeholder="Ghi chú thêm cho admin, ví dụ: muốn xem xe cuối tuần, cần tư vấn thủ tục, cần giao tận nhà..."
+              placeholder={t("deposit_placeholder_note")}
               value={formData.note}
               onChange={handleChange}
             ></textarea>
@@ -543,7 +553,7 @@ export default function DepositPage() {
                 loading || car?.status === "reserved" || car?.status === "sold"
               }
             >
-              {loading ? "Đang tạo thanh toán..." : "Thanh toán cọc với payOS"}
+              {loading ? t("deposit_submit_loading") : t("deposit_submit")}
             </button>
 
             {message && <p className="deposit-message">{message}</p>}
@@ -563,108 +573,110 @@ export default function DepositPage() {
             />
 
             <div className="deposit-car-content">
-              <p className="deposit-car-label">Chi tiết đơn đặt cọc</p>
-              <h2>{car?.name || "Đang tải..."}</h2>
+              <p className="deposit-car-label">{t("deposit_detail_label")}</p>
+              <h2>{car?.name || t("deposit_loading")}</h2>
 
               <div className="deposit-summary">
                 <p>
-                  <strong>Hãng xe:</strong> {car?.brand || "Đang cập nhật"}
+                  <strong>{t("deposit_brand")}</strong>{" "}
+                  {car?.brand || t("deposit_status_updating")}
                 </p>
                 <p>
-                  <strong>Giá xe niêm yết:</strong> {formatPrice(carPrice)}
+                  <strong>{t("deposit_listed_price")}</strong> {formatPrice(carPrice)}
                 </p>
                 <p>
-                  <strong>Trạng thái xe:</strong> {carStatusText}
+                  <strong>{t("deposit_car_status")}</strong> {carStatusText}
                 </p>
                 <p>
-                  <strong>Tỷ lệ cọc:</strong> 5%
+                  <strong>{t("deposit_rate")}</strong> {t("deposit_rate_value")}
                 </p>
                 <p>
-                  <strong>Số tiền cọc tối thiểu:</strong>{" "}
+                  <strong>{t("deposit_minimum")}</strong>{" "}
                   {formatPrice(minimumDeposit)}
                 </p>
                 <p>
-                  <strong>Ngân hàng nhận hoàn:</strong> {selectedRefundBankName}
+                  <strong>{t("deposit_refund_bank")}</strong>{" "}
+                  {selectedRefundBankName}
                 </p>
                 <p>
-                  <strong>Voucher áp dụng:</strong>{" "}
-                  {selectedPromotion ? selectedPromotion.title : "Không có"}
+                  <strong>{t("deposit_applied_voucher")}</strong>{" "}
+                  {selectedPromotion ? selectedPromotion.title : t("deposit_none")}
                 </p>
               </div>
 
               <div className="deposit-price-box">
-                <h3>Chi tiết thanh toán dự kiến</h3>
+                <h3>{t("deposit_payment_detail_title")}</h3>
 
                 <div className="deposit-price-row">
-                  <span>Giá xe</span>
+                  <span>{t("deposit_car_price")}</span>
                   <strong>{formatPrice(carPrice)}</strong>
                 </div>
 
                 <div className="deposit-price-row">
-                  <span>VAT (10%)</span>
+                  <span>{t("deposit_vat")}</span>
                   <strong>{formatPrice(vatAmount)}</strong>
                 </div>
 
                 <div className="deposit-price-row">
-                  <span>Phí trước bạ (10%)</span>
+                  <span>{t("deposit_registration_fee")}</span>
                   <strong>{formatPrice(registrationFee)}</strong>
                 </div>
 
                 <div className="deposit-price-row">
-                  <span>Phí biển số</span>
+                  <span>{t("deposit_license_fee")}</span>
                   <strong>{formatPrice(licensePlateFee)}</strong>
                 </div>
 
                 <div className="deposit-price-row">
-                  <span>Bảo hiểm dân sự</span>
+                  <span>{t("deposit_insurance_fee")}</span>
                   <strong>{formatPrice(insuranceFee)}</strong>
                 </div>
 
                 <div className="deposit-price-row">
-                  <span>Giảm giá voucher</span>
+                  <span>{t("deposit_voucher_discount")}</span>
                   <strong>-{formatPrice(discountAmount)}</strong>
                 </div>
 
                 <div className="deposit-price-row total">
-                  <span>Tổng sau ưu đãi</span>
+                  <span>{t("deposit_total_after_discount")}</span>
                   <strong>{formatPrice(finalEstimatedPrice)}</strong>
                 </div>
 
                 <div className="deposit-price-row paid">
-                  <span>Tiền cọc</span>
+                  <span>{t("deposit_paid_amount")}</span>
                   <strong>{formatPrice(depositInput || minimumDeposit)}</strong>
                 </div>
 
                 <div className="deposit-price-row remain">
-                  <span>Còn phải thanh toán</span>
+                  <span>{t("deposit_remaining_payment")}</span>
                   <strong>{formatPrice(remainingAmountAfterVoucher)}</strong>
                 </div>
               </div>
 
               <div className="deposit-highlight-box">
                 <p>
-                  <strong>Ngày nhận xe:</strong>{" "}
-                  {formData.pickupDate || "Chưa chọn"}
+                  <strong>{t("deposit_pickup_date")}</strong>{" "}
+                  {formData.pickupDate || t("deposit_not_selected")}
                 </p>
                 <p>
-                  <strong>Khung giờ:</strong>{" "}
-                  {formData.pickupTimeSlot || "Chưa chọn"}
+                  <strong>{t("deposit_pickup_slot")}</strong>{" "}
+                  {formData.pickupTimeSlot || t("deposit_not_selected")}
                 </p>
                 <p>
-                  <strong>Hình thức nhận:</strong>{" "}
+                  <strong>{t("deposit_delivery_method")}</strong>{" "}
                   {formData.deliveryMethod === "home_delivery"
-                    ? "Giao tận nhà"
-                    : "Nhận tại showroom"}
+                    ? t("deposit_delivery_home")
+                    : t("deposit_delivery_showroom")}
                 </p>
                 <p>
                   <strong>
                     {formData.deliveryMethod === "home_delivery"
-                      ? "Địa chỉ giao:"
-                      : "Showroom:"}
+                      ? t("deposit_delivery_address")
+                      : t("deposit_showroom")}
                   </strong>{" "}
                   {formData.deliveryMethod === "home_delivery"
-                    ? formData.deliveryAddress || "Chưa nhập"
-                    : formData.showroom || "Chưa nhập"}
+                    ? formData.deliveryAddress || t("deposit_not_entered")
+                    : formData.showroom || t("deposit_not_entered")}
                 </p>
               </div>
             </div>

@@ -17,6 +17,7 @@ import "../../styles/user/Home.css";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from "react-i18next";
 import heroVideo from "../../assets/tiktok_nwm_7521664058559532310.mp4";
+import PageLoader from "../../components/PageLoader";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ export default function Home() {
             promotions: [],
           }))
       );
+
       const results = await Promise.all(requests);
       const map = {};
       results.forEach((item) => {
@@ -82,9 +84,11 @@ export default function Home() {
         setFavoriteIds([]);
         return;
       }
+
       const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/favorites", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const favorites = res.data.favorites || [];
       setFavoriteIds(favorites.map((item) => item._id));
     } catch (error) {
@@ -120,6 +124,7 @@ export default function Home() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       const isFav = res.data.isFavorite;
       setFavoriteIds((prev) =>
         isFav ? [...new Set([...prev, carId])] : prev.filter((id) => id !== carId)
@@ -144,6 +149,8 @@ export default function Home() {
       .sort((a, b) => Number(b.soldCount || 0) - Number(a.soldCount || 0))
       .slice(0, 3);
   }, [cars]);
+
+  if (loading) return <PageLoader />;
 
   return (
     <div className="home-page">
@@ -185,10 +192,9 @@ export default function Home() {
             <h2>{t("section_featured_cars")}</h2>
           </div>
 
-          {loading && <p className="home-message">{t("loading")}</p>}
           {message && <p className="home-message error">{message}</p>}
 
-          {!loading && !message && (
+          {!message && (
             <div className="car-grid">
               {topSellingCars.length > 0 ? (
                 topSellingCars.map((car, index) => (

@@ -234,7 +234,7 @@ export default function CarDetail() {
   };
 
   if (message) return <p style={{ padding: "30px", color: "red" }}>{message}</p>;
-  if (!car) return <p style={{ padding: "30px" }}>{t("loading")}</p>;
+  if (!car) return <PageLoader />;
 
   const highlights =
     car.highlights && car.highlights.length > 0
@@ -300,7 +300,7 @@ export default function CarDetail() {
     selectedPromotion.type !== "gift" &&
     Number(selectedPricing.discountAmount || 0) > 0;
   
-  if (loading) return <PageLoader />;
+
   return (
     <div className="mb-detail-page">
       <MainNavbar />

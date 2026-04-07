@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/user/Favorites.css";
 import MainNavbar from "../../components/MainNavbar";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { addToCompare } from "../../utils/compare";
+import PageLoader from "../../components/PageLoader";
 
 export default function Favorites() {
   const { t } = useTranslation();
@@ -12,6 +13,7 @@ export default function Favorites() {
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
   const [promotionMap, setPromotionMap] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const limit = 6;
@@ -33,6 +35,8 @@ export default function Favorites() {
     }
 
     try {
+      setLoading(true);
+
       const res = await axios.get("https://webbanxe-backend-stx9.onrender.com/api/favorites", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -45,9 +49,9 @@ export default function Favorites() {
       await fetchPromotionsForCars(favoritesData);
     } catch (error) {
       console.error(error);
-      setMessage(
-        error?.response?.data?.message || t('error_fetch_favorites')
-      );
+      setMessage(error?.response?.data?.message || t("error_fetch_favorites"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,14 +111,14 @@ export default function Favorites() {
       setMessage("");
     } catch (error) {
       console.error(error);
-      setMessage(t('error_remove_favorite'));
+      setMessage(t("error_remove_favorite"));
     }
   };
 
   const getSaleText = (car) => {
     if (car?.salePercent > 0) return `SALE ${car.salePercent}%`;
     if (car?.discountPercent > 0) return `SALE ${car.discountPercent}%`;
-    
+
     const promotions = promotionMap[car._id] || [];
     if (promotions.length > 0) {
       const percentPromotion = promotions.find(
@@ -132,12 +136,10 @@ export default function Favorites() {
     return "https://via.placeholder.com/400x260?text=No+Image";
   };
 
-  const paginatedFavorites = favorites.slice(
-    (page - 1) * limit,
-    page * limit
-  );
-
+  const paginatedFavorites = favorites.slice((page - 1) * limit, page * limit);
   const totalPages = Math.ceil(favorites.length / limit);
+
+  if (loading) return <PageLoader />;
 
   return (
     <>
@@ -147,8 +149,8 @@ export default function Favorites() {
 
       <div className="favorites-page">
         <div className="favorites-header">
-          <h1>{t('favorites_title')}</h1>
-          <p>{t('favorites_count_desc', { count: favorites.length })}</p>
+          <h1>{t("favorites_title")}</h1>
+          <p>{t("favorites_count_desc", { count: favorites.length })}</p>
         </div>
 
         {message && <div className="favorites-message">{message}</div>}
@@ -178,7 +180,7 @@ export default function Favorites() {
                     <button
                       className="favorite-heart"
                       onClick={() => handleRemove(car._id)}
-                      title={t('remove_from_favorites')}
+                      title={t("remove_from_favorites")}
                     >
                       ❤️
                     </button>
@@ -188,17 +190,17 @@ export default function Favorites() {
                     <h3>{car.name}</h3>
 
                     <div className="info-row">
-                      <span>{t('label_brand')}</span>
-                      <span>{car.brand || t('updating')}</span>
+                      <span>{t("label_brand")}</span>
+                      <span>{car.brand || t("updating")}</span>
                     </div>
 
                     <div className="info-row">
-                      <span>{t('label_category')}</span>
-                      <span>{car.category || t('updating')}</span>
+                      <span>{t("label_category")}</span>
+                      <span>{car.category || t("updating")}</span>
                     </div>
 
                     <div className="info-row">
-                      <span>{t('label_year')}</span>
+                      <span>{t("label_year")}</span>
                       <span>{car.year || "2023"}</span>
                     </div>
 
@@ -206,20 +208,45 @@ export default function Favorites() {
                       {Number(car.price || 0).toLocaleString("vi-VN")}đ
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "16px" }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "12px",
+                        marginTop: "16px",
+                      }}
+                    >
                       <Link
                         to={`/cars/${car._id}`}
-                        style={{ height: "52px", borderRadius: "12px", background: "#fff", color: "#111", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+                        style={{
+                          height: "52px",
+                          borderRadius: "12px",
+                          background: "#fff",
+                          color: "#111",
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textDecoration: "none",
+                        }}
                       >
-                        {t('btn_view_detail')}
+                        {t("btn_view_detail")}
                       </Link>
 
                       <button
                         type="button"
                         onClick={() => handleCompare(car._id)}
-                        style={{ height: "52px", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "12px", background: "rgba(255,255,255,0.04)", color: "#fff", fontWeight: 700, cursor: "pointer" }}
+                        style={{
+                          height: "52px",
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          borderRadius: "12px",
+                          background: "rgba(255,255,255,0.04)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
                       >
-                        {t('btn_compare')}
+                        {t("btn_compare")}
                       </button>
                     </div>
                   </div>
@@ -227,17 +254,24 @@ export default function Favorites() {
               );
             })
           ) : (
-            <div className="favorites-message">
-              {t('no_favorites_found')}
-            </div>
+            <div className="favorites-message">{t("no_favorites_found")}</div>
           )}
         </div>
 
         {favorites.length > limit && (
           <div className="favorites-pagination">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)}> ← </button>
-            <span> {page} / {totalPages} </span>
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}> → </button>
+            <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+              {" "}
+              ←{" "}
+            </button>
+            <span>
+              {" "}
+              {page} / {totalPages}{" "}
+            </span>
+            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+              {" "}
+              →{" "}
+            </button>
           </div>
         )}
       </div>
