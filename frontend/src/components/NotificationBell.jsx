@@ -140,7 +140,7 @@ export default function NotificationBell({ dark = true }) {
         type="button"
         className="notification-bell-btn"
         onClick={handleOpen}
-        title={t('notification_title')}
+        title={t('Thông báo')}
       >
         <Bell size={20} />
         {unreadCount > 0 && (

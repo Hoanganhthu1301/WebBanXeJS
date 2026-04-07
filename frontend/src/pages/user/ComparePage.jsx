@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
+import PageLoader from "../../components/PageLoader";
 import {
   getCompareCars,
   removeFromCompare,
@@ -94,7 +95,7 @@ export default function ComparePage() {
 
     return value || "—";
   };
-
+  if (loading) return <PageLoader />;
   return (
     <>
       <MainNavbar />
@@ -167,9 +168,7 @@ export default function ComparePage() {
             )}
           </div>
 
-          {loading ? (
-            <div style={{ color: "#fff" }}>Đang tải dữ liệu so sánh...</div>
-          ) : message && cars.length === 0 ? (
+          { message && cars.length === 0 ? (
             <div
               style={{
                 background: "rgba(255,255,255,0.04)",

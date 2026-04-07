@@ -3,6 +3,7 @@ import axios from "axios";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from 'react-i18next';
 import "../../styles/user/ContactConsultations.css";
+import PageLoader from "../../components/PageLoader";
 
 export default function ContactConsultations() {
   const { t } = useTranslation();
@@ -103,7 +104,7 @@ export default function ContactConsultations() {
     if (status === "cancelled") return "cancelled";
     return "new";
   };
-
+  if (loading) return <PageLoader />;
   return (
     <>
       <MainNavbar />
@@ -115,9 +116,7 @@ export default function ContactConsultations() {
             <p className="contact-consultations-desc">{t('my_requests_desc')}</p>
           </div>
 
-          {loading ? (
-            <div className="contact-consultations-state">{t('loading')}</div>
-          ) : message ? (
+          { message ? (
             <div className="contact-consultations-state error">{message}</div>
           ) : requests.length === 0 ? (
             <div className="contact-consultations-empty">

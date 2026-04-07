@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 import socket from "./socket";
 
@@ -27,7 +29,7 @@ import AdminUsers from "./pages/Admin/AdminUsers";
 import Favorites from "./pages/user/Favorites";
 import AdminRevenue from "./pages/Admin/AdminRevenue";
 import AdminPromotions from "./pages/Admin/AdminPromotions";
-import UserConsultations from "./pages/user/ContactConsultations";  
+import UserConsultations from "./pages/user/ContactConsultations";
 import QuotationPage from "./pages/user/QuotationPage";
 import AppointmentPage from "./pages/user/AppointmentPage";
 import ComparePage from "./pages/user/ComparePage";
@@ -38,6 +40,13 @@ import UserProfile from "./pages/user/UserProfile";
 
 function App() {
   useEffect(() => {
+    AOS.init({
+      duration: 900,
+      once: false,
+      offset: 80,
+      easing: "ease-in-out",
+    });
+
     const registerSocket = () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
@@ -111,7 +120,6 @@ function App() {
         <Route path="/showrooms" element={<ShowroomsPage />} />
         <Route path="/admin/showrooms" element={<AdminShowrooms />} />
         <Route path="/profile" element={<UserProfile />} />
-        
       </Routes>
       <ChatbotWidget />
     </BrowserRouter>

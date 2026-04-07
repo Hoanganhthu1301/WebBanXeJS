@@ -4,6 +4,8 @@ import axios from "axios";
 import "../../styles/user/ContactPage.css";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from 'react-i18next';
+import PageLoader from "../../components/PageLoader";
+
 
 const initialForm = {
   salutation: "",
@@ -94,6 +96,7 @@ export default function ContactPage() {
     }
   };
 
+if (loading) return <PageLoader />;
   return (
     <div className="contact-page">
       <MainNavbar />

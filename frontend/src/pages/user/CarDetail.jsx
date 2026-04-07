@@ -5,6 +5,7 @@ import "../../styles/user/CarDetail.css";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from "react-i18next";
 import { addToCompare } from "../../utils/compare";
+import PageLoader from "../../components/PageLoader";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://webbanxe-backend-stx9.onrender.com";
@@ -298,7 +299,8 @@ export default function CarDetail() {
     selectedPromotion &&
     selectedPromotion.type !== "gift" &&
     Number(selectedPricing.discountAmount || 0) > 0;
-
+  
+  if (loading) return <PageLoader />;
   return (
     <div className="mb-detail-page">
       <MainNavbar />
@@ -311,13 +313,15 @@ export default function CarDetail() {
           </div>
         )}
         <div className="mb-hero-overlay"></div>
-        <div className="mb-hero-content">
-          <Link to="/" className="mb-back-link">{`← ${t("back")}`}</Link>
-          <p className="mb-label">{car.brand}</p>
-          <h1>{car.name}</h1>
+        <div className="mb-hero-content" data-aos="fade-up" data-aos-duration="1200">
+          <Link to="/" className="mb-back-link" data-aos="fade-right" data-aos-delay="100">
+            {`← ${t("back")}`}
+          </Link>
+          <p className="mb-label" data-aos="fade-down" data-aos-delay="150">{car.brand}</p>
+          <h1 data-aos="zoom-in" data-aos-delay="200">{car.name}</h1>
 
           {hasDiscountPromotion ? (
-            <div className="mb-price-box">
+            <div className="mb-price-box" data-aos="fade-up" data-aos-delay="250">
               <div className="mb-price-old">
                 {formatPrice(selectedPricing.originalPrice)}
               </div>
@@ -329,20 +333,22 @@ export default function CarDetail() {
               </div>
             </div>
           ) : (
-            <p className="mb-price">
+            <p className="mb-price" data-aos="fade-up" data-aos-delay="250">
               {t("price_from")} {formatPrice(car.price)}
             </p>
           )}
 
           {car.overviewTitle && (
-            <h2 className="mb-overview-title">{car.overviewTitle}</h2>
+            <h2 className="mb-overview-title" data-aos="fade-up" data-aos-delay="300">
+              {car.overviewTitle}
+            </h2>
           )}
 
-          <p className="mb-overview-text">
+          <p className="mb-overview-text" data-aos="fade-up" data-aos-delay="350">
             {car.overviewText || car.description || t("no_description")}
           </p>
 
-          <div className="mb-hero-actions">
+          <div className="mb-hero-actions" data-aos="fade-up" data-aos-delay="400">
             <button className="mb-btn mb-btn-light" onClick={handleConsultationClick}>
               {t("btn_request_consult")}
             </button>
@@ -359,7 +365,7 @@ export default function CarDetail() {
         </div>
 
         {selectedPromotion && (
-          <div className="mb-promo-floating-list">
+          <div className="mb-promo-floating-list" data-aos="fade-left" data-aos-delay="450">
             <div className="mb-promo-floating">
               <div className="mb-promo-topbar">
                 <div className="mb-promo-badge">{t("promo_badge")}</div>
@@ -423,7 +429,7 @@ export default function CarDetail() {
         )}
       </section>
 
-      <nav className="mb-sticky-nav">
+      <nav className="mb-sticky-nav" data-aos="fade-down">
         <a href="#highlights">{t("nav_highlights")}</a>
         <a href="#features">{t("nav_features")}</a>
         <a href="#viewer3d">3D</a>
@@ -433,14 +439,19 @@ export default function CarDetail() {
       </nav>
 
       <section id="highlights" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>{t("section_highlights")}</p>
           <h2>{t("section_highlight_title", { name: car.name })}</h2>
         </div>
 
         <div className="mb-highlight-grid">
           {highlights.map((item, index) => (
-            <div className="mb-highlight-card" key={index}>
+            <div
+              className="mb-highlight-card"
+              key={index}
+              data-aos="fade-up"
+              data-aos-delay={index * 120}
+            >
               <img src={item.image || getImage(index)} alt={item.title} />
               <div className="mb-highlight-text">
                 <h3>{item.title}</h3>
@@ -452,7 +463,7 @@ export default function CarDetail() {
       </section>
 
       <section id="features" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>{t("section_features")}</p>
           <h2>{t("section_features_title")}</h2>
         </div>
@@ -463,6 +474,8 @@ export default function CarDetail() {
               className="mb-feature-card"
               key={index}
               onClick={() => setActiveFeature(item)}
+              data-aos="zoom-in-up"
+              data-aos-delay={index * 100}
             >
               <img
                 src={
@@ -481,12 +494,13 @@ export default function CarDetail() {
       </section>
 
       <section id="viewer3d" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>3D VIEWER</p>
           <h2>Xem mô hình 3D của {car.name}</h2>
         </div>
 
         <div
+          data-aos="zoom-in"
           style={{
             background: "#0f172a",
             borderRadius: "24px",
@@ -554,12 +568,12 @@ export default function CarDetail() {
       </section>
 
       <section id="specs" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>{t("section_specs")}</p>
           <h2>{t("section_specs_title")}</h2>
         </div>
 
-        <div className="mb-specs-card">
+        <div className="mb-specs-card" data-aos="fade-up" data-aos-delay="100">
           <div>
             <span>{t("label_brand")}</span>
             <strong>{car.brand}</strong>
@@ -600,12 +614,13 @@ export default function CarDetail() {
       </section>
 
       <section id="reviews" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>{t("section_reviews")}</p>
           <h2>{t("section_reviews_title", { name: car.name })}</h2>
         </div>
 
         <div
+          data-aos="fade-up"
           style={{
             background: "#111827",
             borderRadius: "24px",
@@ -736,9 +751,11 @@ export default function CarDetail() {
 
         <div style={{ display: "grid", gap: "16px" }}>
           {reviews.length > 0 ? (
-            reviews.map((item) => (
+            reviews.map((item, index) => (
               <div
                 key={item._id}
+                data-aos="fade-up"
+                data-aos-delay={index * 80}
                 style={{
                   background: "#111827",
                   borderRadius: "20px",
@@ -774,12 +791,16 @@ export default function CarDetail() {
       </section>
 
       <section id="contact" className="mb-section">
-        <div className="mb-section-heading">
+        <div className="mb-section-heading" data-aos="fade-up">
           <p>{t("contact_consult_subtitle")}</p>
           <h2>{t("contact_consult_title", { name: car.name })}</h2>
         </div>
 
-        <div className="mb-description-box" style={{ textAlign: "center" }}>
+        <div
+          className="mb-description-box"
+          style={{ textAlign: "center" }}
+          data-aos="zoom-in-up"
+        >
           <h3>
             {user
               ? `${t("hello")} ${user.fullName || user.name || t("guest")}`

@@ -81,14 +81,21 @@ export default function AdminCars() {
   };
 
   const fetchCars = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/api/cars/admin/all`);
-      setCars(res.data.cars || []);
-    } catch (error) {
-      setMessage("Không lấy được danh sách xe");
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
 
+    const res = await axios.get(`${API_URL}/api/cars/admin/all`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setCars(res.data.cars || []);
+  } catch (error) {
+    console.log("FETCH CARS ERROR:", error.response?.data || error);
+    setMessage(error.response?.data?.message || "Không lấy được danh sách xe");
+  }
+};
   const fetchCategories = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/categories`);
@@ -147,55 +154,61 @@ export default function AdminCars() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const parsedImages = parseLinesToArray(formData.imagesText);
+  try {
+    const token = localStorage.getItem("token");
 
-      const payload = {
-        name: formData.name,
-        brand: formData.brand,
-        category: formData.category,
-        price: Number(formData.price),
-        quantity:
-          formData.quantity === "" ? 1 : Math.max(0, Number(formData.quantity)),
-        year: Number(formData.year) || new Date().getFullYear(),
-        fuel: formData.fuel,
-        transmission: formData.transmission,
-        mileage: Number(formData.mileage) || 0,
-        color: formData.color,
-        image: formData.image || parsedImages[0] || "",
-        images: parsedImages,
-        model3dUrl: formData.model3dUrl?.trim() || "",
-        description: formData.description,
-        status: formData.status,
-        overviewTitle: formData.overviewTitle,
-        overviewText: formData.overviewText,
-        highlights: normalizeArrayItems(formData.highlights),
-        features: normalizeArrayItems(formData.features),
-      };
+    const parsedImages = parseLinesToArray(formData.imagesText);
 
-      console.log("PAYLOAD GUI LEN:", payload);
+    const payload = {
+      name: formData.name,
+      brand: formData.brand,
+      category: formData.category,
+      price: Number(formData.price),
+      quantity:
+        formData.quantity === "" ? 1 : Math.max(0, Number(formData.quantity)),
+      year: Number(formData.year) || new Date().getFullYear(),
+      fuel: formData.fuel,
+      transmission: formData.transmission,
+      mileage: Number(formData.mileage) || 0,
+      color: formData.color,
+      image: formData.image || parsedImages[0] || "",
+      images: parsedImages,
+      model3dUrl: formData.model3dUrl?.trim() || "",
+      description: formData.description,
+      status: formData.status,
+      overviewTitle: formData.overviewTitle,
+      overviewText: formData.overviewText,
+      highlights: normalizeArrayItems(formData.highlights),
+      features: normalizeArrayItems(formData.features),
+    };
 
-      if (editingId) {
-        await axios.put(`${API_URL}/api/cars/${editingId}`, payload);
-        setMessage("Cập nhật xe thành công");
-      } else {
-        await axios.post(`${API_URL}/api/cars`, payload);
-        setMessage("Thêm xe thành công");
-      }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
-      resetForm();
-      fetchCars();
-    } catch (error) {
-      console.log("UPDATE ERROR:", error.response?.data || error);
-      setMessage(
-        error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Có lỗi xảy ra"
-      );
+    if (editingId) {
+      await axios.put(`${API_URL}/api/cars/${editingId}`, payload, config);
+      setMessage("Cập nhật xe thành công");
+    } else {
+      await axios.post(`${API_URL}/api/cars`, payload, config);
+      setMessage("Thêm xe thành công");
     }
-  };
+
+    resetForm();
+    fetchCars();
+  } catch (error) {
+    console.log("UPDATE ERROR:", error.response?.data || error);
+    setMessage(
+      error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Có lỗi xảy ra"
+    );
+  }
+};
 
   const handleEdit = (car) => {
     setEditingId(car._id);
@@ -251,18 +264,24 @@ export default function AdminCars() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Bạn có chắc muốn xóa xe này không?");
-    if (!confirmDelete) return;
+  const confirmDelete = window.confirm("Bạn có chắc muốn xóa xe này không?");
+  if (!confirmDelete) return;
 
-    try {
-      await axios.delete(`${API_URL}/api/cars/${id}`);
-      setMessage("Xóa xe thành công");
-      fetchCars();
-    } catch (error) {
-      setMessage(error.response?.data?.message || "Xóa xe thất bại");
-    }
-  };
+  try {
+    const token = localStorage.getItem("token");
 
+    await axios.delete(`${API_URL}/api/cars/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setMessage("Xóa xe thành công");
+    fetchCars();
+  } catch (error) {
+    setMessage(error.response?.data?.message || "Xóa xe thất bại");
+  }
+};
   const getThumb = (car) => {
     if (car.image && car.image.trim() !== "") return car.image;
     if (Array.isArray(car.images) && car.images.length > 0) return car.images[0];
