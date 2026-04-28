@@ -233,29 +233,41 @@
   cursor: pointer;
 }
 
+/* Laptop nhỏ / màn trung bình */
 @media (max-width: 1200px) {
+  .lux-navbar-inner {
+    min-height: 76px;
+    padding: 0 22px;
+    gap: 14px;
+  }
+
   .lux-brand {
-    font-size: 24px;
+    font-size: 23px;
     letter-spacing: 2px;
   }
 
+  .lux-navbar-left {
+    gap: 22px;
+  }
+
   .lux-nav-text {
-    gap: 18px;
+    gap: 16px;
   }
 
   .lux-nav-link {
     font-size: 13px;
   }
 
-  .lux-user-link span {
-    max-width: 120px;
+  .lux-logo-img {
+    height: 58px;
   }
 
-  .lux-logo-img {
-    height: 34px;
+  .lux-user-link span {
+    max-width: 110px;
   }
 }
 
+/* Tablet */
 @media (max-width: 980px) {
   .lux-nav-text {
     display: none;
@@ -267,47 +279,75 @@
 
   .lux-navbar-inner {
     grid-template-columns: auto 1fr auto;
+    min-height: 70px;
   }
 
   .lux-navbar-left {
-    gap: 14px;
+    gap: 12px;
   }
 
   .lux-brand {
-    font-size: 22px;
+    font-size: 21px;
     letter-spacing: 1.5px;
   }
 
   .lux-navbar-center {
     justify-content: center;
   }
+
+  .lux-logo-img {
+    height: 48px;
+  }
 }
 
+/* Mobile */
 @media (max-width: 720px) {
   .lux-navbar-inner {
-    min-height: 72px;
-    padding: 0 14px;
-    gap: 10px;
+    min-height: 64px;
+    padding: 0 12px;
+    gap: 8px;
   }
 
   .lux-brand {
-    font-size: 18px;
+    font-size: 17px;
     letter-spacing: 1px;
   }
 
   .lux-logo-img {
-    height: 30px;
+    height: 40px;
+  }
+
+  .lux-icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .lux-user-link {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
   }
 
   .lux-user-link span {
     display: none;
   }
 
+  .lux-lang-btn {
+    min-width: 48px;
+    padding: 4px 6px;
+  }
+
+  .lang-code {
+    width: 22px;
+    font-size: 11px;
+  }
+
   .lux-mobile-menu {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    padding: 18px 22px 22px;
+    padding: 16px 20px 20px;
     background: rgba(0, 0, 0, 0.98);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -318,5 +358,31 @@
     text-decoration: none;
     font-size: 15px;
     font-weight: 500;
+  }
+}
+
+/* Điện thoại nhỏ */
+@media (max-width: 480px) {
+  .lux-navbar-inner {
+    grid-template-columns: 1fr auto;
+  }
+
+  .lux-navbar-center {
+    display: none;
+  }
+
+  .lux-brand {
+    font-size: 15px;
+    letter-spacing: 0.7px;
+  }
+
+  .lux-navbar-right {
+    gap: 4px;
+  }
+
+  .lux-icon-btn:nth-child(1),
+  .lux-icon-btn:nth-child(2),
+  .lux-icon-btn:nth-child(3) {
+    display: none;
   }
 }
