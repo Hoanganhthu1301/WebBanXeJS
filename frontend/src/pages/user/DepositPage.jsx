@@ -6,6 +6,12 @@ import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from "react-i18next";
 import PageLoader from "../../components/PageLoader";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+
 const getMinPickupDate = () => {
   const today = new Date();
   today.setDate(today.getDate() + 7);
@@ -99,7 +105,7 @@ export default function DepositPage() {
   const fetchCar = async () => {
     try {
       const res = await axios.get(
-        `https://webbanxe-backend-stx9.onrender.com/api/cars/${id}`
+        `${API_BASE}/api/cars/${id}`
       );
       setCar(res.data.car);
     } catch {
@@ -110,7 +116,7 @@ export default function DepositPage() {
   const fetchPromotionsByCar = async (carId) => {
     try {
       const res = await axios.get(
-        `https://webbanxe-backend-stx9.onrender.com/api/promotions/car/${carId}`
+        `${API_BASE}/api/promotions/car/${carId}`
       );
       setPromotions(res.data.promotions || []);
     } catch (error) {
@@ -311,7 +317,7 @@ export default function DepositPage() {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "https://webbanxe-backend-stx9.onrender.com/api/deposits/payos",
+        `${API_BASE}/api/deposits/payos`,
         payload,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},

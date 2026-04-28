@@ -3,6 +3,12 @@ import { Link, useSearchParams } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
 import { useTranslation } from 'react-i18next';
 
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+
 export default function DepositSuccess() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
@@ -15,12 +21,14 @@ export default function DepositSuccess() {
       if (!orderCode) return;
 
       try {
+        const token = localStorage.getItem("token");
         await fetch(
-          `https://webbanxe-backend-stx9.onrender.com/api/deposits/order/${orderCode}/confirm`,
+          `${API_BASE}/api/deposits/order/${orderCode}/confirm`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
           }
         );

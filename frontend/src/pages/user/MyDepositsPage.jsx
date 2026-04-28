@@ -6,6 +6,12 @@ import { useTranslation } from 'react-i18next';
 import "../../styles/user/MyDepositsPage.css";
 import PageLoader from "../../components/PageLoader";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+
 export default function MyDepositsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -30,7 +36,7 @@ export default function MyDepositsPage() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "https://webbanxe-backend-stx9.onrender.com/api/deposits/my-deposits",
+        `${API_BASE}/api/deposits/my-deposits`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -56,7 +62,7 @@ export default function MyDepositsPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(
-        `https://webbanxe-backend-stx9.onrender.com/api/deposits/${id}/user-cancel`,
+        `${API_BASE}/api/deposits/${id}/user-cancel`,
         {},
         {
           headers: {

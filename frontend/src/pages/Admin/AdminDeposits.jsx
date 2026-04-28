@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../styles/admin/AdminDeposits.css";
 
-const API_URL = "https://webbanxe-backend-stx9.onrender.com/api/deposits";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+const API_URL = `${API_BASE}/api/deposits`;
 
 const STATUS_LABELS = {
   pending_payment: "Chờ thanh toán cọc",

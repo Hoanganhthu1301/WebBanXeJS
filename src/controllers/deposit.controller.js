@@ -12,6 +12,7 @@ const {
 const {
   createPaymentLink,
   generateOrderCode,
+  getPaymentLinkInformation,
 } = require("../services/payos.service");
 
 const { getIO } = require("../utils/socket");
@@ -267,6 +268,36 @@ const syncCarStatusByCarId = async (carId) => {
 const syncCarStatusFromDeposit = async (deposit) => {
   if (!deposit?.carId) return;
   await syncCarStatusByCarId(deposit.carId);
+};
+
+const syncPayOSPaymentStatus = async (deposit) => {
+  if (
+    !deposit ||
+    deposit.paymentStatus === "paid" ||
+    deposit.paymentMethod !== "payos" ||
+    !deposit.orderCode
+  ) {
+    return deposit;
+  }
+
+  try {
+    const paymentInfo = await getPaymentLinkInformation(deposit.orderCode);
+    const status = String(paymentInfo?.status || "").toUpperCase();
+    const amountPaid = Number(paymentInfo?.amountPaid || 0);
+
+    if (status === "PAID" || amountPaid >= Number(deposit.depositAmount || 0)) {
+      deposit.paymentStatus = "paid";
+      deposit.status = "paid";
+      deposit.paidAt =
+        paymentInfo?.transactions?.[0]?.transactionDateTime || new Date();
+      await deposit.save();
+      await syncCarStatusFromDeposit(deposit);
+    }
+  } catch (error) {
+    console.error("syncPayOSPaymentStatus error:", error.message);
+  }
+
+  return deposit;
 };
 
 const decreaseCarQuantityWhenCompleted = async (deposit) => {
@@ -1060,6 +1091,8 @@ const cancelPayOSDeposit = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn cọc" });
     }
 
+    await syncPayOSPaymentStatus(deposit);
+
     if (deposit.status === "completed") {
       return res.status(400).json({
         message: "Đơn đã hoàn tất, không thể hủy",
@@ -1348,6 +1381,8 @@ const adminCancelDeposit = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn đặt cọc" });
     }
 
+    await syncPayOSPaymentStatus(deposit);
+
     if (deposit.status === "completed") {
       return res.status(400).json({
         message: "Đơn đã hoàn tất, không thể hủy",
@@ -1358,7 +1393,7 @@ const adminCancelDeposit = async (req, res) => {
     deposit.cancelledBy = req.user?._id || req.user?.id || null;
     deposit.cancelledByRole = "admin";
 
-    if (deposit.paymentStatus !== "paid" || !deposit.paidAt) {
+    if (deposit.paymentStatus !== "paid") {
       deposit.status = "cancelled";
       deposit.paymentStatus =
         deposit.paymentStatus === "paid" ? "paid" : "cancelled";
@@ -1502,11 +1537,14 @@ const adminCancelDeposit = async (req, res) => {
 
 
 
-const isWithin24HoursFromPaidAt = (paidAt) => {
-  if (!paidAt) return false;
+const isWithin24HoursFromCreatedAt = (createdAt) => {
+  if (!createdAt) return false;
   const now = Date.now();
-  const paid = new Date(paidAt).getTime();
-  return now - paid <= 24 * 60 * 60 * 1000;
+  const created = new Date(createdAt).getTime();
+
+  if (Number.isNaN(created)) return false;
+
+  return now - created <= 24 * 60 * 60 * 1000;
 };
 
 const refundViaPayOS = async (deposit, reason) => {
@@ -1609,6 +1647,8 @@ const userCancelDeposit = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn cọc" });
     }
 
+    await syncPayOSPaymentStatus(deposit);
+
     if (String(deposit.userId) !== String(userId)) {
       return res.status(403).json({ message: "Bạn không có quyền hủy đơn này" });
     }
@@ -1621,7 +1661,7 @@ const userCancelDeposit = async (req, res) => {
     deposit.cancelledBy = userId;
     deposit.cancelledByRole = "user";
 
-    if (deposit.paymentStatus !== "paid" || !deposit.paidAt) {
+    if (deposit.paymentStatus !== "paid") {
       deposit.status = "cancelled";
       deposit.paymentStatus =
         deposit.paymentStatus === "paid" ? "paid" : "cancelled";
@@ -1685,7 +1725,7 @@ const userCancelDeposit = async (req, res) => {
       });
     }
 
-    const within24h = isWithin24HoursFromPaidAt(deposit.paidAt);
+    const within24h = isWithin24HoursFromCreatedAt(deposit.createdAt);
 
     if (within24h) {
   const refundResult = await refundViaPayOS(
@@ -1927,7 +1967,7 @@ const confirmRefundCompleted = async (req, res) => {
       });
     }
 
-    if (!["payos_payout", "manual"].includes(deposit.refundMethod)) {
+    if (!["payos_payout", "manual", "payos_payout_failed"].includes(deposit.refundMethod)) {
       return res.status(400).json({
         message: "Đơn chưa có phương thức hoàn tiền hợp lệ để xác nhận",
       });
@@ -1997,7 +2037,105 @@ const confirmRefundCompleted = async (req, res) => {
     });
   }
 };
+const refundDeposit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, reason } = req.body;
 
+    const deposit = await Deposit.findById(id);
+    if (!deposit) {
+      return res.status(404).json({ message: "Không tìm thấy đơn" });
+    }
+
+    await syncPayOSPaymentStatus(deposit);
+
+    if (deposit.paymentStatus !== "paid") {
+      return res.status(400).json({
+        message: "Đơn chưa thanh toán, không thể hoàn tiền",
+      });
+    }
+
+    if (!deposit.refundBankBin || !deposit.refundBankAccountNumber || !deposit.refundBankAccountName) {
+      return res.status(400).json({
+        message: "Đơn chưa có đủ thông tin tài khoản để hoàn tiền",
+      });
+    }
+
+    const refundAmount = Number(amount || 0);
+    if (!Number.isFinite(refundAmount) || refundAmount <= 0) {
+      return res.status(400).json({
+        message: "Số tiền hoàn không hợp lệ",
+      });
+    }
+
+    if (refundAmount > Number(deposit.depositAmount || 0)) {
+      return res.status(400).json({
+        message: "Số tiền hoàn không được lớn hơn tiền cọc",
+      });
+    }
+
+    const referenceId = `refund_${deposit.orderCode || deposit._id}_${Date.now()}`;
+
+    const payout = await createPayout({
+      referenceId,
+      amount: refundAmount,
+      description: reason || "Hoan tien don coc",
+      toAccountNumber: deposit.refundBankAccountNumber,
+      toBin: deposit.refundBankBin,
+      category: ["refund"],
+    });
+
+    if (!payout.success) {
+      deposit.status = "cancelled";
+      deposit.refundStatus = "pending_refund";
+      deposit.refundMethod = "payos_payout_failed";
+      deposit.refundAmount = refundAmount;
+      deposit.refundReason =
+        payout.message || reason || "Gửi yêu cầu hoàn tiền thất bại";
+      deposit.refundReferenceId = referenceId;
+      deposit.refundGatewayResponse = payout.data || payout;
+      deposit.refundAt = null;
+      deposit.refundConfirmedBy = null;
+      deposit.refundConfirmedAt = null;
+
+      await deposit.save();
+      await syncCarStatusFromDeposit(deposit);
+
+      return res.status(payout.statusCode || 500).json({
+        message:
+          payout.message ||
+          "Gửi yêu cầu hoàn tiền thất bại, đơn đang chờ xử lý thủ công",
+        payout,
+        deposit,
+      });
+    }
+
+    deposit.status = "cancelled";
+    deposit.refundStatus = "pending_refund";
+    deposit.refundMethod = "payos_payout";
+    deposit.refundAmount = refundAmount;
+    deposit.refundReason = reason || "";
+    deposit.refundReferenceId = referenceId;
+    deposit.refundGatewayResponse = payout.data || payout;
+    deposit.refundAt = null;
+    deposit.refundConfirmedBy = null;
+    deposit.refundConfirmedAt = null;
+
+    await deposit.save();
+    await syncCarStatusFromDeposit(deposit);
+
+    return res.status(200).json({
+      message: "Đã gửi yêu cầu hoàn tiền thành công",
+      payout,
+      deposit,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Lỗi hoàn tiền",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   createDeposit,
   createPayOSDeposit,
@@ -2019,4 +2157,5 @@ module.exports = {
   userCancelDeposit,
   adminMarkNoShowAndForfeit,
   confirmRefundCompleted,
+  refundDeposit
 };

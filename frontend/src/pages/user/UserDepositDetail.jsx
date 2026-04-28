@@ -20,7 +20,12 @@ import { useTranslation } from 'react-i18next';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const API_URL = "https://webbanxe-backend-stx9.onrender.com/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+const API_URL = `${API_BASE}/api`;
 
 export default function UserDepositDetail() {
   const navigate = useNavigate();
@@ -195,7 +200,7 @@ export default function UserDepositDetail() {
   const getInvoiceImageSrc = () => {
     if (!deposit?.invoiceImage) return "";
     if (deposit.invoiceImage.startsWith("http")) return deposit.invoiceImage;
-    return `https://webbanxe-backend-stx9.onrender.com/${deposit.invoiceImage.replace(/^\/+/, "")}`;
+    return `${API_BASE}/${deposit.invoiceImage.replace(/^\/+/, "")}`;
   };
 
   if (loading) {

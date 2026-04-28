@@ -3,6 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "../../styles/admin/AdminDepositDetail.css";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+
 export default function AdminDepositDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,7 +31,7 @@ export default function AdminDepositDetail() {
     try {
       setLoading(true);
 
-      const res = await axios.get(`https://webbanxe-backend-stx9.onrender.com/api/deposits/${id}`, {
+      const res = await axios.get(`${API_BASE}/api/deposits/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -55,7 +61,7 @@ export default function AdminDepositDetail() {
       formData.append("invoiceNote", invoiceNote);
 
       await axios.put(
-        `https://webbanxe-backend-stx9.onrender.com/api/deposits/${id}/upload-invoice`,
+        `${API_BASE}/api/deposits/${id}/upload-invoice`,
         formData,
         {
           headers: {
@@ -72,6 +78,29 @@ export default function AdminDepositDetail() {
     } catch (error) {
       console.error("uploadInvoice error:", error);
       alert(error?.response?.data?.message || "Upload hóa đơn thất bại");
+    }
+  };
+
+  const confirmRefundCompleted = async () => {
+    if (!window.confirm("Xác nhận đơn này đã được hoàn cọc thủ công?")) {
+      return;
+    }
+
+    try {
+      await axios.put(
+        `${API_BASE}/api/deposits/${id}/confirm-refund`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      await fetchDetail();
+      alert("Đã xác nhận hoàn cọc thành công");
+    } catch (error) {
+      alert(error?.response?.data?.message || "Xác nhận hoàn cọc thất bại");
     }
   };
 
@@ -194,7 +223,7 @@ export default function AdminDepositDetail() {
       return deposit.invoiceImage;
     }
 
-    return `https://webbanxe-backend-stx9.onrender.com${deposit.invoiceImage}`;
+    return `${API_BASE}${deposit.invoiceImage}`;
   };
 
   if (loading) {
@@ -344,6 +373,12 @@ export default function AdminDepositDetail() {
                   </div>
                 </div>
               </div>
+
+              {deposit.refundStatus === "pending_refund" && (
+                <button className="lux-upload-btn" onClick={confirmRefundCompleted}>
+                  Xác nhận đã hoàn cọc
+                </button>
+              )}
             </section>
 
             <section className="lux-card">

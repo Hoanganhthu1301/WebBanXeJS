@@ -9,8 +9,8 @@ const upload = require("../middlewares/upload.middleware");
 router.post("/payos/webhook", depositController.payOSWebhook);
 router.post("/payos", verifyToken, depositController.createPayOSDeposit);
 router.get("/order/:orderCode", depositController.getDepositByOrderCode);
-router.put("/order/:orderCode/cancel", depositController.cancelPayOSDeposit);
-router.put("/order/:orderCode/confirm", depositController.confirmDepositPaid);
+router.put("/order/:orderCode/cancel", verifyToken, depositController.cancelPayOSDeposit);
+router.put("/order/:orderCode/confirm", verifyToken, depositController.confirmDepositPaid);
 
 // user
 router.get("/my-deposits", verifyToken, depositController.getMyDeposits);
@@ -36,5 +36,7 @@ router.put(
   upload.single("invoice"),
   depositController.uploadInvoiceForDeposit
 );
+
 router.put("/:id/confirm-refund", verifyToken, depositController.confirmRefundCompleted);
+router.post("/:id/refund", verifyToken, depositController.refundDeposit);
 module.exports = router;

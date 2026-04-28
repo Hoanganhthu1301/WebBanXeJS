@@ -2,6 +2,12 @@ import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://webbanxe-backend-stx9.onrender.com");
+
 export default function DepositCancel() {
   const [params] = useSearchParams();
 
@@ -15,12 +21,14 @@ export default function DepositCancel() {
       if (!orderCode) return;
 
       try {
+        const token = localStorage.getItem("token");
         await fetch(
-          `https://webbanxe-backend-stx9.onrender.com/api/deposits/order/${orderCode}/cancel`,
+          `${API_BASE}/api/deposits/order/${orderCode}/cancel`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
           }
         );

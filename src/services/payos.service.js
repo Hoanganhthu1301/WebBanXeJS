@@ -115,6 +115,11 @@ const createPaymentLink = async ({
   }
 };
 
+const getPaymentLinkInformation = async (orderCode) => {
+  const client = getPayOSClient();
+  return await client.paymentRequests.get(Number(orderCode));
+};
+
 const verifyWebhookSignature = async (body) => {
   const client = getPayOSClient();
   return await client.webhooks.verify(body);
@@ -122,6 +127,7 @@ const verifyWebhookSignature = async (body) => {
 
 module.exports = {
   createPaymentLink,
+  getPaymentLinkInformation,
   safeDescription,
   generateOrderCode,
   verifyWebhookSignature,
